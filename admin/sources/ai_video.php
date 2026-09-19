@@ -73,10 +73,14 @@ switch ($act) {
         deleteVideoJob();
         break;
 
-    /* 10. Assets Manager */
+    /* 10. Assets Manager & Quick Upload */
     case "assets":
         viewAssetsManager();
         $template = "ai_video/assets";
+        break;
+
+    case "upload_asset":
+        uploadProductAsset();
         break;
 
     /* 11. Settings & Provider Configuration */
@@ -261,6 +265,13 @@ function renderVideoNow() {
         $func->transfer("Dự án không hợp lệ", "index.php?com=ai_video&act=man", false);
     }
 
+    // Nếu video đang ở trạng thái WAITING_ASSET và Admin chủ động bấm Kích hoạt Render,
+    // tự động chuyển sang READY (chế độ Text-to-Video AI prompt) để xử lý
+    $video = $d->rawQueryOne("SELECT status FROM table_ai_video WHERE id = ? LIMIT 1", array($id));
+    if (!empty($video) && $video['status'] === 'WAITING_ASSET') {
+        $d->rawQuery("UPDATE table_ai_video SET status = 'READY', date_updated = ? WHERE id = ?", array(time(), $id));
+    }
+
     $res = $videoQueue->enqueueVideoRender($id);
     if ($res['success']) {
         // Kích hoạt ngay 1 lượt xử lý worker
@@ -440,4 +451,47 @@ function saveSettings() {
 
     $d->rawQuery("UPDATE table_setting SET options = ? WHERE id = 1", array(json_encode($options, JSON_UNESCAPED_UNICODE)));
     $func->transfer("Cập nhật cấu hình AI Video Engine thành công!", "index.php?com=ai_video&act=settings");
+}
+
+/**
+ * 12. Upload nhanh ảnh sản phẩm cho dự án video & tự động giải quyết phân cảnh
+ */
+function uploadProductAsset() {
+    global $d, $func, $videoEngine;
+
+    $idVideo = !empty($_POST['id_video']) ? (int)$_POST['id_video'] : (!empty($_GET['id']) ? (int)$_GET['id'] : 0);
+    if (!$idVideo) {
+        $func->transfer("Dự án video không hợp lệ", "index.php?com=ai_video&act=man", false);
+    }
+
+    $video = $d->rawQueryOne("SELECT id, id_product FROM table_ai_video WHERE id = ? LIMIT 1", array($idVideo));
+    if (empty($video)) {
+        $func->transfer("Không tìm thấy dự án video", "index.php?com=ai_video&act=man", false);
+    }
+
+    $idProduct = (int)$video['id_product'];
+
+    if ($func->hasFile("file")) {
+        $uploadDir = defined('UPLOAD_PRODUCT') ? UPLOAD_PRODUCT : '../upload/product/';
+        $fileName = $func->uploadName($_FILES["file"]["name"]);
+        $photo = $func->uploadImage("file", ".jpg|.png|.jpeg|.webp|.gif", $uploadDir, $fileName);
+
+        if ($photo) {
+            // Cập nhật ảnh chính cho sản phẩm nếu chưa có
+            $product = $d->rawQueryOne("SELECT id, photo FROM table_product WHERE id = ? LIMIT 1", array($idProduct));
+            if (!empty($product)) {
+                $d->rawQuery("UPDATE table_product SET photo = ? WHERE id = ?", array($photo, $idProduct));
+            }
+
+            // Tự động phân giải lại assets cho video
+            $res = $videoEngine->resolveProjectAssets($idVideo);
+
+            $msg = "Tải lên ảnh sản phẩm thành công! Đã tự động ánh xạ phân cảnh cho video.";
+            $func->transfer($msg, "index.php?com=ai_video&act=view&id=" . $idVideo);
+        } else {
+            $func->transfer("Không thể tải lên file hình ảnh. Định dạng không hợp lệ.", "index.php?com=ai_video&act=view&id=" . $idVideo, false);
+        }
+    } else {
+        $func->transfer("Vui lòng chọn file hình ảnh sản phẩm", "index.php?com=ai_video&act=view&id=" . $idVideo, false);
+    }
 }

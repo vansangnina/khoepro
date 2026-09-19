@@ -21,7 +21,17 @@ $linkRender = "index.php?com=ai_video&act=render_now&id=" . $item['id'];
                     <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#rejectModal">
                         <i class="fas fa-times-circle mr-1"></i> Từ chối (Reject)
                     </button>
-                <?php elseif (in_array($item['status'], array('READY', 'FAILED', 'REJECTED'))): ?>
+                <?php elseif ($item['status'] === 'WAITING_ASSET'): ?>
+                    <button type="button" class="btn btn-warning mr-2" data-toggle="modal" data-target="#uploadAssetModal">
+                        <i class="fas fa-upload mr-1"></i> Tải ảnh sản phẩm
+                    </button>
+                    <a href="<?=$linkRender?>" class="btn btn-primary" onclick="return confirm('Kích hoạt tiến trình render AI (Text-to-Video) từ kịch bản phân cảnh ngay?');">
+                        <i class="fas fa-bolt mr-1"></i> Kích hoạt Render (AI Text-to-Video)
+                    </a>
+                <?php elseif (in_array($item['status'], array('READY', 'FAILED', 'REJECTED', 'DRAFT'))): ?>
+                    <button type="button" class="btn btn-outline-secondary mr-2" data-toggle="modal" data-target="#uploadAssetModal">
+                        <i class="fas fa-upload mr-1"></i> Đổi ảnh sản phẩm
+                    </button>
                     <a href="<?=$linkRender?>" class="btn btn-primary" onclick="return confirm('Kích hoạt tiến trình render video ngay?');">
                         <i class="fas fa-bolt mr-1"></i> Kích hoạt Render
                     </a>
@@ -42,9 +52,25 @@ $linkRender = "index.php?com=ai_video&act=render_now&id=" . $item['id'];
         <?php endif; ?>
 
         <?php if ($item['status'] === 'WAITING_ASSET'): ?>
-            <div class="alert alert-warning shadow-sm">
-                <h5><i class="icon fas fa-images"></i> Thiếu Tài nguyên Trực quan (Waiting Asset)!</h5>
-                Dự án chưa thể render do một số phân cảnh chưa được ánh xạ hình ảnh/video sản phẩm. Vui lòng cập nhật tài nguyên cho sản phẩm hoặc upload thủ công.
+            <div class="alert alert-warning shadow-sm border-warning">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div>
+                        <h5 class="font-weight-bold mb-2"><i class="icon fas fa-info-circle"></i> Sản phẩm chưa có File hình ảnh thực tế</h5>
+                        <p class="mb-2">Bạn có thể chọn 1 trong 2 phương án bên dưới để tiếp tục tiến trình sản xuất video:</p>
+                        <ul class="mb-0 pl-3">
+                            <li class="mb-1"><strong>Lựa chọn 1 (Khuyên dùng khi chưa có ảnh chụp):</strong> Nhấn nút <strong>"Kích hoạt Render (AI Text-to-Video)"</strong> để AI Veo 3.1 tự động vẽ bối cảnh phòng tập gym và sản phẩm theo chỉ dẫn chi tiết của từng phân cảnh.</li>
+                            <li><strong>Lựa chọn 2 (Chuẩn xác theo sản phẩm thật):</strong> Nhấn <strong>"Tải ảnh sản phẩm"</strong> hoặc chọn file bên dưới để hệ thống tự động ánh xạ ảnh thật vào tất cả phân cảnh rồi render.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-3 pt-2 border-top">
+                    <form action="index.php?com=ai_video&act=upload_asset" method="POST" enctype="multipart/form-data" class="form-inline">
+                        <input type="hidden" name="id_video" value="<?=$item['id']?>">
+                        <label class="mr-2 font-weight-bold"><i class="fas fa-file-image mr-1"></i> Upload nhanh ảnh sản phẩm:</label>
+                        <input type="file" name="file" class="form-control-file d-inline-block w-auto mr-2" accept="image/*" required>
+                        <button type="submit" class="btn btn-sm btn-dark font-weight-bold"><i class="fas fa-cloud-upload-alt mr-1"></i> Tải lên & Đồng bộ ngay</button>
+                    </form>
+                </div>
             </div>
         <?php endif; ?>
 
@@ -279,6 +305,39 @@ $linkRender = "index.php?com=ai_video&act=render_now&id=" . $item['id'];
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
                     <button type="submit" class="btn btn-danger font-weight-bold">Xác nhận Từ chối</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Upload Ảnh Sản phẩm / Asset -->
+<div class="modal fade" id="uploadAssetModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form action="index.php?com=ai_video&act=upload_asset" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="id_video" value="<?=$item['id']?>">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title font-weight-bold"><i class="fas fa-upload mr-2"></i>Tải lên Ảnh Sản phẩm cho Video #<?=$item['id']?></h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="font-weight-bold">Chọn file hình ảnh sản phẩm:</label>
+                        <div class="custom-file">
+                            <input type="file" name="file" class="custom-file-input" id="customFileProduct" accept="image/*" required>
+                            <label class="custom-file-label" for="customFileProduct">Chọn ảnh (.jpg, .png, .webp)...</label>
+                        </div>
+                        <small class="form-text text-muted mt-2">
+                            <i class="fas fa-lightbulb text-warning mr-1"></i> Sau khi tải lên, hệ thống sẽ tự động đồng bộ ảnh này làm tài nguyên cho tất cả phân cảnh trong kịch bản.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary font-weight-bold"><i class="fas fa-cloud-upload-alt mr-1"></i> Tải lên & Ánh xạ ngay</button>
                 </div>
             </form>
         </div>

@@ -158,6 +158,27 @@ class AIVideoEngine {
     }
 
     /**
+     * Helper tìm file ảnh thực tế trên ổ đĩa hỗ trợ cả ngữ cảnh admin và frontend
+     * @param string $photo
+     * @return string|null
+     */
+    private function findMediaFile($photo) {
+        if (empty($photo)) return null;
+        $candidates = array(
+            defined('UPLOAD_PRODUCT') ? UPLOAD_PRODUCT . $photo : null,
+            defined('UPLOAD_PRODUCT_L') ? UPLOAD_PRODUCT_L . $photo : null,
+            'upload/product/' . $photo,
+            '../upload/product/' . $photo,
+        );
+        foreach ($candidates as $path) {
+            if (!empty($path) && file_exists($path)) {
+                return $path;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Tự động giải quyết và ánh xạ tài nguyên cho từng Scene của dự án
      * @param int $idVideo
      * @return array ['status' => string, 'ready' => bool, 'missing_assets' => array]
@@ -174,12 +195,18 @@ class AIVideoEngine {
         $gallery = $this->d->rawQuery("SELECT id, photo FROM table_gallery WHERE id_parent = ? AND type = 'san-pham' AND find_in_set('hienthi', status)", array($idProduct));
 
         $availableMedia = array();
-        if (!empty($product['photo']) && file_exists(UPLOAD_PRODUCT_L . $product['photo'])) {
-            $availableMedia[] = array('type' => 'PRODUCT_PHOTO', 'path' => 'upload/product/' . $product['photo'], 'name' => 'Ảnh chính sản phẩm');
+        if (!empty($product['photo'])) {
+            $foundPath = $this->findMediaFile($product['photo']);
+            if ($foundPath) {
+                $availableMedia[] = array('type' => 'PRODUCT_PHOTO', 'path' => $foundPath, 'name' => 'Ảnh chính sản phẩm');
+            }
         }
         foreach ($gallery as $gal) {
-            if (!empty($gal['photo']) && file_exists(UPLOAD_PRODUCT_L . $gal['photo'])) {
-                $availableMedia[] = array('type' => 'PRODUCT_PHOTO', 'path' => 'upload/product/' . $gal['photo'], 'name' => 'Ảnh thư viện gallery');
+            if (!empty($gal['photo'])) {
+                $foundPath = $this->findMediaFile($gal['photo']);
+                if ($foundPath) {
+                    $availableMedia[] = array('type' => 'PRODUCT_PHOTO', 'path' => $foundPath, 'name' => 'Ảnh thư viện gallery');
+                }
             }
         }
 
@@ -223,7 +250,7 @@ class AIVideoEngine {
                     'date_created' => time()
                 ));
             } else {
-                // Không có tài nguyên trực quan nào cho sản phẩm
+                // Không có tài nguyên hình ảnh vật lý -> ghi nhận thiếu ảnh nhưng vẫn hỗ trợ Text-to-Video
                 $missingAssets[] = array(
                     'scene_number' => $sceneNum,
                     'requirement' => !empty($sc['asset_requirement']) ? $sc['asset_requirement'] : 'Hình ảnh sản phẩm'
@@ -235,6 +262,7 @@ class AIVideoEngine {
         }
 
         // Cập nhật lại scenes_data và trạng thái
+        // Nếu không có ảnh nhưng có shot plan thì trạng thái là WAITING_ASSET (vẫn cho phép Render bằng Text-to-Video Prompt)
         $newStatus = !empty($missingAssets) ? 'WAITING_ASSET' : 'READY';
         $this->d->rawQuery("UPDATE table_ai_video SET scenes_data = ?, status = ?, date_updated = ? WHERE id = ?", array(
             json_encode($resolvedScenes, JSON_UNESCAPED_UNICODE),
