@@ -53,3 +53,16 @@ Tài liệu này lưu trữ các quyết định kỹ thuật và kiến trúc c
   2. **Chính xác & Minh bạch**: Ngăn chặn hallucination của LLM trong các số liệu tài chính/doanh số quan trọng.
   3. **Giám sát xu hướng**: Snapshots cho phép FITNADO theo dõi tốc độ tăng trưởng doanh số và độ nóng của sản phẩm theo thời gian thực.
 
+---
+
+## 6. QUYẾT ĐỊNH 06: KIỂM DUYỆT CHẤT LƯỢNG (QUALITY GATE), SOURCE HASH VÀ ÁP DỤNG HOÀN NGUYÊN (PHASE 05)
+
+* **Quyết định**:
+  1. **Strict Quality Gate**: Áp dụng bộ lọc kiểm duyệt `validateQualityGate()` để chặn các claim sai sự thật ("Tôi đã dùng", "chữa bệnh"), fake testimonials và hạ điểm chất lượng trước khi cho phép vào vòng duyệt `REVIEW_REQUIRED`.
+  2. **Deterministic Source Hash**: Tính toán SHA-256 trên dữ liệu nguồn của sản phẩm và research facts để tự động gắn cờ Outdated nếu sản phẩm thay đổi sau khi sinh nội dung.
+  3. **Shot Plan Bridge**: Định dạng kịch bản TikTok có phân cảnh chi tiết (`shot_plan`) để sẵn sàng tích hợp thẳng vào AI Video Rendering (Phase 06) mà không cần refactor cấu trúc.
+  4. **Reversible Apply & Backup**: Tự động lưu bản sao lưu các trường sản phẩm bị ghi đè vào `table_product_content_backup` khi Admin bấm "Áp dụng", cho phép xem Diff và Rollback an toàn.
+* **Lý do**:
+  1. Đảm bảo uy tín thương hiệu FITNADO, tuân thủ pháp luật quảng cáo thực phẩm/dụng cụ thể thao và bảo vệ dữ liệu sản phẩm gốc khi ứng dụng AI quy mô lớn.
+
+

@@ -4,6 +4,34 @@ Tài liệu ghi nhận toàn bộ các thay đổi được thực hiện bởi 
 
 ---
 
+## [2026-09-19] - PHASE 05: AI CONTENT ENGINE (PRODUCT ANALYSIS, HOOKS, TIKTOK SCRIPTS, SHOT PLANS & SEO PACKS)
+
+### CREATED
+* `database/migrations/phase05_ai_content.sql`: Migration tạo 3 bảng mới (`table_ai_content`, `table_ai_content_job`, `table_product_content_backup`).
+* `libraries/class/class.AIContentEngine.php`: Lớp động cơ nội dung AI lõi: tổng hợp dữ liệu sản phẩm & evidence facts, tính toán `source_hash` phát hiện nội dung lỗi thời, kiểm tra cổng chất lượng (`validateQualityGate`), quản lý phiên bản (`version`, `is_current`), bộ so sánh và áp dụng có thể hoàn nguyên (`applyToProduct`) kèm backup.
+* `libraries/class/class.AIContentJobQueue.php`: Lớp quản lý hàng đợi tác vụ sinh nội dung AI bất đồng bộ (Single / Batch queue, concurrency lock, retry, stale recovery).
+* `cron/ai_content_worker.php`: Background CLI / HTTP Token worker xử lý hàng đợi theo lô.
+* `admin/sources/ai_content.php`: Controller quản trị thư viện nội dung AI, xem chi tiết gói nội dung, trình so sánh Diff Apply, tạo nội dung đơn/hàng loạt, giám sát Job Queue và cấu hình Prompts.
+* `admin/templates/ai_content/mans_tpl.php`: Thư viện nội dung lọc theo sản phẩm, loại nội dung, trạng thái và cảnh báo outdated.
+* `admin/templates/ai_content/view_tpl.php`: Màn hình xem chi tiết gói nội dung (7 Hooks, phân cảnh kịch bản, bảng Shot Plan, SEO meta, bài review và kết quả Quality Gate).
+* `admin/templates/ai_content/diff_apply_tpl.php`: Trình so sánh Diff trực quan song song (Side-by-Side Diff) giữa nội dung hiện tại và nội dung AI được duyệt.
+* `admin/templates/ai_content/generate_tpl.php`: Giao diện tạo nội dung AI cho sản phẩm hoặc tạo hàng loạt.
+* `admin/templates/ai_content/jobs_tpl.php`: Màn hình giám sát hàng đợi job AI Content.
+* `admin/templates/ai_content/settings_tpl.php`: Màn hình xem thông tin prompt templates và cài đặt.
+* `.ai/plans/PHASE-05-AI-CONTENT.md`: Kế hoạch triển khai chi tiết Phase 05.
+* `.ai/skills/fitnado-ai-content/SKILL.md`: Tài liệu kỹ năng về quy trình AI Content Engine, Quality Gate và Shot Plan bridge.
+* `test_phase05.php`: Bộ kiểm thử toàn diện Phase 05 gồm 49 test cases.
+
+### MODIFIED & ENHANCED
+* `libraries/class/class.AIResearchAgent.php`: Mở rộng MockAIProvider với các cấu trúc sinh nội dung chuyên sâu (Hooks 7 loại, kịch bản phân cảnh TikTok, Shot Plan 5 scene, SEO metadata, Review draft, FAQ, Tone guide) hỗ trợ kiểm thử và fallback ngoại tuyến.
+* `admin/templates/layout/menu.php`: Thêm menu điều hướng "AI Content Engine" với đầy đủ sub-menus (Thư viện nội dung, Tạo nội dung, Hàng đợi xử lý, Cấu hình Prompts).
+* `.ai/DATABASE.md`, `.ai/BUSINESS_RULES.md`, `.ai/ARCHITECTURE.md`: Cập nhật schema Mục 11, Quy tắc Mục 8 và Kiến trúc Mục 9 cho Phase 05.
+
+### RESULT
+* Hoàn thành toàn diện Phase 05: Hệ thống AI Content Engine tự động tạo ra nội dung phong phú, giàu tính thương mại và chuẩn xác dựa trên facts thật; tuân thủ nghiêm ngặt Quality Gate và Human Approval; kịch bản TikTok kèm Shot Plan phân đoạn sẵn sàng làm cầu nối cho Phase 06; hoàn thành 49/49 test cases (100% PASS) và 0 lỗi PHP 7.4.
+
+---
+
 ## [2026-09-19] - PHASE 04: AUTOMATED PRODUCT RESEARCH + AI RESEARCH AGENT
 
 ### CREATED

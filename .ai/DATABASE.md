@@ -309,3 +309,68 @@
   * `price`, `sales_count`, `rating`, `review_count`, `commission_rate`, `creator_count`, `video_count`: Các chỉ số thị trường tại thời điểm snapshot
   * `date_created`: Unix timestamp thời điểm ghi nhận snapshot
 
+---
+
+## 11. BẢNG AI CONTENT ENGINE & CONTENT PACKAGE (PHASE 05)
+
+### `table_ai_content` (Gói nội dung AI theo sản phẩm)
+* **Mục đích**: Lưu trữ các phiên bản nội dung AI sinh ra cho sản phẩm (SEO, TikTok Script, Shot Plan, Hooks, Review Draft, FAQ, Tone Guide).
+* **Cấu trúc**:
+  * `id`: Khóa chính INT(11) UNSIGNED AUTO_INCREMENT
+  * `id_product`: Khóa ngoại liên kết `table_product.id` (bắt buộc)
+  * `id_research`: Khóa ngoại liên kết `table_product_research.id` (nếu có)
+  * `content_type`: Loại gói (`ALL`, `TIKTOK_SCRIPT`, `SEO_PACK`, `REVIEW_DRAFT`, `PRODUCT_ANALYSIS`, `SHORT_COPY`)
+  * `version`: Phiên bản INT(11) DEFAULT 1
+  * `is_current`: Cờ phiên bản hiện tại TINYINT(1) DEFAULT 1
+  * `title`: Tiêu đề nội dung / Hook chính VARCHAR(255)
+  * `product_analysis`: Phân tích chuyên sâu JSON (USP, đối tượng, pain point, góc khai thác)
+  * `tiktok_hooks`: Mảng 7 loại Hook chiến lược JSON (Curiosity, Problem-Agitate, Transformation, Cost-Comparison, Direct-Review, Myth-Busting, FOMO)
+  * `tiktok_scripts`: Kịch bản TikTok JSON (Hook, Body, Visual cue, Audio cue, CTA)
+  * `shot_plan`: Kế hoạch cảnh quay theo phân đoạn JSON (Scene #, duration, visual instruction, voiceover, on-screen text, asset requirement - Cầu nối Phase 06)
+  * `seo_metadata`: Gói SEO JSON (Meta title, meta desc, primary/secondary keywords, schema FAQ & Review, alt suggestions)
+  * `review_draft`: Bài đánh giá/review chi tiết (Mô tả, Pros, Cons, Verdict, Best For, Specs, Hướng dẫn sử dụng)
+  * `faq_list`: Danh sách câu hỏi thường gặp JSON
+  * `tone_guide`: Chỉ dẫn giọng điệu JSON (Giọng tập trung chuyên gia, thể thao, năng động, trung thực)
+  * `evidence_used`: Danh sách ID bằng chứng fact đã trích xuất sử dụng JSON
+  * `source_hash`: SHA-256 hash của dữ liệu đầu vào sản phẩm & research để phát hiện nội dung lỗi thời
+  * `prompt_version`: Mã phiên bản prompt template (ví dụ: `tiktok-script-v1`, `seo-pack-v1`)
+  * `ai_model`: Model AI đã sinh nội dung (gemini-1.5-pro, gpt-4o, mock-content-engine...)
+  * `quality_score`: Điểm chất lượng nội dung DOUBLE (0 - 100)
+  * `quality_checks`: Kết quả kiểm tra Quality Gate JSON (Pass/Fail các tiêu chí factual, cấm claim giả mạo)
+  * `status`: Trạng thái (`DRAFT`, `REVIEW_REQUIRED`, `APPROVED`, `REJECTED`, `APPLIED_TO_PRODUCT`, `ARCHIVED`)
+  * `review_notes`: Ghi chú từ chối hoặc góp ý của Admin TEXT
+  * `reviewed_by`: Tên hoặc ID admin kiểm duyệt VARCHAR(100)
+  * `reviewed_at`: Unix timestamp thời điểm kiểm duyệt INT(11)
+  * `applied_at`: Unix timestamp thời điểm áp dụng vào sản phẩm INT(11)
+  * `date_created`, `date_updated`: Unix timestamp
+
+### `table_ai_content_job` (Hàng đợi tác vụ sinh nội dung AI)
+* **Mục đích**: Quản lý các job bất đồng bộ sinh nội dung AI đơn lẻ hoặc hàng loạt cho sản phẩm.
+* **Cấu trúc**:
+  * `id`: Khóa chính INT(11) UNSIGNED AUTO_INCREMENT
+  * `id_product`: Khóa ngoại liên kết `table_product.id`
+  * `content_type`: Loại nội dung yêu cầu (`ALL`, `TIKTOK_SCRIPT`, `SEO_PACK`...)
+  * `prompt_version`: Phiên bản prompt cấu hình VARCHAR(50)
+  * `ai_model`: Tên model AI thực thi VARCHAR(50)
+  * `status`: Trạng thái (`PENDING`, `RUNNING`, `SUCCESS`, `FAILED`, `CANCELLED`)
+  * `attempts`: Số lần thử lại INT(11) DEFAULT 0
+  * `max_attempts`: Giới hạn retry INT(11) DEFAULT 3
+  * `id_content`: ID kết quả sinh ra liên kết `table_ai_content.id`
+  * `error_message`: Nội dung lỗi nếu có TEXT
+  * `started_at`, `completed_at`: Timestamp bắt đầu và kết thúc
+  * `duration`: Thời gian xử lý (giây) DOUBLE
+  * `date_created`, `date_updated`: Unix timestamp
+
+### `table_product_content_backup` (Lưu trữ sao lưu nội dung sản phẩm khi áp dụng AI)
+* **Mục đích**: Lưu lại trạng thái nội dung cũ của `table_product` trước khi áp dụng AI Content để đảm bảo tính hoàn nguyên (Reversible apply/rollback).
+* **Cấu trúc**:
+  * `id`: Khóa chính BIGINT(20) UNSIGNED AUTO_INCREMENT
+  * `id_product`: ID sản phẩm `table_product.id`
+  * `id_content`: ID gói nội dung AI `table_ai_content.id` đã áp dụng
+  * `field_name`: Tên trường được ghi đè (descvi, contentvi, expert_pros, expert_cons, verdict, best_for, specs...)
+  * `old_value`: Giá trị cũ trước khi ghi đè MEDIUMTEXT
+  * `new_value`: Giá trị mới vừa được áp dụng MEDIUMTEXT
+  * `created_by`: Admin thực hiện áp dụng VARCHAR(100)
+  * `date_created`: Unix timestamp thời điểm sao lưu
+
+

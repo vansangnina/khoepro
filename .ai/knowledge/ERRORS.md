@@ -54,3 +54,11 @@ Tài liệu này lưu trữ các lỗi đã phát hiện hoặc có nguy cơ ph�
 * **Biện pháp phòng ngừa**: Luôn kiểm tra cơ chế autoload và khai báo `require_once` tường minh hoặc đặt tên file khớp với class chính.
 * **Phạm vi ảnh hưởng**: `libraries/class/class.ResearchProvider.php`, `libraries/class/class.ResearchJobQueue.php`.
 
+### [ERR-006] Ghi đè trực tiếp dữ liệu sản phẩm gốc mà không lưu lịch sử hoàn nguyên
+* **Vấn đề**: Khi người dùng áp dụng nội dung AI vào sản phẩm, nếu không hài lòng không thể khôi phục lại mô tả/bài viết cũ.
+* **Nguyên nhân**: Thiết kế ban đầu update thẳng vào `table_product` mà không có cơ chế snapshot/backup.
+* **Cách khắc phục**: Tạo bảng `table_product_content_backup` và xây dựng hàm `applyToProduct()` tự động backup toàn bộ các trường `descvi`, `contentvi`, `expert_pros`, `expert_cons`, `verdict`, `best_for`, `specs` cũ trước khi thực hiện UPDATE.
+* **Biện pháp phòng ngừa**: Mọi luồng áp dụng nội dung AI hàng loạt vào dữ liệu sản phẩm chính phải có bước sao lưu tự động và cho phép Diff/Rollback.
+* **Phạm vi ảnh hưởng**: `libraries/class/class.AIContentEngine.php`, `admin/sources/ai_content.php`.
+
+

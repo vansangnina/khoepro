@@ -106,3 +106,32 @@ Hệ thống phân định rõ ràng các cấp độ nội dung đánh giá:
 * **Bảo mật thông tin & API Keys**:
   * API key của các nhà cung cấp AI (Gemini, OpenAI) được lưu trong bảng cấu hình `table_setting`, che giấu (masking) trên giao diện Admin và không bao giờ commit vào Git.
 
+---
+
+## 8. QUY TẮC NỘI DUNG AI & DUYỆT BẢN THẢO (AI CONTENT RULES - PHASE 05)
+
+* **Nguyên tắc Factual Integrity (Sự thật là tối thượng)**:
+  * Fact > AI Analysis: AI Content chỉ được tạo dựa trên dữ liệu sản phẩm, thông số kỹ thuật thực tế và evidence facts đã duyệt.
+  * Nghiêm cấm bịa đặt trải nghiệm cá nhân giả mạo ("Tôi đã tập thử", "Mình dùng 3 tháng...") nếu không có cờ `REAL_TEST` kèm tư liệu test phòng gym.
+  * Nghiêm cấm bịa đặt lời nhận xét của khách hàng giả mạo (Fake Testimonials / Fake User Quotes).
+  * Nghiêm cấm cam kết y tế hoặc chữa bệnh trái luật ("chữa khỏi đau lưng", "cam kết giảm 10kg sau 1 tuần").
+* **Chất lượng nội dung & Quality Gate Bắt Buộc**:
+  * Mọi gói nội dung AI sinh ra phải vượt qua bộ lọc `validateQualityGate()` trước khi chuyển sang `REVIEW_REQUIRED`.
+  * Nếu phát hiện từ khóa cấm hoặc vi phạm claim sự thật, hệ thống hạ `quality_score` và đánh dấu cờ vi phạm để Admin đối soát.
+* **Quy tắc Kiểm duyệt & Trạng thái (Human Content Gate)**:
+  * Trạng thái mặc định sau khi sinh: `REVIEW_REQUIRED`.
+  * Tuyệt đối không tự động publish lên website hoặc auto-apply vào `table_product`.
+  * Chuyển đổi trạng thái hợp lệ: `DRAFT` → `REVIEW_REQUIRED` → `APPROVED` / `REJECTED` → `APPLIED_TO_PRODUCT`.
+  * Khi bị `REJECTED`, bắt buộc lưu `review_notes` để phục vụ tinh chỉnh prompt và audit.
+* **Cơ chế Snapshot Hoàn nguyên (Reversible Apply & Backup)**:
+  * Khi Admin bấm "Áp dụng vào sản phẩm" (Apply to Product), hệ thống bắt buộc tự động sao lưu toàn bộ giá trị cũ của các trường sản phẩm liên quan (`descvi`, `contentvi`, `expert_pros`, `expert_cons`, `verdict`, `best_for`, `specs`) vào `table_product_content_backup`.
+  * Cho phép Admin xem Diff đối soát trước khi áp dụng và khôi phục (Rollback) nội dung cũ bất cứ lúc nào.
+* **Định dạng Kịch bản TikTok & Cầu nối Shot Plan (Bridge to Phase 06)**:
+  * Mỗi kịch bản TikTok kèm danh sách 7 loại Hooks chiến lược.
+  * Kịch bản bắt buộc có mảng `shot_plan` chi tiết từng phân đoạn (Scene #, duration, visual instruction, voiceover, on-screen text, asset requirement).
+  * Cấu trúc `shot_plan` này là dữ liệu đầu vào chuẩn hóa sẵn sàng cho Phase 06 (AI Video Rendering & Video Scene Assembler).
+* **Phát hiện Nội dung Lỗi thời (Deterministic Source Hash)**:
+  * Sử dụng mã băm SHA-256 (`source_hash`) của toàn bộ thông tin sản phẩm và nghiên cứu tại thời điểm sinh nội dung.
+  * Nếu sản phẩm hoặc dữ liệu research bị thay đổi sau khi sinh, hệ thống hiển thị nhãn cảnh báo "Nội dung cũ hơn dữ liệu nghiên cứu (Outdated)" để Admin cân nhắc chạy lại.
+
+

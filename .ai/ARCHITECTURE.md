@@ -222,3 +222,69 @@ Hệ thống cấu hình chia làm 2 lớp:
    * Cấu hình nhà cung cấp AI & API Keys (`provider_config`, `save_provider_config`).
    * Hiển thị chi tiết bảng Evidence và thẻ AI Insights Visualizer trên form Candidate.
 
+---
+
+## 9. KIẾN TRÚC AI CONTENT ENGINE & CONTENT LIFECYCLE (PHASE 05)
+
+### Luồng xử lý sinh nội dung (Content Generation & Review Flow):
+
+```text
+[table_product] + [table_product_research] + [table_product_research_evidence]
+                                    │
+                                    ▼
+                          [Input Data Aggregator]
+                       (Calculate SHA-256 source_hash)
+                                    │
+                                    ▼
+                        [AI Content Job Queue]
+                       (table_ai_content_job)
+                                    │
+                                    ▼
+                         [AI Content Worker]
+                      (cron/ai_content_worker.php)
+                                    │
+                                    ▼
+                         [AI Provider Service]
+                      (Gemini / OpenAI / Mock)
+                                    │
+                                    ▼
+                         [Quality Gate Filter]
+                   (validateQualityGate & Factual Rules)
+                                    │
+                                    ▼
+                          [table_ai_content]
+                      (Status: REVIEW_REQUIRED)
+                                    │
+                                    ▼
+                          [HUMAN ADMIN GATE]
+                   (Review / Edit / Approve / Reject)
+                                    │ (When Approved)
+                                    ▼
+                       [Side-by-Side Diff Apply]
+                                    ├── Step 1: Backup current product fields to table_product_content_backup
+                                    └── Step 2: Overwrite table_product with approved AI content
+```
+
+### Thành phần lớp nghiệp vụ Phase 05:
+1. **`AIContentEngine`** (`libraries/class/class.AIContentEngine.php`):
+   * Tổng hợp dữ liệu đầu vào sản phẩm & trích xuất các facts từ `table_product_research_evidence` (`buildProductInputContext`).
+   * Tính toán chữ ký dữ liệu `source_hash` để phát hiện nội dung bị lỗi thời khi thông tin sản phẩm thay đổi (`computeSourceHash`, `isContentOutdated`).
+   * Quản lý các mẫu prompt có phiên bản (`PROMPTS` registry: `all-pack-v1`, `tiktok-script-v1`, `seo-pack-v1`, `review-draft-v1`).
+   * Bộ kiểm tra cổng chất lượng (`validateQualityGate`): Kiểm tra độ dài, cấu trúc, phát hiện từ khóa cấm, cam kết y tế sai lệch, và claims cá nhân giả mạo.
+   * Quản lý vòng đời phiên bản: Tự động tăng `version` khi sinh lại và đánh dấu `is_current = 1`.
+   * Áp dụng có thể hoàn nguyên (`applyToProduct`): Tự động sao lưu dữ liệu cũ vào `table_product_content_backup` trước khi cập nhật `table_product`.
+2. **`AIContentJobQueue`** (`libraries/class/class.AIContentJobQueue.php`):
+   * Quản lý hàng đợi tác vụ sinh nội dung AI đơn lẻ hoặc hàng loạt (`table_ai_content_job`).
+   * Cơ chế khóa concurrency lock (`worker_ai_content_lock`), xử lý timeout và tự động retry tác vụ thất bại.
+3. **`ai_content_worker.php`** (`cron/ai_content_worker.php`):
+   * Background CLI worker xử lý job theo lô (mặc định 5 jobs/lần) hoặc kích hoạt qua HTTP với access token bí mật.
+4. **Cầu nối Kịch bản TikTok & Shot Plan (Bridge to Phase 06)**:
+   * Kịch bản TikTok được cấu trúc mảng phân cảnh (`shot_plan`): bao gồm `scene_number`, `duration`, `visual_instruction`, `voiceover`, `on_screen_text`, `asset_requirement`.
+   * Cung cấp dữ liệu đầu vào sẵn sàng cho việc dựng video và render AI cảnh quay trong Phase 06.
+5. **Giao diện Quản trị AI Content (`admin/sources/ai_content.php`)**:
+   * Thư viện nội dung (`mans_tpl.php`): Lọc theo sản phẩm, loại nội dung, trạng thái và cảnh báo outdated.
+   * Chi tiết nội dung (`view_tpl.php`): Hiển thị trực quan 7 Hooks chiến lược, kịch bản phân cảnh, bảng Shot Plan, SEO meta, bài review và kết quả Quality Gate.
+   * Đối soát & Áp dụng (`diff_apply_tpl.php`): Trình so sánh Diff trực quan song song (Side-by-Side Diff) giữa nội dung hiện tại của sản phẩm và nội dung AI đã duyệt.
+   * Giám sát Job (`jobs_tpl.php`) & Cấu hình Prompts (`settings_tpl.php`).
+
+

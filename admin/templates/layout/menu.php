@@ -67,6 +67,46 @@
                     </ul>
                 </li>
 
+                <!-- AI Content Engine (Phase 05) -->
+                <?php
+                $isAiContentActive = ($com == 'ai_content');
+                ?>
+                <li class="nav-item has-treeview <?= $isAiContentActive ? 'menu-open' : '' ?>">
+                    <a class="nav-link <?= $isAiContentActive ? 'active' : '' ?>" href="#" title="AI Content Engine">
+                        <i class="nav-icon text-sm fas fa-magic text-danger"></i>
+                        <p>
+                            AI Content Engine
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'ai_content' && in_array($act, array('man', 'view', 'diff'))) ? 'active' : '' ?>" href="index.php?com=ai_content&act=man" title="Kho nội dung AI (Library)">
+                                <i class="nav-icon text-sm far fa-circle text-info"></i>
+                                <p>Kho nội dung (Library)</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'ai_content' && $act == 'generate') ? 'active' : '' ?>" href="index.php?com=ai_content&act=generate" title="Tạo nội dung mới">
+                                <i class="nav-icon text-sm far fa-circle text-success"></i>
+                                <p>Tạo nội dung mới</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'ai_content' && $act == 'jobs') ? 'active' : '' ?>" href="index.php?com=ai_content&act=jobs" title="Hàng đợi Content Jobs">
+                                <i class="nav-icon text-sm far fa-circle text-warning"></i>
+                                <p>Hàng đợi Jobs</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'ai_content' && $act == 'settings') ? 'active' : '' ?>" href="index.php?com=ai_content&act=settings" title="Cấu hình & Prompts">
+                                <i class="nav-icon text-sm far fa-circle text-purple"></i>
+                                <p>Cấu hình & Prompts</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
                 <!-- Affiliate Clicks -->
                 <li class="nav-item <?= ($com == 'affiliate') ? 'active' : '' ?>">
                     <a class="nav-link <?= ($com == 'affiliate') ? 'active' : '' ?>" href="index.php?com=affiliate&act=man" title="Thống kê Affiliate Clicks">

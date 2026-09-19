@@ -45,3 +45,15 @@ Tài liệu này tổng hợp các bài học kinh nghiệm rút ra sau từng g
 * **Bài học 03: Lưu Snapshot để theo dõi tín hiệu thị trường theo thời gian**:
   * Khi quét lại một sản phẩm đã có, thay vì tạo ứng viên trùng lặp, việc cập nhật `last_seen_at` và lưu một snapshot biến động giá/lượt bán/creator count mang lại giá trị vô cùng lớn cho việc phát hiện các sản phẩm đang có xu hướng tăng trưởng nóng (Trending Velocity).
 
+---
+
+## 5. BÀI HỌC TỪ PHASE 05 (AI CONTENT ENGINE & QUALITY GATES)
+
+* **Bài học 01: Quality Gates tự động hóa bảo vệ an toàn thương hiệu và tính trung thực**:
+  * LLM mặc định có xu hướng dùng văn phong trải nghiệm cá nhân ("Tôi đã thử nghiệm đai lưng này...") hoặc đưa ra cam kết quá đà ("chữa dứt điểm đau khớp"). Việc tích hợp lớp kiểm duyệt tự động `validateQualityGate()` dùng regex/pattern matching giúp chặn đứng các claim sai sự thật ngay khi nội dung vừa được sinh ra, bảo vệ thương hiệu FITNADO trước rủi ro pháp lý.
+* **Bài học 02: Deterministic Source Hash giúp phát hiện nội dung lỗi thời tức thì**:
+  * Khi giá, thông số, hoặc nghiên cứu sản phẩm thay đổi, việc kiểm tra SHA-256 hash của input context cho phép hệ thống tự động gắn nhãn "Outdated" mà không cần quét lại toàn bộ cơ sở dữ liệu.
+* **Bài học 03: Thiết kế Shot Plan theo phân cảnh là chìa khóa kết nối Phase 06**:
+  * Thay vì chỉ sinh ra một đoạn text kịch bản thuần túy, việc cấu trúc kịch bản TikTok thành mảng `shot_plan` gồm các scene phân đoạn (scene_number, duration, visual_instruction, voiceover, on_screen_text, asset_requirement) tạo ra định dạng chuẩn hóa, giúp giai đoạn tạo AI Video (Phase 06) có thể đọc và render cảnh quay trực tiếp mà không cần qua thêm một tầng bóc tách trung gian.
+
+
