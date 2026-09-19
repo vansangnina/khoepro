@@ -1,0 +1,180 @@
+.fixwidth{
+
+}
+.menu_top_intro{
+
+}
+.menu_top_intro ul{
+    list-style: none;
+    margin: 0px;
+}
+.menu_top_intro ul li{
+    display: inline-block;
+
+}
+.menu_top_intro li a{
+    display: flex;
+    color: #70757a;
+    width: fit-content;
+    padding-bottom: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    text-decoration: none;
+}
+.menu_top_intro li a:hover{
+    color: #1f1f1f;
+    border-bottom: 3px solid #1f1f1f;
+    padding-bottom: 8px;
+}
+.menu_top_intro{
+    border-bottom: 1px solid #c7c8ca;
+}
+.d75{
+    width: 70%;
+}
+.d25{
+    width: 30%;
+}
+.margin20{
+    margin-bottom: 20px;
+}
+
+.box_dktk_trangchu nav{
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 3px;
+    background: #f0efef;
+    border-radius: 3px;
+  }
+
+.box_dktk_trangchu nav label{
+    display: block;
+    height: 100%;
+    width: 100%;
+    text-align: center;
+    line-height: 30px;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+    color: #000;
+    font-size: 17px;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+    margin-left: 5px;
+  }
+  .box_dktk_trangchu nav label:hover{
+    background: #fff;
+    color:#000;
+  }
+  #khachang:checked ~ nav label.home,
+  #dichgia:checked ~ nav label.blog{
+    color: #000;
+  }
+.box_dktk_trangchu nav label i{
+    padding-right: 7px;
+  }
+.box_dktk_trangchu nav .slider{
+    position: absolute;
+    width: 50%;
+    left: 3px;
+    bottom: 3px;
+    z-index: 0;
+    border-radius: 5px;
+    background: #fff;
+    transition: all 0.3sease;
+    top: 3px;
+  }
+  input[type="radio"]{
+    display: none;
+  }
+  #dichgia:checked ~ nav .slider{
+    left: 49%;
+  }
+  
+  section .content{
+    display: none;
+    background: #fff;
+  }
+  #khachhang:checked ~ section .content-1,
+  #dichgia:checked ~ section .content-2{
+    display: block;
+  }
+  section .content a.title_adk{
+    font-size: 18px;
+    font-weight: 500;
+    margin: 20px 0 10px 0;
+    display: block;
+    text-decoration: none;
+    width: 100%;
+    text-align: center;
+    background: #008ff8cc;
+    color: #fff;
+    border-radius: 30px;
+    padding: 3px;
+  }
+
+  .box_dktk_trangchu{
+    padding: 10px;
+    box-shadow: 0px 0px 1px 2px #e6e1e1;
+    margin-bottom: 20px;
+    border-radius: 3px;
+  }
+  .titile_dk_trangchu{
+    margin-bottom: 5px;
+  }
+  .titile_dk_trangchu b{
+    font-size: 16px;
+  }
+
+.tens_top_content_trangchu {}
+
+.tens_top_content_trangchu span{ display:block;font-size: 15px;color: #000;margin-bottom: 5px; }
+
+.tens_top_content_trangchu b{
+    display: inline-block;
+    font-size: 15px;
+    color: #008ff8cc;
+    font-weight: 400;
+  padding-left: 5px;
+  font-weight: 400;
+}
+
+.tens_top_content_trangchu img{
+  max-width: 25px;
+  border-radius: 50%;
+  float: left;
+  margin-right: 5px;
+}
+.b_box_dh_dichthuat_intro .tens_top_content_trangchu i{
+}
+i.mdh_intro{}
+i.sotu_intro{}
+i.sotien_intro{}
+.h_box_dh_dichthuat_intro{}
+.h_box_dh_dichthuat_intro img{
+    float: left;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+.h_box_dh_dichthuat_intro b{
+    font-size: 16px;
+    color:#008ff8cc;
+}
+.h_box_dh_dichthuat_intro span{
+    font-size: 15px;
+    color: #ccc;
+}
+
+.img_cn_intro img{
+    float: left;
+    margin-right: 5px;
+}
+.magt_trans b.danhan{}
+.magt_trans b.damo{}

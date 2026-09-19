@@ -1,0 +1,763 @@
+.fadein,
+.fadeout {
+	animation-duration: 1s
+}
+
+@keyframes Start {
+	from {
+		visibility: hidden
+	}
+
+	to {
+		visibility: visible
+	}
+
+}
+
+@keyframes Preloader {
+	100% {
+		transform: rotate(360deg)
+	}
+
+}
+
+@keyframes Play {
+	from {
+		background-position: 0
+	}
+
+	to {
+		background-position: -360px
+	}
+
+}
+
+@keyframes Ani {
+	0% {
+		box-shadow: 0 0 0 rgba(220, 220, 220, 0);
+		border: 1px solid rgba(220, 220, 220, 0);
+		transform: scale(0)
+	}
+
+	70% {
+		box-shadow: 0 0 50px rgba(220, 220, 220, 1);
+		border: 1px solid rgba(220, 220, 220, 1);
+		transform: scale(1)
+	}
+
+	100% {
+		box-shadow: 0 0 60px rgba(220, 220, 220, 0);
+		border: 0 solid rgba(220, 220, 220, 0);
+		transform: scale(2)
+	}
+
+}
+
+@keyframes BgColor {
+	from {
+		background-color: rgba(0, 72, 53, 1)
+	}
+
+	to {
+		background-color: rgba(176, 92, 30, 1)
+	}
+
+}
+
+@keyframes Leftpage {
+	from {
+		left: -100%
+	}
+
+	to {
+		left: 100%
+	}
+
+}
+
+@keyframes Rotate {
+	from {
+		transform: rotate(0) translateZ(0)
+	}
+
+	to {
+		transform: rotate(360deg) translateZ(0)
+	}
+
+}
+
+@keyframes empty {
+	0% {
+		opacity: 1
+	}
+
+}
+
+@keyframes fadeIn {
+	0% {
+		opacity: 0
+	}
+
+	100% {
+		opacity: 1
+	}
+
+}
+
+@keyframes fadeOut {
+	0% {
+		opacity: 1
+	}
+
+	100% {
+		opacity: 0
+	}
+
+}
+
+@keyframes fadeInUp {
+	0% {
+		opacity: 0;
+		transform: translate3d(0, 100px, 0)
+	}
+
+	100% {
+		opacity: 1;
+		transform: translate3d(0, 0, 0)
+	}
+
+}
+
+@keyframes fadeInDown {
+	0% {
+		opacity: 0;
+		transform: translate3d(0, -100px, 0)
+	}
+
+	100% {
+		opacity: 1;
+		transform: translate3d(0, 0, 0)
+	}
+
+}
+
+@keyframes flipInX {
+	0% {
+		transform: perspective(400px) rotateX(90deg) scale(.5);
+		opacity: 0
+	}
+
+	100% {
+		transform: perspective(400px) rotateX(0) scale(1);
+		opacity: 1
+	}
+
+}
+
+@keyframes flipOutX {
+	0% {
+		transform: perspective(400px) rotateX(0) scale(1);
+		opacity: 1
+	}
+
+	100% {
+		transform: perspective(400px) rotateX(90deg) scale(.5);
+		opacity: 0
+	}
+
+}
+
+@keyframes scaleSmall {
+	0% {
+		opacity: 0;
+		transform: scale(1.1)
+	}
+
+	100% {
+		opacity: 1;
+		transform: scale(1)
+	}
+
+}
+
+@keyframes scaleLarge {
+	0% {
+		opacity: 0;
+		transform: scale(2)
+	}
+
+	100% {
+		opacity: 1;
+		transform: scale(1)
+	}
+
+}
+
+@keyframes scaleLarge2 {
+	0% {
+		opacity: 0;
+		transform: scale(1.1)
+	}
+
+	100% {
+		opacity: 1;
+		transform: scale(1)
+	}
+
+}
+
+@keyframes trackBallSlide {
+
+	0%,
+	100%,
+	30%,
+	60% {
+		opacity: 1;
+		transform: translateY(-12px)
+	}
+
+	15%,
+	50% {
+		opacity: 0;
+		transform: translateY(8px)
+	}
+
+}
+
+@keyframes goHeight {
+	from {
+		transform: scale3d(1, 0, 1)
+	}
+
+	to {
+		transform: scale3d(1, 1, 1)
+	}
+
+}
+
+@keyframes goWidth {
+	from {
+		transform: scale3d(0, 1, 1)
+	}
+
+	to {
+		transform: scale3d(1, 1, 1)
+	}
+
+}
+
+@keyframes aniHeight {
+	from {
+		transform: scale3d(1, 1, 1)
+	}
+
+	to {
+		transform: scale3d(1, 0, 1)
+	}
+
+}
+
+@keyframes aniWidth {
+	from {
+		transform: scale3d(1, 1, 1)
+	}
+
+	to {
+		transform: scale3d(0, 1, 1)
+	}
+
+}
+
+@keyframes moveLeft {
+	100% {
+		transform: translateX(-100%)
+	}
+
+}
+
+@keyframes moveRight {
+	100% {
+		transform: translateX(100%)
+	}
+
+}
+
+@keyframes toRight {
+	0% {
+		opacity: 0;
+		right: -100px
+	}
+
+	100% {
+		opacity: 1;
+		right: 0
+	}
+
+}
+
+@keyframes toLeft {
+	0% {
+		opacity: 0;
+		left: -100px
+	}
+
+	100% {
+		opacity: 1;
+		left: 0
+	}
+
+}
+
+@keyframes goRight {
+	0% {
+		opacity: 0;
+		transform: translate3d(-100%, 0, 0)
+	}
+
+	100% {
+		opacity: 1;
+		transform: none
+	}
+
+}
+
+@keyframes goLeft {
+	0% {
+		opacity: 0;
+		transform: translate3d(100%, 0, 0)
+	}
+
+	100% {
+		opacity: 1;
+		transform: none
+	}
+
+}
+
+@keyframes DrawStroke {
+	0% {
+		stroke-dashoffset: 1000
+	}
+
+	100% {
+		stroke-dashoffset: 0
+	}
+
+}
+
+@keyframes DrawStroke1 {
+	0% {
+		stroke-dashoffset: 2500
+	}
+
+	100% {
+		stroke-dashoffset: 0
+	}
+
+}
+
+@keyframes goBg {
+	0% {
+		transform: translate3d(-50%, 0, 0)
+	}
+
+	100% {
+		transform: none
+	}
+
+}
+
+@keyframes bounceInDown {
+
+	60%,
+	75%,
+	90%,
+	from,
+	to {
+		animation-timing-function: cubic-bezier(.215, .61, .355, 1)
+	}
+
+	0% {
+		opacity: 0;
+		transform: translate3d(0, -3000px, 0)
+	}
+
+	60% {
+		opacity: 1;
+		transform: translate3d(0, 25px, 0)
+	}
+
+	75% {
+		transform: translate3d(0, -10px, 0)
+	}
+
+	90% {
+		transform: translate3d(0, 5px, 0)
+	}
+
+	to {
+		opacity: 1
+	}
+
+}
+
+@keyframes Color2 {
+
+	0%,
+	60% {
+		background-color: #00431c
+	}
+
+	20% {
+		background-color: #b08a30
+	}
+
+}
+
+@keyframes Border {
+
+	0%,
+	60% {
+		border-top-color: #ffdd80
+	}
+
+	20% {
+		border-top-color: #117090
+	}
+
+}
+
+@keyframes Border1 {
+
+	0%,
+	60% {
+		border-color: #ffdd80
+	}
+
+	20% {
+		border-color: #117090
+	}
+
+}
+
+@keyframes Shake {
+
+	from,
+	to {
+		transform: translate3d(0, 0, 0) rotate(0)
+	}
+
+	0%,
+	50% {
+		transform: translate3d(-10px, 0, 0) rotate(15deg)
+	}
+
+	25% {
+		transform: translate3d(10px, 0, 0) rotate(-15deg)
+	}
+
+}
+
+@keyframes Bounce {
+	0% {
+		transform: translate3d(0, 0, 0) rotate(0)
+	}
+
+	50% {
+		transform: translate3d(50px, 20px, 0) rotate(125deg)
+	}
+
+	100% {
+		transform: translate3d(0, 0, 0) rotate(360deg)
+	}
+
+}
+
+@keyframes StrokeLine {
+	0% {
+		stroke-dashoffset: 0
+	}
+
+	100% {
+		stroke-dashoffset: -200
+	}
+
+}
+
+@keyframes StrokeLine1 {
+	0% {
+		stroke-dashoffset: 0
+	}
+
+	100% {
+		stroke-dashoffset: 200
+	}
+
+}
+
+@keyframes StrokeLine2 {
+	0% {
+		stroke-dashoffset: 0
+	}
+
+	100% {
+		stroke-dashoffset: 300
+	}
+
+}
+
+@keyframes BorderBox {
+
+	0%,
+	100% {
+		background-position: 0 0
+	}
+
+	50% {
+		background-position: 100% 100%
+	}
+
+}
+
+@keyframes MaskPlay {
+	from {
+		mask-position: 0 0
+	}
+
+	to {
+		mask-position: 100% 0
+	}
+
+}
+
+@keyframes DrawStroke1 {
+	0% {
+		stroke-dashoffset: 8000
+	}
+
+	100% {
+		stroke-dashoffset: 0
+	}
+
+}
+
+.fadein {
+	animation-name: fadeIn;
+	animation-fill-mode: forwards
+}
+
+.fadeout {
+	animation-name: fadeOut;
+	animation-fill-mode: forwards
+}
+
+.flipinx,
+.flipoutx {
+	animation-duration: .8s;
+	animation-fill-mode: forwards
+}
+
+.flipoutx {
+	-webkit-backface-visibility: visible !important;
+	backface-visibility: visible !important;
+	animation-name: flipOutX
+}
+
+.flipinx {
+	-webkit-backface-visibility: visible !important;
+	backface-visibility: visible !important;
+	animation-name: flipInX
+}
+
+.fadeindown,
+.fadeinup,
+.fadeoff,
+.fadeon {
+	animation-duration: 1s
+}
+
+.fadeindown {
+	animation-name: fadeInDown;
+	animation-fill-mode: forwards
+}
+
+.fadeinup {
+	animation-name: fadeInUp;
+	animation-fill-mode: forwards
+}
+
+.fadeoff {
+	animation-name: fadeOff;
+	animation-fill-mode: forwards
+}
+
+.fadeon {
+	animation-name: fadeOn;
+	animation-fill-mode: forwards
+}
+
+.goleft,
+.goright {
+	animation-duration: .8s;
+	animation-fill-mode: forwards
+}
+
+.goleft {
+	animation-name: goLeft
+}
+
+.goright {
+	animation-name: goRight
+}
+
+.scalelarge {
+	animation: scaleLarge;
+	animation-duration: 1s;
+	animation-fill-mode: forwards
+}
+
+.moveleft,
+.moveright {
+	pointer-events: none;
+	animation-duration: .8s;
+	animation-fill-mode: forwards
+}
+
+.moveleft {
+	animation-name: moveLeft
+}
+
+.moveright {
+	animation-name: moveRight
+}
+
+.contact-form,
+.container,
+.footer,
+.go-top,
+.header,
+.register-form {
+	animation: Start 1s steps(1, end) 0s 1 normal both
+}
+
+.slide-fade-out {
+	animation: fadeOut;
+	animation-duration: 1s;
+	animation-fill-mode: forwards
+}
+
+.slide-fade-in {
+	animation: fadeIn;
+	animation-duration: 1s;
+	animation-fill-mode: forwards;
+}
+
+.interior-hero-callout {
+	animation: circleFloat 5s linear forwards infinite
+}
+
+@keyframes circleFloat {
+	from {
+		transform: rotate(0deg)
+	}
+
+	to {
+		transform: rotate(360deg)
+	}
+
+}
+
+.is-selected {
+	animation-name: sizingSmall;
+	animation-duration: 1s;
+	animation-iteration-count: 1;
+	animation-fill-mode: forwards;
+	transform: scale(1)
+}
+
+@keyframes sizingLarge {
+	0% {
+		transform: scale(.8)
+	}
+
+	50% {
+		transform: scale(1.1)
+	}
+
+	100% {
+		transform: scale(1)
+	}
+
+}
+
+@keyframes sizingSmall {
+	0% {
+		transform: scale(.8)
+	}
+
+	50% {
+		transform: scale(1)
+	}
+
+	100% {
+		transform: scale(.9)
+	}
+
+}
+
+.flickity-button {
+	width: 49px;
+	height: 49px;
+	background-color: #f4c271;
+	overflow: hidden;
+	transition: transform .2s ease-in-out
+}
+
+@keyframes circleFloat {
+	from {
+		transform: rotate(0deg)
+	}
+
+	to {
+		transform: rotate(360deg)
+	}
+
+}
+
+.is-selected {
+	animation-name: sizingSmall;
+	animation-duration: 1s;
+	animation-iteration-count: 1;
+	animation-fill-mode: forwards;
+	transform: scale(1)
+}
+
+@keyframes sizingLarge {
+	0% {
+		transform: scale(.8)
+	}
+
+	50% {
+		transform: scale(1.05)
+	}
+
+	100% {
+		transform: scale(1)
+	}
+
+}
+
+@keyframes sizingSmall {
+	0% {
+		transform: scale(.8)
+	}
+
+	50% {
+		transform: scale(1)
+	}
+
+	100% {
+		transform: scale(.9)
+	}
+
+}

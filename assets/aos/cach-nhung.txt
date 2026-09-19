@@ -1,0 +1,10 @@
+<link href="js/aos/aos.css" rel="stylesheet"/>
+
+<div data-aos="fade-left" data-aos-duration="1000">noi dung trong div</div>
+
+<script src="js/aos/aos.js"></script>
+<script>
+  AOS.init({
+    once: true,
+  });
+</script>
