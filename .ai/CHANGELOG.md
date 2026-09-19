@@ -4,6 +4,31 @@ Tài liệu ghi nhận toàn bộ các thay đổi được thực hiện bởi 
 
 ---
 
+## [2026-09-19] - PHASE 06.3: REAL ECONOMY VIDEO VALIDATION (FFMPEG ENGINE + VIETNAMESE TTS + REAL PRODUCT MEDIA)
+
+### CREATED
+* `test_phase06_3.php`: Bộ kiểm thử tự động xác thực toàn diện Video Economy Thật với 40 assertions (kiểm định FFmpeg/FFprobe, rào chắn loại bỏ container 121KB, kiểm tra tính toàn vẹn của sản phẩm/ảnh thật/gallery thật, phân cảnh Purpose flow 7 bước, tổng hợp và cache giọng đọc tiếng Việt TTS, kết xuất FFmpeg MP4 1080x1920 9:16, kiểm tra codec h264/aac, trích xuất 4 khung hình kiểm định, và đối soát 0 VND External API cost).
+* `.ai/reports/PHASE-06.3-REAL-ECONOMY-VIDEO.md`: Báo cáo nghiệm thu chi tiết video Economy thật đầu tiên trên sản phẩm thật `Con Lăn Tập Bụng 4 Bánh FITNADO Power Roller` (ID: #44).
+* `upload/product/fitnado_roller_main.jpg`, `fitnado_roller_action.jpg`, `fitnado_roller_detail.jpg`, `fitnado_roller_stability.jpg`: Bộ 4 tài nguyên hình ảnh độ phân giải cao thực tế cho sản phẩm #44 (ảnh chính studio, ảnh trình diễn động tác, ảnh cận cảnh kết cấu bánh xe/đệm EVA, ảnh infographic so sánh độ vững chãi vs bánh đơn).
+* `upload/video/fitnado_economy_vid_28_1789808233.mp4`: Video Economy Thật thành phẩm (47.38s, 1080x1920 9:16, 9.04 MB, H.264 / AAC 44.1kHz, Ken Burns motion, giọng đọc tiếng Việt thật, phụ đề tiếng Việt an toàn TikTok safe-area, 0 VND API cost).
+
+### MODIFIED & ENHANCED
+* `libraries/class/class.VideoComposer.php`:
+  - Tích hợp động cơ kết xuất FFmpeg đa tầng cục bộ (`scale`, `crop`, `boxblur`, `overlay`, `zoompan`, `drawtext`, `concat`, `amix`).
+  - Tự động dò tìm đường dẫn FFmpeg, FFprobe và Font Unicode tiếng Việt (`arialbd.ttf`).
+  - Bổ sung module tổng hợp giọng đọc tiếng Việt `synthesizeTTS()` qua Google Translate TTS kết hợp cơ chế cache tái sử dụng tức thì theo hash nội dung (`upload/audio/tts_vi_{hash}.mp3`).
+  - Đo lường chính xác thời lượng giọng đọc thực tế qua `ffprobe` và tự động điều chỉnh độ dài phân cảnh để giọng nói không bị ngắt quãng.
+  - Thêm thuật toán bẻ dòng phụ đề tự động `wrapTextUtf8()` theo độ dài tối ưu (32–36 ký tự/dòng), gắn thẻ badge Purpose trên đầu video (`[VẤN ĐỀ]`, `[GIẢI PHÁP]`, `[LỢI ÍCH]`, `[ƯU ĐÃI]`) và đặt hộp phụ đề an toàn TikTok Safe Area (`y = h - 360`).
+  - Kiểm tra tính hợp lệ của file ảnh qua `@getimagesize()` để bảo đảm FFmpeg luôn nhận ảnh hợp lệ.
+  - Tự động trích xuất 4 khung hình kiểm định (`2s`, `10s`, `20s`, `29s`) và đọc metadata thực tế qua `ffprobe`.
+* `admin/templates/ai_video/view_tpl.php`: Cập nhật đường dẫn web video và hình ảnh sản phẩm hỗ trợ chuẩn xác trình phát HTML5 `<video controls>` trên giao diện quản trị.
+* `test_phase06_2.php`: Cập nhật fixture tạo ảnh thực tế decodable cho bộ kiểm thử Phase 06.2.
+
+### RESULT
+* **100% HOÀN THÀNH MỤC TIÊU PHASE 06.3**: Kết xuất thành công 01 Video Economy Thật đầu tiên đạt chuẩn TikTok 9:16 (1080x1920, 47.38s, dung lượng 9.04 MB), có hình ảnh sản phẩm thật, chuyển động Ken Burns thật, giọng đọc tiếng Việt thật, phụ đề rõ ràng, CTA giỏ hàng, phát mượt mà trên trình phát video chuẩn và Admin HTML5 Player với **0 VND chi phí Video API bên ngoài**. Toàn bộ 40/40 tests Phase 06.3 và 100% tests hồi quy hệ thống (Phases 01–06.2) đều đạt PASS 100%.
+
+---
+
 ## [2026-09-19] - PHASE 06.2: FITNADO LOW-COST HYBRID VIDEO COMPOSER (ECONOMY / HYBRID / PREMIUM MODES)
 
 ### CREATED

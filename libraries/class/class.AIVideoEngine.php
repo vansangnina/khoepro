@@ -206,7 +206,7 @@ class AIVideoEngine {
 
         $idProduct = (int)$video['id_product'];
         $product = $this->d->rawQueryOne("SELECT id, photo, namevi FROM table_product WHERE id = ? LIMIT 1", array($idProduct));
-        $gallery = $this->d->rawQuery("SELECT id, photo FROM table_gallery WHERE id_parent = ? AND type = 'san-pham' AND find_in_set('hienthi', status)", array($idProduct));
+        $gallery = $this->d->rawQuery("SELECT id, photo FROM table_gallery WHERE id_parent = ? AND (com = 'product' OR type = 'san-pham' OR type = '' OR type IS NULL) AND find_in_set('hienthi', status)", array($idProduct));
 
         $availableMedia = array();
         if (!empty($product['photo'])) {

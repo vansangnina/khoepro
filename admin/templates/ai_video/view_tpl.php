@@ -89,13 +89,25 @@ $modeBadgeClass = ($mode === 'ECONOMY') ? 'badge-success' : (($mode === 'HYBRID'
                         </div>
                     </div>
                     <div class="card-body text-center p-3 bg-dark rounded-bottom">
-                        <?php if (!empty($item['video_file']) && file_exists($item['video_file'])): ?>
-                            <video width="100%" height="450" controls style="max-height: 480px; border-radius: 8px; background: #000;" poster="<?=$item['thumbnail'] ?? ''?>">
-                                <source src="<?=$item['video_file']?>" type="video/mp4">
+                        <?php 
+                        $videoFilePath = !empty($item['video_file']) ? $item['video_file'] : '';
+                        $videoWebSrc = '';
+                        if (!empty($videoFilePath)) {
+                            if (file_exists($videoFilePath)) {
+                                $videoWebSrc = (strpos($videoFilePath, '../') === 0) ? $videoFilePath : '../' . $videoFilePath;
+                            } elseif (file_exists('../' . $videoFilePath)) {
+                                $videoWebSrc = '../' . $videoFilePath;
+                            }
+                        }
+                        $thumbWebSrc = !empty($item['thumbnail']) ? ((strpos($item['thumbnail'], '../') === 0) ? $item['thumbnail'] : '../' . $item['thumbnail']) : '';
+                        ?>
+                        <?php if (!empty($videoWebSrc)): ?>
+                            <video width="100%" height="450" controls style="max-height: 480px; border-radius: 8px; background: #000;" poster="<?=$thumbWebSrc?>">
+                                <source src="<?=$videoWebSrc?>" type="video/mp4">
                                 Trình duyệt của bạn không hỗ trợ thẻ video HTML5.
                             </video>
                             <div class="mt-3 text-left">
-                                <a href="<?=$item['video_file']?>" download class="btn btn-sm btn-outline-light btn-block"><i class="fas fa-download mr-1"></i> Tải file MP4 về máy</a>
+                                <a href="<?=$videoWebSrc?>" download class="btn btn-sm btn-outline-light btn-block"><i class="fas fa-download mr-1"></i> Tải file MP4 về máy</a>
                             </div>
                         <?php else: ?>
                             <div class="py-5 text-secondary">
@@ -222,9 +234,12 @@ $modeBadgeClass = ($mode === 'ECONOMY') ? 'badge-success' : (($mode === 'HYBRID'
                     </div>
                     <div class="card-body">
                         <div class="row align-items-center">
-                            <div class="col-md-2 text-center">
-                                <?php if (!empty($product['photo']) && file_exists('upload/product/'.$product['photo'])): ?>
-                                    <img src="upload/product/<?=$product['photo']?>" class="img-fluid rounded border" style="max-height: 80px;">
+                                <?php 
+                                $pPhoto = !empty($product['photo']) ? $product['photo'] : '';
+                                $pPhotoExists = (!empty($pPhoto) && (file_exists('upload/product/' . $pPhoto) || file_exists('../upload/product/' . $pPhoto)));
+                                ?>
+                                <?php if ($pPhotoExists): ?>
+                                    <img src="../upload/product/<?=$pPhoto?>" class="img-fluid rounded border shadow-sm" style="max-height: 80px;">
                                 <?php else: ?>
                                     <i class="fas fa-image fa-3x text-secondary"></i>
                                 <?php endif; ?>

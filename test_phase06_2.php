@@ -59,8 +59,10 @@ $testProdCode = "LEVER_P062_" . $runSuffix;
 // Tạo 2 ảnh sản phẩm và gallery thật để test asset resolution & local motion
 $prodPhoto = 'p062_lever_main_' . $runSuffix . '.jpg';
 $galPhoto = 'p062_lever_gal_' . $runSuffix . '.jpg';
-@file_put_contents('upload/product/' . $prodPhoto, "\xFF\xD8\xFF\xE0\x00\x10JFIF" . str_repeat("\x00", 600));
-@file_put_contents('upload/product/' . $galPhoto, "\xFF\xD8\xFF\xE0\x00\x10JFIF" . str_repeat("\x00", 600));
+if (file_exists('upload/product/fitnado_roller_main.jpg')) {
+    @copy('upload/product/fitnado_roller_main.jpg', 'upload/product/' . $prodPhoto);
+    @copy('upload/product/fitnado_roller_action.jpg', 'upload/product/' . $galPhoto);
+}
 
 $testProductId = $d->insert('product', array(
     'namevi' => $testProdName,
