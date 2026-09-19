@@ -108,15 +108,20 @@ class AIVideoJobQueue {
 
     /**
      * Xử lý 1 Job tiếp theo trong hàng đợi
+     * @param int|null $specificJobId
      * @return array|null Kết quả xử lý hoặc null nếu hết job
      */
-    public function processNextJob() {
+    public function processNextJob($specificJobId = null) {
         // 1. Phục hồi các job bị treo (Stale Jobs > 10 phút)
         $this->recoverStaleJobs();
 
         // 2. Tìm job PENDING hoặc RUNNING cần poll
         $now = time();
-        $job = $this->d->rawQueryOne("SELECT * FROM table_ai_video_job WHERE status = 'PENDING' OR (status = 'RUNNING' AND next_poll_at <= ?) ORDER BY id ASC LIMIT 1", array($now));
+        if ($specificJobId) {
+            $job = $this->d->rawQueryOne("SELECT * FROM table_ai_video_job WHERE id = ? LIMIT 1", array((int)$specificJobId));
+        } else {
+            $job = $this->d->rawQueryOne("SELECT * FROM table_ai_video_job WHERE status = 'PENDING' OR (status = 'RUNNING' AND next_poll_at <= ?) ORDER BY id ASC LIMIT 1", array($now));
+        }
 
         if (empty($job)) {
             return null;

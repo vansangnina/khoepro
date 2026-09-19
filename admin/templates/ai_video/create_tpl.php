@@ -100,6 +100,7 @@ $linkSave = "index.php?com=ai_video&act=save_create";
                                 <label class="font-weight-bold">Nhà cung cấp Render (Provider):</label>
                                 <select name="provider" class="form-control">
                                     <option value="mock" selected>Mock Video Engine (Mặc định)</option>
+                                    <option value="beeknoee">Beeknoee AI Video (Veo-3.1 Model)</option>
                                     <option value="creatify">Creatify AI Video (Thương mại)</option>
                                     <option value="arcads">Arcads AI (Thương mại)</option>
                                     <option value="manual">Manual DIY Upload (Tải lên thủ công)</option>

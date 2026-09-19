@@ -30,6 +30,7 @@ $linkSave = "index.php?com=ai_video&act=save_settings";
                                 <label class="font-weight-bold">Nhà cung cấp Video Mặc định (Active Provider):</label>
                                 <select name="active_provider" class="form-control">
                                     <option value="mock" <?=(($aiVideoConfig['active_provider'] ?? 'mock') === 'mock') ? 'selected' : ''?>>Mock Video Engine (Môi trường Thử nghiệm / Miễn phí)</option>
+                                    <option value="beeknoee" <?=(($aiVideoConfig['active_provider'] ?? '') === 'beeknoee') ? 'selected' : ''?>>Beeknoee AI Video (Veo-3.1 Fast Engine - Khuyên dùng)</option>
                                     <option value="creatify" <?=(($aiVideoConfig['active_provider'] ?? '') === 'creatify') ? 'selected' : ''?>>Creatify AI (Text/Product to Video)</option>
                                     <option value="arcads" <?=(($aiVideoConfig['active_provider'] ?? '') === 'arcads') ? 'selected' : ''?>>Arcads AI (AI Actor UGC Ads)</option>
                                     <option value="heygen" <?=(($aiVideoConfig['active_provider'] ?? '') === 'heygen') ? 'selected' : ''?>>HeyGen AI (Avatar Presentation)</option>
@@ -38,6 +39,33 @@ $linkSave = "index.php?com=ai_video&act=save_settings";
                             </div>
 
                             <hr>
+
+                            <!-- Beeknoee AI Video (Real Provider) -->
+                            <?php
+                            global $config;
+                            $beeknoeeActive = !empty($config['beeknoee']['active']) || !empty($aiVideoConfig['beeknoee_api_key']);
+                            $beeknoeeKeySet = !empty($config['beeknoee']['api_key']) || !empty($aiVideoConfig['beeknoee_api_key']);
+                            $beeknoeeModel = !empty($config['beeknoee']['video_model']) ? $config['beeknoee']['video_model'] : 'veo-3.1-fast-generate-preview';
+                            $beeknoeeDuration = !empty($config['beeknoee']['duration']) ? $config['beeknoee']['duration'] : 8;
+                            ?>
+                            <div class="card card-outline card-success mb-3">
+                                <div class="card-header py-2 bg-light">
+                                    <strong class="text-success"><i class="fas fa-bolt mr-1"></i> Beeknoee Video Provider (Real API)</strong>
+                                    <span class="badge badge-<?=$beeknoeeKeySet ? 'success' : 'secondary'?> float-right">
+                                        <?=$beeknoeeKeySet ? 'Configured (Đã cấu hình)' : 'Not configured (Chưa cấu hình)'?>
+                                    </span>
+                                </div>
+                                <div class="card-body py-2 small">
+                                    <div class="row">
+                                        <div class="col-md-4"><strong>Model:</strong> <code><?=$beeknoeeModel?></code></div>
+                                        <div class="col-md-4"><strong>Thời lượng:</strong> <code><?=$beeknoeeDuration?>s (9:16)</code></div>
+                                        <div class="col-md-4"><strong>Trạng thái:</strong> <?=$beeknoeeActive ? '<span class="text-success font-weight-bold">Bật (Active)</span>' : '<span class="text-warning font-weight-bold">Tắt (Inactive)</span>'?></div>
+                                    </div>
+                                    <div class="text-muted mt-2">
+                                        <i class="fas fa-info-circle mr-1"></i> API Key được nạp bảo mật từ <code>libraries/config.php</code>.
+                                    </div>
+                                </div>
+                            </div>
 
                             <!-- Creatify API Key -->
                             <div class="form-group">

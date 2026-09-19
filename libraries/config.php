@@ -94,7 +94,18 @@ $config = array(
         'active' => false,
         'id' => 'af12ae0e-cfb7-41d0-91d8-8997fca889f8',
         'restId' => 'MWFmZGVhMzYtY2U0Zi00MjA0LTg0ODEtZWFkZTZlNmM1MDg4'
-    )
+    ),
+    'beeknoee' => array(
+        'active' => true,
+        'api_key' => 'sk-bee-670e35421b47cdc2b81398d10c77c14caacf245ac0fee30f18eb26e67098ed7e',
+        'base_url' => 'https://platform.beeknoee.com',
+        'video_model' => 'veo-3.1-fast-generate-preview',
+        'aspect_ratio' => '9:16',
+        'duration' => 8,
+        'timeout' => 120,
+        'poll_interval' => 5,
+        'max_poll_attempts' => 60
+    ),
 );
 error_reporting(($config['website']['error-reporting']) ? E_ALL : 0);
 $http = 'https://';

@@ -375,13 +375,267 @@ class ManualVideoProvider implements VideoProviderInterface {
 }
 
 /**
+ * Class BeeknoeeVideoProvider
+ * Tích hợp chính thức API sản xuất video Beeknoee (https://platform.beeknoee.com)
+ * Endpoint: POST /v1/video/generations, GET /v1/video/generations/{job_id}
+ */
+class BeeknoeeVideoProvider implements VideoProviderInterface {
+    private $apiKey;
+    private $baseUrl;
+    private $model;
+    private $aspectRatio;
+    private $duration;
+    private $timeout;
+    private $active;
+    private $d;
+    private $func;
+
+    public function __construct($beeknoeeConfig = array(), $d = null, $func = null) {
+        $this->d = $d;
+        $this->func = $func;
+
+        // Ưu tiên nạp từ $config['beeknoee']
+        if (empty($beeknoeeConfig)) {
+            global $config;
+            if (isset($config['beeknoee'])) {
+                $beeknoeeConfig = $config['beeknoee'];
+            }
+        }
+
+        $this->active = !empty($beeknoeeConfig['active']) ? (bool)$beeknoeeConfig['active'] : false;
+        $this->apiKey = !empty($beeknoeeConfig['api_key']) ? trim($beeknoeeConfig['api_key']) : '';
+        $this->baseUrl = !empty($beeknoeeConfig['base_url']) ? rtrim($beeknoeeConfig['base_url'], '/') : 'https://platform.beeknoee.com';
+        $this->model = !empty($beeknoeeConfig['video_model']) ? trim($beeknoeeConfig['video_model']) : 'veo-3.1-fast-generate-preview';
+        $this->aspectRatio = !empty($beeknoeeConfig['aspect_ratio']) ? trim($beeknoeeConfig['aspect_ratio']) : '9:16';
+        $this->duration = !empty($beeknoeeConfig['duration']) ? (int)$beeknoeeConfig['duration'] : 8;
+        $this->timeout = !empty($beeknoeeConfig['timeout']) ? (int)$beeknoeeConfig['timeout'] : 120;
+    }
+
+    public function createRenderJob($videoData) {
+        // 1. Kiểm tra cấu hình và API key
+        if (empty($this->apiKey)) {
+            return array(
+                'success' => false,
+                'provider_job_id' => null,
+                'status' => 'FAILED',
+                'cost' => 0,
+                'error' => 'Beeknoee Video Provider chưa được cấu hình API key. Vui lòng nhập api_key trong libraries/config.php.'
+            );
+        }
+
+        if (!$this->active) {
+            return array(
+                'success' => false,
+                'provider_job_id' => null,
+                'status' => 'FAILED',
+                'cost' => 0,
+                'error' => 'Beeknoee Video Provider đang ở trạng thái tắt (active = false trong libraries/config.php).'
+            );
+        }
+
+        // 2. Trích xuất chỉ dẫn phân cảnh từ Shot Plan
+        $scenes = !empty($videoData['scenes_data']) ? (is_array($videoData['scenes_data']) ? $videoData['scenes_data'] : json_decode($videoData['scenes_data'], true)) : array();
+        $visualInstruction = '';
+        $productImageBase64 = null;
+
+        if (!empty($scenes)) {
+            $firstScene = $scenes[0];
+            $visualInstruction = !empty($firstScene['visual_instruction']) ? $firstScene['visual_instruction'] : '';
+
+            // Kiểm tra xem có ảnh sản phẩm để thực hiện Image-to-Video không
+            if (!empty($firstScene['asset_resolved']) && file_exists($firstScene['asset_resolved'])) {
+                $imgData = file_get_contents($firstScene['asset_resolved']);
+                $mime = mime_content_type($firstScene['asset_resolved']) ?: 'image/jpeg';
+                $productImageBase64 = 'data:' . $mime . ';base64,' . base64_encode($imgData);
+            }
+        }
+
+        // 3. Xây dựng Prompt thương mại chuẩn xác
+        $prompt = "Vertical commercial product video for TikTok (9:16). " . ($visualInstruction ?: 'Fitness equipment commercial product showcase.') . " Preserve exact product appearance, preserve logo, preserve color, preserve shape, no additional text, no watermark, realistic gym lighting, high quality 4K commercial shot.";
+
+        $payload = array(
+            'model' => $this->model,
+            'prompt' => $prompt,
+            'aspect_ratio' => $this->aspectRatio,
+            'duration' => $this->duration
+        );
+
+        if (!empty($productImageBase64)) {
+            $payload['image'] = $productImageBase64;
+        }
+
+        // 4. Gửi cURL POST tới Beeknoee Video Generations endpoint
+        $endpoint = $this->baseUrl . '/v1/video/generations';
+        $ch = curl_init($endpoint);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $this->apiKey,
+            'Accept: application/json'
+        ));
+        curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlErr = curl_error($ch);
+        curl_close($ch);
+
+        if (!$response || $httpCode < 200 || $httpCode >= 300) {
+            $errMsg = 'Beeknoee API Error (HTTP ' . $httpCode . '): ' . ($curlErr ?: $response);
+            $jsonErr = json_decode($response, true);
+            if (!empty($jsonErr['error']['message'])) {
+                $errMsg = 'Beeknoee Error: ' . $jsonErr['error']['message'];
+            } elseif (!empty($jsonErr['message'])) {
+                $errMsg = 'Beeknoee Error: ' . $jsonErr['message'];
+            }
+            return array(
+                'success' => false,
+                'provider_job_id' => null,
+                'status' => 'FAILED',
+                'cost' => 0,
+                'error' => $errMsg
+            );
+        }
+
+        $resData = json_decode($response, true);
+        $jobId = !empty($resData['job_id']) ? $resData['job_id'] : (!empty($resData['id']) ? $resData['id'] : null);
+
+        if (empty($jobId)) {
+            return array(
+                'success' => false,
+                'provider_job_id' => null,
+                'status' => 'FAILED',
+                'cost' => 0,
+                'error' => 'Beeknoee API không trả về job_id hợp lệ. Phản hồi: ' . substr($response, 0, 200)
+            );
+        }
+
+        $costVnd = !empty($resData['cost_vnd']) ? (float)$resData['cost_vnd'] : (!empty($resData['cost']) ? (float)$resData['cost'] : 0.0);
+
+        return array(
+            'success' => true,
+            'provider_job_id' => $jobId,
+            'status' => 'PROCESSING',
+            'cost' => $costVnd,
+            'model' => $this->model,
+            'error' => null
+        );
+    }
+
+    public function checkJobStatus($providerJobId) {
+        if (empty($this->apiKey)) {
+            return array('status' => 'FAILED', 'progress' => 0, 'video_url' => null, 'thumbnail_url' => null, 'duration' => 0, 'width' => 1080, 'height' => 1920, 'file_size' => 0, 'error' => 'Beeknoee API key missing');
+        }
+
+        $endpoint = $this->baseUrl . '/v1/video/generations/' . urlencode($providerJobId);
+        $ch = curl_init($endpoint);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Authorization: Bearer ' . $this->apiKey,
+            'Accept: application/json'
+        ));
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if (!$response || $httpCode !== 200) {
+            return array(
+                'status' => 'FAILED',
+                'progress' => 0,
+                'video_url' => null,
+                'thumbnail_url' => null,
+                'duration' => 0,
+                'width' => 1080,
+                'height' => 1920,
+                'file_size' => 0,
+                'error' => 'Failed to poll Beeknoee job status (HTTP ' . $httpCode . ')'
+            );
+        }
+
+        $resData = json_decode($response, true);
+        $rawStatus = strtoupper(!empty($resData['status']) ? $resData['status'] : 'PROCESSING');
+
+        $status = 'PROCESSING';
+        if (in_array($rawStatus, array('COMPLETED', 'SUCCESS', 'READY', 'FINISHED'))) {
+            $status = 'READY';
+        } elseif (in_array($rawStatus, array('FAILED', 'ERROR', 'TIMEOUT', 'CANCELLED'))) {
+            $status = 'FAILED';
+        }
+
+        $videoUrl = !empty($resData['video_url']) ? $resData['video_url'] : (!empty($resData['output']['video_url']) ? $resData['output']['video_url'] : (!empty($resData['download_url']) ? $resData['download_url'] : null));
+        $thumbUrl = !empty($resData['thumbnail_url']) ? $resData['thumbnail_url'] : (!empty($resData['output']['thumbnail_url']) ? $resData['output']['thumbnail_url'] : null);
+        $costVnd = !empty($resData['cost_vnd']) ? (float)$resData['cost_vnd'] : (!empty($resData['cost']) ? (float)$resData['cost'] : 0.0);
+
+        return array(
+            'status' => $status,
+            'raw_status' => $rawStatus,
+            'progress' => !empty($resData['progress']) ? (int)$resData['progress'] : ($status === 'READY' ? 100 : 50),
+            'video_url' => $videoUrl,
+            'thumbnail_url' => $thumbUrl,
+            'duration' => !empty($resData['duration']) ? (float)$resData['duration'] : $this->duration,
+            'width' => !empty($resData['width']) ? (int)$resData['width'] : 1080,
+            'height' => !empty($resData['height']) ? (int)$resData['height'] : 1920,
+            'file_size' => !empty($resData['file_size']) ? (int)$resData['file_size'] : 0,
+            'cost_vnd' => $costVnd,
+            'elapsed_seconds' => !empty($resData['elapsed_seconds']) ? (float)$resData['elapsed_seconds'] : 0,
+            'error' => !empty($resData['error']['message']) ? $resData['error']['message'] : (!empty($resData['error']) ? (is_string($resData['error']) ? $resData['error'] : json_encode($resData['error'])) : null)
+        );
+    }
+
+    public function downloadVideoAsset($remoteUrl, $localDestination) {
+        $mock = new MockVideoProvider();
+        return $mock->downloadVideoAsset($remoteUrl, $localDestination);
+    }
+
+    public function cancelRenderJob($providerJobId) {
+        $endpoint = $this->baseUrl . '/v1/video/generations/' . urlencode($providerJobId) . '/cancel';
+        $ch = curl_init($endpoint);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Authorization: Bearer ' . $this->apiKey
+        ));
+        curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+        curl_exec($ch);
+        curl_close($ch);
+        return true;
+    }
+
+    public function getCapabilities() {
+        return array(
+            'name' => 'Beeknoee AI Video Engine',
+            'provider' => 'beeknoee',
+            'model' => $this->model,
+            'base_url' => $this->baseUrl,
+            'text_to_video' => true,
+            'image_to_video' => true,
+            'avatar' => false,
+            'voice' => true,
+            'captions' => true,
+            'duration' => $this->duration,
+            'aspect_ratios' => array('9:16', '16:9', '1:1'),
+            'languages' => array('vi', 'en'),
+            'is_configured' => (!empty($this->apiKey) && $this->active)
+        );
+    }
+}
+
+/**
  * Class VideoProviderFactory
  */
 class VideoProviderFactory {
     public static function create($providerName = 'mock', $d = null, $func = null) {
         $providerName = strtolower(trim($providerName));
 
-        // Nạp API key từ setting nếu có
+        global $config;
+
+        // Nạp API key từ config.php hoặc table_setting nếu có
         $settingOptions = array();
         if ($d) {
             $settingRow = $d->rawQueryOne("SELECT options FROM table_setting LIMIT 1");
@@ -392,6 +646,15 @@ class VideoProviderFactory {
         $aiVideoConfig = !empty($settingOptions['ai_video_config']) ? $settingOptions['ai_video_config'] : array();
 
         switch ($providerName) {
+            case 'beeknoee':
+                $beeknoeeConfig = !empty($config['beeknoee']) ? $config['beeknoee'] : array();
+                // Merge với cấu hình trong setting nếu có override
+                if (!empty($aiVideoConfig['beeknoee_api_key'])) {
+                    $beeknoeeConfig['api_key'] = $aiVideoConfig['beeknoee_api_key'];
+                    $beeknoeeConfig['active'] = true;
+                }
+                return new BeeknoeeVideoProvider($beeknoeeConfig, $d, $func);
+
             case 'creatify':
             case 'arcads':
             case 'heygen':
@@ -409,3 +672,4 @@ class VideoProviderFactory {
         }
     }
 }
+

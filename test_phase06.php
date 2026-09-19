@@ -174,6 +174,16 @@ assertTest(!empty($capabilities['is_configured']) && in_array('9:16', $capabilit
 $extProvider = VideoProviderFactory::create('creatify', $d, $func);
 assertTest($extProvider instanceof VideoProviderInterface, "VideoProviderFactory hỗ trợ ExternalVideoProvider (Creatify)");
 
+$beeknoeeProvider = VideoProviderFactory::create('beeknoee', $d, $func);
+assertTest($beeknoeeProvider instanceof VideoProviderInterface, "VideoProviderFactory hỗ trợ BeeknoeeVideoProvider");
+
+$bkCaps = $beeknoeeProvider->getCapabilities();
+assertTest($bkCaps['provider'] === 'beeknoee' && $bkCaps['model'] === 'veo-3.1-fast-generate-preview' && $bkCaps['duration'] === 8, "BeeknoeeVideoProvider nạp đúng cấu hình veo-3.1-fast-generate-preview (8s, 9:16)");
+
+// Test bảo vệ khi chưa cấu hình API key
+$unconfiguredRes = $beeknoeeProvider->createRenderJob(array('scenes_data' => json_encode($mockShotPlan)));
+assertTest($unconfiguredRes['success'] === false && strpos($unconfiguredRes['error'], 'Beeknoee') !== false, "BeeknoeeVideoProvider chặn an toàn khi chưa kích hoạt/chưa có API key");
+
 // -------------------------------------------------------------
 // NHÓM 3: CONTENT GATE & PROJECT CREATION
 // -------------------------------------------------------------
@@ -264,7 +274,7 @@ assertTest($enqueueRes['success'] === true && $enqueueRes['id_job'] > 0, "Đưa 
 $idJob = (int)$enqueueRes['id_job'];
 
 // Worker xử lý Job
-$processRes = $videoQueue->processNextJob();
+$processRes = $videoQueue->processNextJob($idJob);
 assertTest($processRes['success'] === true && $processRes['status'] === 'REVIEW_REQUIRED', "Background Worker render, tải về và chuyển trạng thái sang REVIEW_REQUIRED");
 
 $jobDb = $d->rawQueryOne("SELECT * FROM table_ai_video_job WHERE id = ?", array($idJob));
