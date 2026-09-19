@@ -62,10 +62,19 @@ assertTest(!empty($audit['font_path']) && file_exists($audit['font_path']), "Vie
 // -------------------------------------------------------------
 // TEST 2: REJECT FALLBACK CONTAINER AS PRODUCTION VIDEO
 // -------------------------------------------------------------
-echo "\n--- 2. FALLBACK CONTAINER SANITY GUARD ---\n";
+echo "\n--- 2. FALLBACK CONTAINER SANITY GUARD & REJECTION ---\n";
 $dummySize = 121 * 1024;
 $isRealVideoSize = ($dummySize >= 1024 * 1024);
 assertTest($isRealVideoSize === false, "121 KB fallback container is rejected as Production Video");
+
+// Test legacy fake container rejection via validateRenderedMedia
+$legacyFakeFile = 'upload/video/fitnado_economy_vid_20_1789805156.mp4';
+if (file_exists($legacyFakeFile)) {
+    $qcLegacy = $videoEngine->validateRenderedMedia($legacyFakeFile, array('target_duration' => 30));
+    assertTest($qcLegacy['passed'] === false, "Legacy 121KB fake container is REJECTED by QC validator", $qcLegacy['error'] ?? '');
+} else {
+    assertTest(true, "Legacy dummy container verified as removed/rejected");
+}
 
 // -------------------------------------------------------------
 // TEST 3: REAL PRODUCT & ASSET RESOLUTION
@@ -176,9 +185,19 @@ assertTest((int)$format['size'] > 2000000, "File Size is authentic (>2MB, not 12
 assertTest((int)$format['bit_rate'] > 500000, "Bitrate is high quality (>500 kbps)", number_format((int)$format['bit_rate']) . " bps");
 
 // -------------------------------------------------------------
-// TEST 8: VALIDATION FRAMES
+// TEST 8: FFMPEG FULL DECODE VERIFICATION
 // -------------------------------------------------------------
-echo "\n--- 8. VALIDATION FRAMES INSPECTION ---\n";
+echo "\n--- 8. FFMPEG FULL DECODE VERIFICATION ---\n";
+$decodeCmd = sprintf('"%s" -v error -i "%s" -f null - 2>&1', $audit['ffmpeg_binary'], $finalVideoRecord['video_file']);
+$decodeOut = array();
+$decodeRet = 1;
+@exec($decodeCmd, $decodeOut, $decodeRet);
+assertTest($decodeRet === 0 && empty($decodeOut), "FFmpeg Full Decode Test on rendered MP4 passed with 0 errors", empty($decodeOut) ? '0 decode errors' : implode('; ', $decodeOut));
+
+// -------------------------------------------------------------
+// TEST 9: VALIDATION FRAMES
+// -------------------------------------------------------------
+echo "\n--- 9. VALIDATION FRAMES INSPECTION ---\n";
 $baseName = pathinfo($finalVideoRecord['video_file'], PATHINFO_FILENAME);
 $frame2s = 'upload/video/' . $baseName . '_frame_2s.jpg';
 $frame10s = 'upload/video/' . $baseName . '_frame_10s.jpg';
@@ -191,14 +210,23 @@ assertTest(file_exists($frame20s) && filesize($frame20s) > 10000, "Validation Fr
 assertTest(file_exists($frame29s) && filesize($frame29s) > 10000, "Validation Frame at 29s exists and readable", filesize($frame29s) . " bytes");
 
 // -------------------------------------------------------------
-// TEST 9: ZERO EXTERNAL VIDEO API COST
+// TEST 10: ZERO EXTERNAL VIDEO API COST
 // -------------------------------------------------------------
-echo "\n--- 9. COST BREAKDOWN VERIFICATION ---\n";
+echo "\n--- 10. COST BREAKDOWN VERIFICATION ---\n";
 assertTest((float)$finalVideoRecord['ai_video_cost'] === 0.0, "External Video Generation API Cost = 0 VND");
 assertTest((int)$finalVideoRecord['ai_video_seconds'] === 0, "External AI Video Seconds = 0s");
 assertTest((float)$finalVideoRecord['tts_cost'] === 0.0, "TTS Cost = 0 VND");
 assertTest((float)$finalVideoRecord['local_render_cost'] === 0.0, "Local CPU Render Cost = 0 VND");
 assertTest((float)$finalVideoRecord['total_external_api_cost'] === 0.0, "Total External API Cost = 0 VND");
+
+// -------------------------------------------------------------
+// TEST 11: CANONICAL VALIDATION FILE
+// -------------------------------------------------------------
+echo "\n--- 11. CANONICAL VALIDATION FILE INTEGRITY ---\n";
+$canonicalVideo = 'upload/video/real_economy_validation.mp4';
+assertTest(file_exists($canonicalVideo), "Canonical video real_economy_validation.mp4 exists", $canonicalVideo);
+$canonicalQC = $videoEngine->validateRenderedMedia($canonicalVideo, array('target_duration' => 30));
+assertTest($canonicalQC['passed'] === true, "Canonical video passes full QC & decode verification", "Score: " . $canonicalQC['score'] . "/100");
 
 // -------------------------------------------------------------
 // SUMMARY

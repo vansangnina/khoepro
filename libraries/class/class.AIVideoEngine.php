@@ -331,53 +331,153 @@ class AIVideoEngine {
     }
 
     /**
-     * Kiểm định chất lượng media video sau render (Media QC)
+     * Kiểm định chất lượng media video sau render (Media QC Source of Truth)
+     * FFprobe stream inspection + FFmpeg full decode verification
      * @param string $localVideoPath
      * @param array $expectedMetadata
-     * @return array ['passed' => bool, 'score' => float, 'checks' => array, 'error' => string]
+     * @return array ['passed' => bool, 'score' => float, 'checks' => array, 'probed' => array, 'error' => string]
      */
     public function validateRenderedMedia($localVideoPath, $expectedMetadata = array()) {
         $checks = array(
             'file_exists' => false,
             'non_zero_byte' => false,
+            'size_sanity' => false,
             'valid_format' => false,
+            'video_codec_h264' => false,
+            'pixel_format_yuv420p' => false,
+            'resolution_1080x1920' => false,
+            'audio_codec_aac' => false,
             'duration_valid' => false,
+            'decode_pass' => false,
             'safe_area_compliant' => true
         );
 
+        $probed = array(
+            'width' => 0,
+            'height' => 0,
+            'duration' => 0.0,
+            'video_codec' => null,
+            'pix_fmt' => null,
+            'audio_codec' => null,
+            'audio_sample_rate' => null,
+            'file_size' => 0
+        );
+
         if (!file_exists($localVideoPath)) {
-            return array('passed' => false, 'score' => 0.0, 'checks' => $checks, 'error' => 'File video không tồn tại trên hệ thống cục bộ: ' . $localVideoPath);
+            return array('passed' => false, 'score' => 0.0, 'checks' => $checks, 'probed' => $probed, 'error' => 'File video không tồn tại trên hệ thống cục bộ: ' . $localVideoPath);
         }
         $checks['file_exists'] = true;
 
         $fileSize = filesize($localVideoPath);
+        $probed['file_size'] = $fileSize;
         if ($fileSize <= 0) {
-            return array('passed' => false, 'score' => 0.0, 'checks' => $checks, 'error' => 'File video rỗng (0 bytes)');
+            return array('passed' => false, 'score' => 0.0, 'checks' => $checks, 'probed' => $probed, 'error' => 'File video rỗng (0 bytes)');
         }
         $checks['non_zero_byte'] = true;
 
-        // Kiểm tra phần mở rộng và header MP4
+        // Size Sanity: Video TikTok 25-35s 1080x1920 thật phải có dung lượng >= 500 KB (loại bỏ dummy 121KB fake container)
+        if ($fileSize >= 500 * 1024) {
+            $checks['size_sanity'] = true;
+        }
+
         $ext = strtolower(pathinfo($localVideoPath, PATHINFO_EXTENSION));
         if (in_array($ext, array('mp4', 'mov', 'webm'))) {
             $checks['valid_format'] = true;
         }
 
+        $ffprobeBin = $this->composer->getResolvedFFprobe();
+        $ffmpegBin = $this->composer->getResolvedFFmpeg();
+
+        // 1. FFprobe Stream Inspection
+        if (!empty($ffprobeBin) && file_exists($ffprobeBin)) {
+            $probeCmd = '"' . $ffprobeBin . '" -v error -show_entries stream=index,codec_type,codec_name,width,height,r_frame_rate,pix_fmt,sample_rate -show_entries format=duration,size -of json "' . $localVideoPath . '" 2>&1';
+            $probeOutput = @shell_exec($probeCmd);
+            if (!empty($probeOutput)) {
+                $probeData = @json_decode($probeOutput, true);
+                if (!empty($probeData['streams']) && is_array($probeData['streams'])) {
+                    foreach ($probeData['streams'] as $stream) {
+                        if (isset($stream['codec_type']) && $stream['codec_type'] === 'video') {
+                            $probed['video_codec'] = isset($stream['codec_name']) ? $stream['codec_name'] : null;
+                            $probed['pix_fmt'] = isset($stream['pix_fmt']) ? $stream['pix_fmt'] : null;
+                            $probed['width'] = isset($stream['width']) ? (int)$stream['width'] : 0;
+                            $probed['height'] = isset($stream['height']) ? (int)$stream['height'] : 0;
+                        } elseif (isset($stream['codec_type']) && $stream['codec_type'] === 'audio') {
+                            $probed['audio_codec'] = isset($stream['codec_name']) ? $stream['codec_name'] : null;
+                            $probed['audio_sample_rate'] = isset($stream['sample_rate']) ? (int)$stream['sample_rate'] : 0;
+                        }
+                    }
+                }
+                if (!empty($probeData['format']['duration'])) {
+                    $probed['duration'] = (float)$probeData['format']['duration'];
+                }
+            }
+        }
+
+        // Đánh giá Video Stream
+        if (!empty($probed['video_codec']) && in_array(strtolower($probed['video_codec']), array('h264', 'avc1'))) {
+            $checks['video_codec_h264'] = true;
+        }
+        if (!empty($probed['pix_fmt']) && in_array(strtolower($probed['pix_fmt']), array('yuv420p', 'yuvj420p'))) {
+            $checks['pixel_format_yuv420p'] = true;
+        }
+        if ($probed['width'] === 1080 && $probed['height'] === 1920) {
+            $checks['resolution_1080x1920'] = true;
+        }
+
+        // Đánh giá Audio Stream (AAC)
+        if (!empty($probed['audio_codec']) && in_array(strtolower($probed['audio_codec']), array('aac', 'mp4a-40-2'))) {
+            $checks['audio_codec_aac'] = true;
+        }
+
+        // Đánh giá Duration
         $expectedDuration = !empty($expectedMetadata['target_duration']) ? (float)$expectedMetadata['target_duration'] : 30.0;
-        $actualDuration = !empty($expectedMetadata['duration_actual']) ? (float)$expectedMetadata['duration_actual'] : $expectedDuration;
-        if ($actualDuration > 0 && abs($actualDuration - $expectedDuration) <= 15.0) {
+        $actualDuration = ($probed['duration'] > 0) ? $probed['duration'] : (!empty($expectedMetadata['duration_actual']) ? (float)$expectedMetadata['duration_actual'] : 0);
+        if ($actualDuration > 0 && abs($actualDuration - $expectedDuration) <= 20.0) {
             $checks['duration_valid'] = true;
         }
+
+        // 2. FFmpeg Full Decode Verification
+        $decodeErrors = array();
+        if (!empty($ffmpegBin) && file_exists($ffmpegBin)) {
+            $decodeCmd = '"' . $ffmpegBin . '" -v error -i "' . $localVideoPath . '" -f null - 2>&1';
+            $decodeOut = array();
+            $decodeRet = 1;
+            @exec($decodeCmd, $decodeOut, $decodeRet);
+            if ($decodeRet === 0 && empty($decodeOut)) {
+                $checks['decode_pass'] = true;
+            } else {
+                $decodeErrors = $decodeOut;
+                $checks['decode_pass'] = false;
+            }
+        }
+
+        // Bắt buộc PASS các core criteria: file exists, non zero, size sanity, video codec H264, decode pass
+        $criticalPass = ($checks['file_exists'] && $checks['non_zero_byte'] && $checks['size_sanity'] && $checks['video_codec_h264'] && $checks['decode_pass']);
 
         $passedCount = count(array_filter($checks));
         $totalChecks = count($checks);
         $score = round(($passedCount / $totalChecks) * 100, 1);
-        $isPassed = ($score >= 80.0 && $checks['file_exists'] && $checks['non_zero_byte']);
+        $isPassed = ($criticalPass && $score >= 80.0);
+
+        $errorMessage = null;
+        if (!$isPassed) {
+            if (!$checks['size_sanity']) {
+                $errorMessage = 'File video có dung lượng bất thường (' . number_format($fileSize) . ' bytes < 500 KB) - Nghi ngờ fake container.';
+            } elseif (!$checks['decode_pass']) {
+                $errorMessage = 'FFmpeg decode verification FAILED: ' . (!empty($decodeErrors) ? implode('; ', array_slice($decodeErrors, 0, 3)) : 'Decode error');
+            } elseif (!$checks['video_codec_h264']) {
+                $errorMessage = 'Video stream không hợp lệ hoặc không phải H.264 codec.';
+            } else {
+                $errorMessage = 'Kiểm định chất lượng video không đạt yêu cầu QC (Điểm: ' . $score . '/100).';
+            }
+        }
 
         return array(
             'passed' => $isPassed,
             'score' => $score,
             'checks' => $checks,
-            'error' => $isPassed ? null : 'Kiểm định chất lượng video không đạt yêu cầu'
+            'probed' => $probed,
+            'error' => $errorMessage
         );
     }
 

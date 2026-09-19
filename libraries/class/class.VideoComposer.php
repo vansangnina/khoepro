@@ -88,7 +88,8 @@ class VideoComposer {
      */
     private function resolveBinaries() {
         $ffmpegCandidates = array(
-            $this->config['ffmpeg_binary'],
+            !empty($this->config['ffmpeg_path']) ? $this->config['ffmpeg_path'] : null,
+            !empty($this->config['ffmpeg_binary']) ? $this->config['ffmpeg_binary'] : null,
             'C:\\Users\\VanSang\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg.Essentials_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-9.0.1-essentials_build\\bin\\ffmpeg.exe',
             'C:\\Program Files\\ffmpeg\\bin\\ffmpeg.exe',
             'C:\\ffmpeg\\bin\\ffmpeg.exe',
@@ -98,7 +99,8 @@ class VideoComposer {
         );
 
         $ffprobeCandidates = array(
-            $this->config['ffprobe_binary'],
+            !empty($this->config['ffprobe_path']) ? $this->config['ffprobe_path'] : null,
+            !empty($this->config['ffprobe_binary']) ? $this->config['ffprobe_binary'] : null,
             'C:\\Users\\VanSang\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg.Essentials_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-9.0.1-essentials_build\\bin\\ffprobe.exe',
             'C:\\Program Files\\ffmpeg\\bin\\ffprobe.exe',
             'C:\\ffmpeg\\bin\\ffprobe.exe',
@@ -152,6 +154,18 @@ class VideoComposer {
                 break;
             }
         }
+    }
+
+    public function getResolvedFFmpeg() {
+        return $this->resolvedFFmpeg;
+    }
+
+    public function getResolvedFFprobe() {
+        return $this->resolvedFFprobe;
+    }
+
+    public function getResolvedFont() {
+        return $this->resolvedFont;
     }
 
     /**

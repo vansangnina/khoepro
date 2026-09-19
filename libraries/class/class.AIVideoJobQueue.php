@@ -176,6 +176,20 @@ class AIVideoJobQueue {
             $qcReport = $this->videoEngine->validateRenderedMedia($localVideoPath, $expectedMeta);
             $durationSec = round(microtime(true) - $startTime, 2);
 
+            // Nếu Media QC FAILED -> Đánh dấu FAILED, STOP không cho chuyển REVIEW_REQUIRED
+            if (!$qcReport['passed']) {
+                $qcError = 'QC Media Validation FAILED: ' . (!empty($qcReport['error']) ? $qcReport['error'] : 'Media file corrupt or invalid');
+                $this->handleJobFailure($idJob, $idVideo, $job['max_attempts'], $job['max_attempts'], $qcError);
+                $this->d->rawQuery("UPDATE table_ai_video SET status = 'FAILED', video_file = ?, file_size = ?, quality_report = ?, date_updated = ? WHERE id = ?", array(
+                    $localVideoPath,
+                    !empty($composeRes['file_size']) ? (int)$composeRes['file_size'] : 0,
+                    json_encode($qcReport, JSON_UNESCAPED_UNICODE),
+                    time(),
+                    $idVideo
+                ));
+                return array('id_job' => $idJob, 'id_video' => $idVideo, 'success' => false, 'error' => $qcError);
+            }
+
             // Cập nhật video sang REVIEW_REQUIRED (Strict Human Gate)
             $this->d->rawQuery("UPDATE table_ai_video SET status = 'REVIEW_REQUIRED', video_file = ?, thumbnail = ?, duration_actual = ?, width = ?, height = ?, file_size = ?, local_render_cost = ?, ai_video_seconds = ?, ai_video_cost = ?, tts_cost = ?, total_external_api_cost = ?, cost_estimate = ?, composer_log = ?, quality_report = ?, date_updated = ? WHERE id = ?", array(
                 $localVideoPath,
