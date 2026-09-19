@@ -4,6 +4,30 @@ Tài liệu ghi nhận toàn bộ các thay đổi được thực hiện bởi 
 
 ---
 
+## [2026-09-19] - PHASE 06.2: FITNADO LOW-COST HYBRID VIDEO COMPOSER (ECONOMY / HYBRID / PREMIUM MODES)
+
+### CREATED
+* `database/migrations/phase06_2_hybrid_composer.sql`: Non-destructive DDL migration bổ sung các trường theo dõi chế độ và chi phí cho `table_ai_video` (`mode`, `local_render_cost`, `ai_video_seconds`, `ai_video_cost`, `tts_cost`, `total_external_api_cost`, `composer_log`).
+* `libraries/class/class.VideoComposer.php`: Lớp động cơ Video Composer cục bộ hỗ trợ 3 chế độ sản xuất (`ECONOMY` 0 VND API default, `HYBRID` max 1-2 AI scenes, `PREMIUM`), cấu trúc phân cảnh 7-stage Purpose Flow (`HOOK`, `PROBLEM`, `PRODUCT_INTRO`, `DEMO`, `BENEFIT`, `LIMITATION`, `BEST_FOR`, `CTA`), 8 hiệu ứng Motion cục bộ (`zoom_in`, `zoom_out`, `pan_left`, `pan_right`, `slow_push`, `crop_focus`, `fade`, `slide`), bộ chẩn đoán `auditFFmpeg()`, bộ ước tính chi phí trước render và `validateCostGuard()`.
+* `test_phase06_2.php`: Bộ kiểm thử tự động toàn diện Phase 06.2 với 32 assertions.
+* `.ai/reports/PHASE-06.2-HYBRID-COMPOSER.md`: Báo cáo nghiệm thu chi tiết và so sánh định lượng ECONOMY vs HYBRID.
+
+### MODIFIED & ENHANCED
+* `libraries/config.php`: Thêm cấu hình `video_composer` (`default_mode` => `'ECONOMY'`, `max_ai_video_cost_per_video` => 60000 VND, `hybrid_max_ai_scenes` => 2, `hybrid_max_ai_seconds` => 8, `enable_branding` => true, `brand_name` => `'FITNADO'`).
+* `libraries/class/class.AIVideoEngine.php`: Tích hợp `VideoComposer`, tự động chuẩn hóa phân cảnh theo purpose, đảm bảo 0–3s là `HOOK`, tính toán chi phí trước khi lưu dự án.
+* `libraries/class/class.AIVideoJobQueue.php`: Kết nối tiến trình xử lý worker với `VideoComposer::composeVideo()`, lưu trữ đầy đủ breakdown chi phí thực tế và composer log.
+* `libraries/class/class.VideoProvider.php`: Chuyển đổi vai trò `BeeknoeeVideoProvider` thành Optional AI Scene Generator cho từng phân cảnh thay vì toàn bộ video.
+* `admin/sources/ai_video.php`: Điều phối tham số `mode` khi tạo dự án video, tích hợp chẩn đoán FFmpeg và lưu cài đặt hạn mức chi phí.
+* `admin/templates/ai_video/create_tpl.php`: Màn hình khởi tạo video mới với 3 thẻ chọn Video Mode, bảng Purpose flow trực quan và bộ tính toán chi phí trước render.
+* `admin/templates/ai_video/view_tpl.php`: Bổ sung Mode badge, bảng phân cảnh Purpose & Motion badges, thẻ báo cáo chi phí chi tiết và nhật ký Composer log.
+* `admin/templates/ai_video/settings_tpl.php`: Bảng chẩn đoán trạng thái FFmpeg kèm hướng dẫn cài đặt và cấu hình hạn mức Cost Guard.
+* `admin/templates/ai_video/mans_tpl.php`: Hiển thị Mode badge và chi phí API trên danh sách dự án.
+
+### RESULT
+* Chuyển đổi thành công kiến trúc sản xuất video: Mặc định chế độ **ECONOMY với 0 VND chi phí Video API bên ngoài**, giảm chi phí sản xuất video test affiliate từ 50.000–200.000 VND về 0 VND; hỗ trợ chế độ HYBRID cho phép 1 cảnh AI Video chuyển động sinh động trong hạn mức; 100% video tuân thủ chuẩn 7-stage Purpose Flow với 0–3s bắt buộc là Hook; vượt qua 32/32 tests Phase 06.2 và 100% tests hồi quy của toàn hệ thống.
+
+---
+
 ## [2026-09-19] - UI/UX REFINEMENT: ADMIN RESPONSIVE TABLES & MULTI-LINE TEXT WRAPPING (NO HORIZONTAL SCROLL)
 
 ### MODIFIED & ENHANCED

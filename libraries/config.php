@@ -106,6 +106,19 @@ $config = array(
         'poll_interval' => 5,
         'max_poll_attempts' => 60
     ),
+    'video_composer' => array(
+        'default_mode' => 'ECONOMY', // ECONOMY (0 VND default), HYBRID (max 1-2 AI scenes), PREMIUM
+        'max_ai_video_cost_per_video' => 60000, // VND limit per video
+        'hybrid_max_ai_scenes' => 2,
+        'hybrid_max_ai_seconds' => 8,
+        'ai_scene_cost_estimate' => 50000, // Estimated VND per 8s AI clip
+        'ffmpeg_binary' => 'ffmpeg',
+        'ffprobe_binary' => 'ffprobe',
+        'caption_font_size' => 28,
+        'safe_area_bottom_pct' => 20,
+        'enable_branding' => true,
+        'brand_name' => 'FITNADO'
+    ),
 );
 error_reporting(($config['website']['error-reporting']) ? E_ALL : 0);
 $http = 'http://';

@@ -377,8 +377,8 @@
 
 ## 12. BẢNG AI VIDEO PRODUCTION ENGINE (PHASE 06)
 
-### `table_ai_video` (Dự án Video & Thành phẩm AI)
-* **Mục đích**: Lưu trữ thông tin các dự án video, phân cảnh, file video thành phẩm, thumbnail, trạng thái, và điểm kiểm định chất lượng Media QC.
+### `table_ai_video` (Dự án Video & Thành phẩm AI - Phase 06 & Phase 06.2)
+* **Mục đích**: Lưu trữ thông tin các dự án video, phân cảnh, file video thành phẩm, thumbnail, trạng thái, chế độ sản xuất (`mode`), báo cáo chi phí chi tiết, và điểm kiểm định chất lượng Media QC.
 * **Cấu trúc**:
   * `id`: Khóa chính INT(11) UNSIGNED AUTO_INCREMENT
   * `id_product`: Khóa ngoại liên kết `table_product.id` (bắt buộc)
@@ -389,12 +389,13 @@
   * `target_duration`: Thời lượng mục tiêu (giây, vd: 15, 30, 45, 60)
   * `voice_id`: Giọng đọc TTS (`vi-VN-Standard-A`...)
   * `template_id`: Mẫu visual presentation (`PROBLEM_SOLUTION`, `PRODUCT_REVIEW`, `COMPARISON`...)
-  * `scenes_data`: Mảng phân cảnh chuẩn hóa JSON (Scene 1..N kèm asset mapping)
+  * `mode`: Chế độ sản xuất VARCHAR(20) DEFAULT 'ECONOMY' (`ECONOMY` 0 VND default, `HYBRID` max 1-2 AI scenes, `PREMIUM`)
+  * `scenes_data`: Mảng phân cảnh chuẩn hóa JSON (Scene 1..N kèm `purpose`, `render_method`, `motion_effect`, `voiceover`, `on_screen_text`, `asset_resolved`)
   * `script_hash`: Mã băm SHA-256 kịch bản tại thời điểm cấu hình dự án
   * `version`: Phiên bản video INT(11) DEFAULT 1
   * `is_active`: TINYINT(1) DEFAULT 1 - Cờ phiên bản chính
   * `is_outdated`: TINYINT(1) DEFAULT 0 - Đánh dấu khi kịch bản gốc bị sửa đổi
-  * `provider`: Nhà cung cấp render (`mock`, `creatify`, `arcads`, `heygen`, `manual`)
+  * `provider`: Nhà cung cấp render (`mock`, `beeknoee`, `creatify`, `arcads`, `heygen`, `manual`)
   * `provider_job_id`: ID tác vụ phía provider bên ngoài
   * `status`: Trạng thái (`DRAFT`, `WAITING_ASSET`, `READY`, `QUEUED`, `PROCESSING`, `RENDERED`, `VALIDATING`, `REVIEW_REQUIRED`, `APPROVED`, `REJECTED`, `FAILED`, `ARCHIVED`)
   * `reject_reason`: Lý do từ chối của Admin VARCHAR(255)
@@ -404,6 +405,12 @@
   * `width`, `height`: Kích thước pixel (1080x1920)
   * `file_size`: Dung lượng file (bytes) BIGINT(20)
   * `cost_estimate`: Chi phí ước tính DOUBLE
+  * `local_render_cost`: Chi phí render cục bộ DOUBLE DEFAULT 0 (0 VND)
+  * `ai_video_seconds`: Tổng số giây AI Video clip đã sử dụng INT(11) DEFAULT 0
+  * `ai_video_cost`: Chi phí AI Video clip phát sinh DOUBLE DEFAULT 0 (VND)
+  * `tts_cost`: Chi phí TTS lồng tiếng DOUBLE DEFAULT 0 (VND)
+  * `total_external_api_cost`: Tổng chi phí API đối tác bên ngoài DOUBLE DEFAULT 0 (VND)
+  * `composer_log`: Nhật ký chi tiết tiến trình Video Composer MEDIUMTEXT NULL
   * `quality_report`: Kết quả kiểm định Media QC JSON
   * `reviewed_by`: Tên/ID Admin kiểm duyệt
   * `reviewed_at`: Unix timestamp thời điểm kiểm duyệt

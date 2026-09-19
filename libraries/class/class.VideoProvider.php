@@ -377,6 +377,9 @@ class ManualVideoProvider implements VideoProviderInterface {
 /**
  * Class BeeknoeeVideoProvider
  * Tích hợp chính thức API sản xuất video Beeknoee (https://platform.beeknoee.com)
+ * ROLE: OPTIONAL AI SCENE GENERATOR (Không phải Default Full Video Generator)
+ * Chỉ được gọi khi một phân cảnh có render_method = 'AI_VIDEO' trong chế độ HYBRID / PREMIUM.
+ * Model: veo-3.1-fast-generate-preview (8s, 9:16)
  * Endpoint: POST /v1/video/generations, GET /v1/video/generations/{job_id}
  */
 class BeeknoeeVideoProvider implements VideoProviderInterface {

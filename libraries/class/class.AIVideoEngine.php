@@ -10,10 +10,12 @@ if (!defined('LIBRARIES')) {
 }
 
 require_once LIBRARIES . 'class/class.VideoProvider.php';
+require_once LIBRARIES . 'class/class.VideoComposer.php';
 
 class AIVideoEngine {
     private $d;
     private $func;
+    private $composer;
 
     // Các mẫu template visual cho video
     const TEMPLATES = array(
@@ -54,12 +56,21 @@ class AIVideoEngine {
     public function __construct($d, $func) {
         $this->d = $d;
         $this->func = $func;
+        $this->composer = new VideoComposer($d, $func);
+    }
+
+    /**
+     * Lấy thực thể VideoComposer
+     * @return VideoComposer
+     */
+    public function getComposer() {
+        return $this->composer;
     }
 
     /**
      * Khởi tạo dự án Video từ Kịch bản TikTok đã được Admin duyệt
      * @param int $idContent ID từ table_ai_content (bắt buộc status = 'APPROVED')
-     * @param array $options Cấu hình tùy chọn (voice_id, template_id, target_duration, aspect_ratio)
+     * @param array $options Cấu hình tùy chọn (mode, voice_id, template_id, target_duration, aspect_ratio)
      * @return array ['success' => bool, 'id_video' => int, 'status' => string, 'error' => string]
      */
     public function createProjectFromApprovedContent($idContent, $options = array()) {
@@ -86,7 +97,12 @@ class AIVideoEngine {
         // 2. Tính toán mã băm kịch bản (Script Hash)
         $scriptHash = $this->computeScriptHash($content);
 
-        // 3. Xác định các thuộc tính cấu hình
+        // 3. Xác định các thuộc tính cấu hình & Video Mode (Default: ECONOMY)
+        $mode = !empty($options['mode']) ? strtoupper(trim($options['mode'])) : VideoComposer::MODE_ECONOMY;
+        if (!in_array($mode, array(VideoComposer::MODE_ECONOMY, VideoComposer::MODE_HYBRID, VideoComposer::MODE_PREMIUM))) {
+            $mode = VideoComposer::MODE_ECONOMY;
+        }
+
         $title = !empty($options['title']) ? trim($options['title']) : (!empty($content['title']) ? 'Video TikTok: ' . $content['title'] : 'Video Project #' . $idProduct);
         $videoType = !empty($options['video_type']) ? $options['video_type'] : 'TIKTOK_9_16';
         $aspectRatio = !empty($options['aspect_ratio']) ? $options['aspect_ratio'] : '9:16';
@@ -104,20 +120,11 @@ class AIVideoEngine {
             $this->d->rawQuery("UPDATE table_ai_video SET is_active = 0 WHERE id_product = ?", array($idProduct));
         }
 
-        // 5. Chuẩn bị mảng phân cảnh chuẩn hóa & Khởi tạo dự án
-        $scenesData = array();
-        foreach ($shotPlan as $idx => $scene) {
-            $scenesData[] = array(
-                'scene_number' => !empty($scene['scene_number']) ? (int)$scene['scene_number'] : ($idx + 1),
-                'duration' => !empty($scene['duration']) ? (int)$scene['duration'] : 5,
-                'visual_instruction' => !empty($scene['visual_instruction']) ? $scene['visual_instruction'] : '',
-                'voiceover' => !empty($scene['voiceover']) ? $scene['voiceover'] : '',
-                'on_screen_text' => !empty($scene['on_screen_text']) ? $scene['on_screen_text'] : '',
-                'asset_requirement' => !empty($scene['asset_requirement']) ? $scene['asset_requirement'] : 'Ảnh/Video sản phẩm',
-                'asset_resolved' => null,
-                'status' => 'PENDING'
-            );
-        }
+        // 5. Chuẩn hóa phân cảnh qua VideoComposer (Gán purpose, motion effect, render method)
+        $scenesData = $this->composer->normalizeScenes($shotPlan, $mode, $content);
+
+        // 6. Tính toán ước tính chi phí
+        $costEstimate = $this->composer->estimateCost($scenesData, $mode);
 
         $videoData = array(
             'id_product' => $idProduct,
@@ -128,6 +135,7 @@ class AIVideoEngine {
             'target_duration' => $targetDuration,
             'voice_id' => $voiceId,
             'template_id' => $templateId,
+            'mode' => $mode,
             'scenes_data' => json_encode($scenesData, JSON_UNESCAPED_UNICODE),
             'script_hash' => $scriptHash,
             'version' => $nextVersion,
@@ -135,6 +143,12 @@ class AIVideoEngine {
             'is_outdated' => 0,
             'provider' => $provider,
             'status' => 'DRAFT',
+            'cost_estimate' => $costEstimate['total_external_api_cost'],
+            'local_render_cost' => $costEstimate['local_render_cost'],
+            'ai_video_seconds' => $costEstimate['ai_video_seconds'],
+            'ai_video_cost' => $costEstimate['ai_video_cost'],
+            'tts_cost' => $costEstimate['tts_cost'],
+            'total_external_api_cost' => $costEstimate['total_external_api_cost'],
             'date_created' => time(),
             'date_updated' => time()
         );
@@ -144,7 +158,7 @@ class AIVideoEngine {
             return array('success' => false, 'id_video' => 0, 'status' => 'FAILED', 'error' => 'Lỗi chèn dữ liệu bảng table_ai_video');
         }
 
-        // 6. Tự động giải quyết tài nguyên phân cảnh (Asset Resolution Pipeline)
+        // 7. Tự động giải quyết tài nguyên phân cảnh (Asset Resolution Pipeline)
         $assetRes = $this->resolveProjectAssets($idVideo);
 
         return array(

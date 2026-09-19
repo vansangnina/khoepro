@@ -182,6 +182,18 @@ $linkJobs = "index.php?com=ai_video&act=jobs";
                                     <div class="text-muted small mt-1" style="word-break: break-word; line-height: 1.3;">
                                         <i class="fas fa-box text-secondary mr-1"></i><?=htmlspecialchars($item['product_name'] ?: 'N/A')?>
                                     </div>
+                                    <div class="mt-1">
+                                        <?php 
+                                        $vMode = !empty($item['mode']) ? strtoupper($item['mode']) : 'ECONOMY';
+                                        $mClass = ($vMode === 'ECONOMY') ? 'badge-success' : (($vMode === 'HYBRID') ? 'badge-info' : 'badge-danger');
+                                        ?>
+                                        <span class="badge <?=$mClass?>"><?=$vMode?></span>
+                                        <?php if (!empty($item['total_external_api_cost'])): ?>
+                                            <span class="badge badge-light border text-muted ml-1"><?=number_format($item['total_external_api_cost'])?> đ</span>
+                                        <?php else: ?>
+                                            <span class="badge badge-light border text-success ml-1">0 đ API</span>
+                                        <?php endif; ?>
+                                    </div>
                                     <?php if (!empty($item['is_outdated'])): ?>
                                         <span class="badge badge-danger mt-1"><i class="fas fa-exclamation-triangle mr-1"></i>Kịch bản gốc đã thay đổi</span>
                                     <?php endif; ?>
@@ -195,8 +207,8 @@ $linkJobs = "index.php?com=ai_video&act=jobs";
                                 </td>
                                 <td class="text-center align-middle">
                                     <span class="badge badge-light border text-uppercase font-weight-bold"><?=$item['provider']?></span>
-                                    <?php if (!empty($item['cost_estimate'])): ?>
-                                        <div class="text-muted text-xs mt-1">$<?=number_format($item['cost_estimate'], 3)?></div>
+                                    <?php if (!empty($item['ai_video_seconds'])): ?>
+                                        <div class="text-muted text-xs mt-1"><?=$item['ai_video_seconds']?>s AI Clip</div>
                                     <?php endif; ?>
                                 </td>
                                 <td class="text-center align-middle">

@@ -356,5 +356,58 @@ APPROVED TIKTOK SCRIPT + SHOT PLAN (table_ai_content)
    * Quản lý dự án (`mans_tpl.php`), xem chi tiết & preview HTML5 `<video controls>` (`view_tpl.php`).
    * Tạo dự án mới (`create_tpl.php`), giám sát hàng đợi (`jobs_tpl.php`), quản lý kho tài nguyên (`assets_tpl.php`) và cấu hình API / hạn mức render (`settings_tpl.php`).
 
+---
+
+## 11. KIẾN TRÚC LOW-COST HYBRID VIDEO COMPOSER (PHASE 06.2)
+
+### Luồng xử lý Video Composer (Low-Cost Hybrid Pipeline):
+
+```text
+APPROVED SCRIPT + SHOT PLAN (Phase 05)
+                │
+                ▼
+      [PURPOSE-DRIVEN FLOW]
+  (0-3s HOOK -> PROBLEM -> INTRO -> DEMO -> BENEFIT -> LIMITATION -> CTA)
+                │
+                ▼
+     [SELECT PRODUCTION MODE]
+  ├── ECONOMY (Default: 0 VND API Cost - 100% Local Motion)
+  ├── HYBRID (Max 1-2 AI Scenes - Motion Highlights)
+  └── PREMIUM (High Investment Multi-scene AI)
+                │
+                ▼
+     [COST ESTIMATOR & GUARD]
+  (Estimate AI Sec & Cost -> Block if > max_ai_video_cost_per_video)
+                │
+                ▼
+        [VIDEO COMPOSER]
+  ├── Local Scene Renderer (Ken Burns zoom_in/out, pan, push, fade, slide)
+  ├── Optional AI Scene Collector (Beeknoee Veo 3.1 - only if AI_VIDEO)
+  ├── Voiceover Mixer (TTS Audio Track)
+  ├── Safe-Area Captions Overlay (Vietnamese Unicode)
+  └── Branding & CTA Watermark (FITNADO)
+                │
+                ▼
+  [FINAL COMPOSED 9:16 MP4] (1080x1920 H.264 / AAC)
+                │
+                ▼
+   [MEDIA QC & COST BREAKDOWN LOG]
+  (local_render_cost, ai_video_cost, tts_cost, total_api_cost)
+                │
+                ▼
+  [STRICT HUMAN APPROVAL GATE] (Admin Preview -> Approve / Reject)
+```
+
+### Thành phần lớp nghiệp vụ Phase 06.2:
+1. **`VideoComposer`** (`libraries/class/class.VideoComposer.php`):
+   * Quản lý 3 modes: `ECONOMY`, `HYBRID`, `PREMIUM`.
+   * Khởi tạo và kiểm tra hạ tầng `auditFFmpeg()`.
+   * Ước tính chi phí trước render `estimateCost()` và áp dụng rào chắn ngân sách `validateCostGuard()`.
+   * Chuẩn hóa cấu trúc phân cảnh `normalizeScenes()` với quy tắc 0–3s bắt buộc là `HOOK`.
+   * Xử lý kết xuất toàn diện `composeVideo()`: ghép cảnh, hiệu ứng chuyển động, lồng tiếng, phụ đề safe-area và xuất file MP4.
+2. **`BeeknoeeVideoProvider`** (`libraries/class/class.VideoProvider.php`):
+   * Định vị lại thành **Optional AI Scene Generator**, chỉ được kích hoạt khi phân cảnh cụ thể yêu cầu `render_method = 'AI_VIDEO'`.
+
+
 
 

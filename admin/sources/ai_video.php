@@ -216,7 +216,7 @@ function viewVideoDetail() {
  * 3. Giao diện Tạo Dự án Video
  */
 function viewCreateForm() {
-    global $d, $func, $approvedScripts, $templatesList, $voicesList;
+    global $d, $func, $approvedScripts, $templatesList, $voicesList, $composer;
 
     // Lấy các kịch bản TikTok đã được phê duyệt
     $approvedScripts = $d->rawQuery("SELECT c.id, c.id_product, c.title, c.target_duration, p.namevi as product_name, p.photo as product_photo 
@@ -227,6 +227,7 @@ function viewCreateForm() {
 
     $templatesList = AIVideoEngine::TEMPLATES;
     $voicesList = AIVideoEngine::VOICES;
+    $composer = new VideoComposer($d, $func);
 }
 
 /**
@@ -241,6 +242,7 @@ function saveCreateProject() {
     }
 
     $options = array(
+        'mode' => !empty($_POST['mode']) ? strtoupper(trim($_POST['mode'])) : 'ECONOMY',
         'title' => !empty($_POST['title']) ? trim($_POST['title']) : '',
         'video_type' => !empty($_POST['video_type']) ? trim($_POST['video_type']) : 'TIKTOK_9_16',
         'aspect_ratio' => !empty($_POST['aspect_ratio']) ? trim($_POST['aspect_ratio']) : '9:16',
@@ -252,7 +254,7 @@ function saveCreateProject() {
 
     $res = $videoEngine->createProjectFromApprovedContent($idContent, $options);
     if ($res['success']) {
-        $msg = "Tạo dự án Video thành công (Version v" . $res['version'] . ")!";
+        $msg = "Tạo dự án Video thành công (Mode: " . $options['mode'] . ", Version v" . $res['version'] . ")!";
         if ($res['status'] === 'WAITING_ASSET') {
             $msg .= " Lưu ý: Dự án đang thiếu " . $res['missing_assets_count'] . " tài nguyên trực quan.";
         }
@@ -458,7 +460,7 @@ function viewAssetsManager() {
  * 11. Cấu hình Cài đặt Provider & Hạn mức
  */
 function viewSettings() {
-    global $d, $func, $settingOptions, $aiVideoConfig, $templatesList, $voicesList;
+    global $d, $func, $settingOptions, $aiVideoConfig, $templatesList, $voicesList, $ffmpegAudit;
 
     $settingRow = $d->rawQueryOne("SELECT options FROM table_setting LIMIT 1");
     $settingOptions = !empty($settingRow['options']) ? json_decode($settingRow['options'], true) : array();
@@ -466,6 +468,9 @@ function viewSettings() {
 
     $templatesList = AIVideoEngine::TEMPLATES;
     $voicesList = AIVideoEngine::VOICES;
+
+    $composer = new VideoComposer($d, $func);
+    $ffmpegAudit = $composer->auditFFmpeg();
 }
 
 function saveSettings() {
@@ -476,6 +481,8 @@ function saveSettings() {
 
     $options['ai_video_config'] = array(
         'active_provider' => !empty($_POST['active_provider']) ? trim($_POST['active_provider']) : 'mock',
+        'default_mode' => !empty($_POST['default_mode']) ? strtoupper(trim($_POST['default_mode'])) : 'ECONOMY',
+        'max_ai_video_cost_per_video' => !empty($_POST['max_ai_video_cost_per_video']) ? (float)$_POST['max_ai_video_cost_per_video'] : 60000,
         'daily_video_limit' => !empty($_POST['daily_video_limit']) ? (int)$_POST['daily_video_limit'] : 20,
         'default_voice' => !empty($_POST['default_voice']) ? trim($_POST['default_voice']) : 'vi-VN-Standard-A',
         'default_template' => !empty($_POST['default_template']) ? trim($_POST['default_template']) : 'PROBLEM_SOLUTION',

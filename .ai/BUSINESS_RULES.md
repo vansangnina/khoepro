@@ -161,5 +161,28 @@ Hệ thống phân định rõ ràng các cấp độ nội dung đánh giá:
 * **Bảo vệ Ngân sách & Hạn mức Render (Cost Guard & Daily Limit)**:
   * Áp dụng hạn mức sinh video hàng ngày (`daily_video_limit`) trong cấu hình để tránh chi phí ngoài ý muốn khi chạy hàng loạt.
 
+---
+
+## 10. QUY TẮC LOW-COST HYBRID VIDEO COMPOSER (AI VIDEO RULES - PHASE 06.2)
+
+* **Ba Chế độ Video (Three Video Modes)**:
+  * **ECONOMY (Mặc định)**: 100% kết xuất cục bộ từ ảnh sản phẩm, gallery, chuyển động Ken Burns pan/zoom, voiceover TTS và phụ đề TikTok safe-area. **Chi phí API Video bên ngoài = 0 VND**.
+  * **HYBRID**: Sử dụng toàn bộ hạ tầng Economy, cho phép tối đa 1–2 phân cảnh AI Video sinh chuyển động chân thực (giới hạn $\le$ 8s) cho các cảnh thực sự cần thiết (vd: Demo khóa / hành động).
+  * **PREMIUM**: Cho phép nhiều phân cảnh AI Video. Chỉ dành cho sản phẩm trọng điểm đã được Admin xác nhận đầu tư.
+* **Cấu trúc Phân cảnh Tiếp thị Bắt buộc (Purpose-Driven Flow)**:
+  * Mọi phân cảnh trong Shot Plan phải có `purpose` thuộc danh mục hợp lệ: `HOOK`, `PROBLEM`, `PRODUCT_INTRO`, `DEMO`, `BENEFIT`, `PROOF`, `LIMITATION`, `COMPARISON`, `BEST_FOR`, `CTA`.
+  * **0–3 giây đầu BẮT BUỘC có purpose là `HOOK`** lấy từ kịch bản đã được phê duyệt ở Phase 05. AI Video không được tự ý bịa đặt hook mới.
+  * Phân cảnh cuối cùng bắt buộc là `CTA` dẫn dắt xem giỏ hàng.
+* **Quy tắc Gọi AI Scene Provider (Beeknoee Rule)**:
+  * Chỉ gọi API Beeknoee khi phân cảnh có `render_method = 'AI_VIDEO'`.
+  * Beeknoee đóng vai trò là **Optional AI Scene Generator**, không phải Full Final Video Generator.
+* **Hạn mức Chi phí & Cost Guard**:
+  * Trước khi render, hệ thống tự động tính toán: số cảnh AI, tổng số giây AI và chi phí ước tính (`Estimated AI Video Cost`).
+  * Cấu hình `max_ai_video_cost_per_video` (mặc định 60.000 VND). Nếu chi phí ước tính vượt quá hạn mức, hệ thống TỰ ĐỘNG CHẶN (Block) trừ khi có quyền Admin Override.
+* **Hạ tầng FFmpeg & Fallback**:
+  * Hệ thống kiểm định `ffmpeg -version` và `ffprobe -version`.
+  * Nếu chưa có FFmpeg, báo cáo chẩn đoán trạng thái trên Admin Settings và kích hoạt bộ sinh Local Media Container fallback, tuyệt đối không silently fail.
+
+
 
 

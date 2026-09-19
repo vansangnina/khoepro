@@ -15,9 +15,11 @@ logs/*
 thumbs/*
 !thumbs/.gitkeep
 
-# Temporary IDE files
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
+# Uploads & generated media
+upload/video/*
+!upload/video/.gitkeep
+upload/product/test_*
+upload/product/p062_*
+upload/product/p06_*
+admin/upload/*
+!admin/upload/.gitkeep

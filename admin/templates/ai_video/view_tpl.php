@@ -2,38 +2,42 @@
 $linkMan = "index.php?com=ai_video&act=man";
 $linkApprove = "index.php?com=ai_video&act=approve&id=" . $item['id'];
 $linkRender = "index.php?com=ai_video&act=render_now&id=" . $item['id'];
+
+$mode = !empty($item['mode']) ? strtoupper($item['mode']) : 'ECONOMY';
+$modeBadgeClass = ($mode === 'ECONOMY') ? 'badge-success' : (($mode === 'HYBRID') ? 'badge-info' : 'badge-danger');
 ?>
 
 <div class="content-header">
     <div class="container-fluid">
-        <div class="row mb-2">
+        <div class="row mb-2 align-items-center">
             <div class="col-sm-6">
-                <h1 class="m-0 text-dark">
+                <h1 class="m-0 text-dark" style="font-size: 1.35rem;">
                     <a href="<?=$linkMan?>" class="btn btn-sm btn-outline-secondary mr-2"><i class="fas fa-arrow-left"></i> Quay lại</a>
                     Chi tiết Dự án Video #<?=$item['id']?> (v<?=$item['version']?>)
+                    <span class="badge <?=$modeBadgeClass?> ml-2 font-weight-bold" style="font-size: 0.9rem;"><?=$mode?> MODE</span>
                 </h1>
             </div>
             <div class="col-sm-6 text-right">
                 <?php if ($item['status'] === 'REVIEW_REQUIRED' || $item['status'] === 'RENDERED'): ?>
-                    <a href="<?=$linkApprove?>" class="btn btn-success mr-2" onclick="return confirm('Xác nhận phê duyệt Video này? Video sẽ sẵn sàng cho giai đoạn phân phối.');">
+                    <a href="<?=$linkApprove?>" class="btn btn-success mr-2 shadow-sm" onclick="return confirm('Xác nhận phê duyệt Video này? Video sẽ sẵn sàng cho giai đoạn phân phối.');">
                         <i class="fas fa-check-circle mr-1"></i> Phê duyệt Video (Approve)
                     </a>
-                    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#rejectModal">
+                    <button type="button" class="btn btn-danger shadow-sm" data-toggle="modal" data-target="#rejectModal">
                         <i class="fas fa-times-circle mr-1"></i> Từ chối (Reject)
                     </button>
                 <?php elseif ($item['status'] === 'WAITING_ASSET'): ?>
-                    <button type="button" class="btn btn-warning mr-2" data-toggle="modal" data-target="#uploadAssetModal">
+                    <button type="button" class="btn btn-warning mr-2 shadow-sm" data-toggle="modal" data-target="#uploadAssetModal">
                         <i class="fas fa-upload mr-1"></i> Tải ảnh sản phẩm
                     </button>
-                    <a href="<?=$linkRender?>" class="btn btn-primary" onclick="return confirm('Kích hoạt tiến trình render AI (Text-to-Video) từ kịch bản phân cảnh ngay?');">
-                        <i class="fas fa-bolt mr-1"></i> Kích hoạt Render (AI Text-to-Video)
+                    <a href="<?=$linkRender?>" class="btn btn-primary shadow-sm" onclick="return confirm('Kích hoạt tiến trình Video Composer render ngay?');">
+                        <i class="fas fa-bolt mr-1"></i> Kích hoạt Video Composer
                     </a>
                 <?php elseif (in_array($item['status'], array('READY', 'FAILED', 'REJECTED', 'DRAFT'))): ?>
-                    <button type="button" class="btn btn-outline-secondary mr-2" data-toggle="modal" data-target="#uploadAssetModal">
+                    <button type="button" class="btn btn-outline-secondary mr-2 shadow-sm" data-toggle="modal" data-target="#uploadAssetModal">
                         <i class="fas fa-upload mr-1"></i> Đổi ảnh sản phẩm
                     </button>
-                    <a href="<?=$linkRender?>" class="btn btn-primary" onclick="return confirm('Kích hoạt tiến trình render video ngay?');">
-                        <i class="fas fa-bolt mr-1"></i> Kích hoạt Render
+                    <a href="<?=$linkRender?>" class="btn btn-primary shadow-sm" onclick="return confirm('Kích hoạt tiến trình Video Composer render ngay?');">
+                        <i class="fas fa-bolt mr-1"></i> Kích hoạt Video Composer
                     </a>
                 <?php endif; ?>
             </div>
@@ -58,7 +62,7 @@ $linkRender = "index.php?com=ai_video&act=render_now&id=" . $item['id'];
                         <h5 class="font-weight-bold mb-2"><i class="icon fas fa-info-circle"></i> Sản phẩm chưa có File hình ảnh thực tế</h5>
                         <p class="mb-2">Bạn có thể chọn 1 trong 2 phương án bên dưới để tiếp tục tiến trình sản xuất video:</p>
                         <ul class="mb-0 pl-3">
-                            <li class="mb-1"><strong>Lựa chọn 1 (Khuyên dùng khi chưa có ảnh chụp):</strong> Nhấn nút <strong>"Kích hoạt Render (AI Text-to-Video)"</strong> để AI Veo 3.1 tự động vẽ bối cảnh phòng tập gym và sản phẩm theo chỉ dẫn chi tiết của từng phân cảnh.</li>
+                            <li class="mb-1"><strong>Lựa chọn 1 (Khuyên dùng khi chưa có ảnh chụp):</strong> Nhấn nút <strong>"Kích hoạt Video Composer"</strong> để hệ thống tự động sinh ảnh/visual và áp dụng chuyển động Ken Burns.</li>
                             <li><strong>Lựa chọn 2 (Chuẩn xác theo sản phẩm thật):</strong> Nhấn <strong>"Tải ảnh sản phẩm"</strong> hoặc chọn file bên dưới để hệ thống tự động ánh xạ ảnh thật vào tất cả phân cảnh rồi render.</li>
                         </ul>
                     </div>
@@ -103,9 +107,46 @@ $linkRender = "index.php?com=ai_video&act=render_now&id=" . $item['id'];
                     </div>
                 </div>
 
+                <!-- Thẻ Chi tiết Chi phí Sản xuất (Cost Report) -->
+                <div class="card card-outline card-warning shadow-sm mb-4">
+                    <div class="card-header py-2">
+                        <h3 class="card-title font-weight-bold"><i class="fas fa-coins mr-2 text-warning"></i>Báo cáo Chi phí Sản xuất (Cost Report)</h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-sm table-striped mb-0">
+                            <tr>
+                                <th>Chế độ (Mode):</th>
+                                <td><span class="badge <?=$modeBadgeClass?> font-weight-bold"><?=$mode?></span></td>
+                            </tr>
+                            <tr>
+                                <th>Local Render Cost:</th>
+                                <td class="text-success font-weight-bold">0 VND (Miễn phí)</td>
+                            </tr>
+                            <tr>
+                                <th>Số giây AI Video:</th>
+                                <td><?=(int)($item['ai_video_seconds'] ?? 0)?> giây</td>
+                            </tr>
+                            <tr>
+                                <th>Chi phí AI Video:</th>
+                                <td><?=number_format((float)($item['ai_video_cost'] ?? 0))?> VND</td>
+                            </tr>
+                            <tr>
+                                <th>Chi phí TTS Voice:</th>
+                                <td><?=number_format((float)($item['tts_cost'] ?? 0))?> VND</td>
+                            </tr>
+                            <tr class="bg-light">
+                                <th class="font-weight-bold">Tổng Chi phí API:</th>
+                                <td class="font-weight-bold text-primary" style="font-size: 1.05rem;">
+                                    <?=number_format((float)($item['total_external_api_cost'] ?? 0))?> VND
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
                 <!-- Thẻ Thông số Kỹ thuật & Quality Check -->
                 <div class="card card-outline card-secondary shadow-sm mb-4">
-                    <div class="card-header">
+                    <div class="card-header py-2">
                         <h3 class="card-title font-weight-bold"><i class="fas fa-sliders-h mr-2"></i>Thông số & Kiểm định Media</h3>
                     </div>
                     <div class="card-body p-0">
@@ -134,10 +175,6 @@ $linkRender = "index.php?com=ai_video&act=render_now&id=" . $item['id'];
                                 <th>Nhà cung cấp:</th>
                                 <td><span class="badge badge-light border text-uppercase"><?=$item['provider']?></span></td>
                             </tr>
-                            <tr>
-                                <th>Chi phí ước tính:</th>
-                                <td>$<?=number_format((float)($item['cost_estimate'] ?? 0), 4)?></td>
-                            </tr>
                             <?php if (!empty($qcReport)): ?>
                                 <tr>
                                     <th>Điểm Media QC:</th>
@@ -155,7 +192,7 @@ $linkRender = "index.php?com=ai_video&act=render_now&id=" . $item['id'];
                 <!-- Lịch sử Phiên bản -->
                 <?php if (!empty($historyList)): ?>
                     <div class="card card-outline card-info shadow-sm mb-4">
-                        <div class="card-header">
+                        <div class="card-header py-2">
                             <h3 class="card-title font-weight-bold"><i class="fas fa-history mr-2"></i>Phiên bản khác của sản phẩm</h3>
                         </div>
                         <div class="card-body p-0">
@@ -200,7 +237,7 @@ $linkRender = "index.php?com=ai_video&act=render_now&id=" . $item['id'];
                                 </div>
                                 <div class="bg-light p-2 rounded small border">
                                     <i class="fas fa-quote-left mr-1 text-secondary"></i>
-                                    <strong>Hook chính:</strong> <?=htmlspecialchars($content['title'] ?? '')?>
+                                    <strong>Hook mở đầu (0-3s):</strong> <?=htmlspecialchars($content['title'] ?? '')?>
                                 </div>
                             </div>
                         </div>
@@ -210,31 +247,39 @@ $linkRender = "index.php?com=ai_video&act=render_now&id=" . $item['id'];
                 <!-- Bảng Phân cảnh Chi tiết (Scene by Scene Shot Plan) -->
                 <div class="card card-outline card-success shadow-sm mb-4">
                     <div class="card-header">
-                        <h3 class="card-title font-weight-bold"><i class="fas fa-film mr-2 text-success"></i>Bảng Phân cảnh Chi tiết (Shot Plan Pipeline)</h3>
+                        <h3 class="card-title font-weight-bold"><i class="fas fa-film mr-2 text-success"></i>Bảng Phân cảnh Mục tiêu (Shot Plan & Purpose Flow)</h3>
                         <div class="card-tools">
                             <span class="badge badge-success"><?=count($scenes)?> Phân cảnh</span>
                         </div>
                     </div>
                     <div class="card-body table-responsive p-0">
-                        <table class="table table-bordered table-striped mb-0">
+                        <table class="table table-bordered table-striped mb-0 text-sm">
                             <thead class="thead-light">
                                 <tr>
-                                    <th style="width: 50px;" class="text-center">Cảnh</th>
-                                    <th style="width: 80px;" class="text-center">Thời lượng</th>
-                                    <th>Chỉ dẫn Khung hình (Visual)</th>
+                                    <th style="width: 45px;" class="text-center">Cảnh</th>
+                                    <th style="width: 130px;">Purpose & Phương thức</th>
+                                    <th>Chỉ dẫn Khung hình & Chuyển động</th>
                                     <th>Lời lồng tiếng (Voiceover)</th>
-                                    <th>Chữ trên màn hình (Caption)</th>
-                                    <th style="width: 150px;">Tài nguyên (Asset)</th>
+                                    <th>Phụ đề Safe-area</th>
+                                    <th style="width: 100px;" class="text-center">Tài nguyên</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if (!empty($scenes)): foreach ($scenes as $sc): ?>
+                                <?php if (!empty($scenes)): foreach ($scenes as $sc): 
+                                    $pBadge = ($sc['purpose'] === 'HOOK') ? 'badge-danger' : (($sc['purpose'] === 'CTA') ? 'badge-danger' : (($sc['purpose'] === 'PROBLEM') ? 'badge-warning text-dark' : 'badge-primary'));
+                                    $mBadge = (!empty($sc['render_method']) && $sc['render_method'] === 'AI_VIDEO') ? 'badge-info' : 'badge-success';
+                                ?>
                                     <tr>
                                         <td class="text-center font-weight-bold align-middle">
                                             <span class="badge badge-dark">#<?=$sc['scene_number']?></span>
+                                            <div class="small text-muted mt-1"><?=$sc['duration']?>s</div>
                                         </td>
-                                        <td class="text-center align-middle">
-                                            <span class="badge badge-secondary"><?=$sc['duration']?>s</span>
+                                        <td class="align-middle">
+                                            <span class="badge <?=$pBadge?> font-weight-bold d-block mb-1"><?=htmlspecialchars($sc['purpose'] ?? 'BENEFIT')?></span>
+                                            <span class="badge <?=$mBadge?> d-block mb-1"><?=htmlspecialchars($sc['render_method'] ?? 'LOCAL')?></span>
+                                            <?php if (!empty($sc['motion_effect'])): ?>
+                                                <small class="text-muted d-block"><i class="fas fa-film mr-1"></i><?=$sc['motion_effect']?></small>
+                                            <?php endif; ?>
                                         </td>
                                         <td class="small">
                                             <strong><i class="fas fa-camera mr-1 text-primary"></i>Visual:</strong><br>
@@ -251,11 +296,11 @@ $linkRender = "index.php?com=ai_video&act=render_now&id=" . $item['id'];
                                         </td>
                                         <td class="align-middle text-center small">
                                             <?php if (!empty($sc['asset_resolved']) && file_exists($sc['asset_resolved'])): ?>
-                                                <img src="<?=$sc['asset_resolved']?>" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;" title="<?=$sc['asset_resolved']?>">
-                                                <div class="text-success font-weight-bold mt-1"><i class="fas fa-check-circle"></i> Đã có</div>
+                                                <img src="<?=$sc['asset_resolved']?>" class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;" title="<?=$sc['asset_resolved']?>">
+                                                <div class="text-success font-weight-bold mt-1" style="font-size: 11px;"><i class="fas fa-check-circle"></i> Đã có</div>
                                             <?php else: ?>
-                                                <div class="text-danger font-weight-bold"><i class="fas fa-exclamation-circle"></i> Thiếu</div>
-                                                <small class="text-muted d-block"><?=htmlspecialchars($sc['asset_requirement'])?></small>
+                                                <div class="text-danger font-weight-bold" style="font-size: 11px;"><i class="fas fa-exclamation-circle"></i> Thiếu</div>
+                                                <small class="text-muted d-block" style="font-size: 10px;"><?=htmlspecialchars($sc['asset_requirement'])?></small>
                                             <?php endif; ?>
                                         </td>
                                     </tr>
@@ -266,6 +311,18 @@ $linkRender = "index.php?com=ai_video&act=render_now&id=" . $item['id'];
                         </table>
                     </div>
                 </div>
+
+                <!-- Nhật ký Video Composer (Composer Log) -->
+                <?php if (!empty($item['composer_log'])): ?>
+                    <div class="card card-outline card-dark shadow-sm mb-4">
+                        <div class="card-header py-2">
+                            <h3 class="card-title font-weight-bold"><i class="fas fa-terminal mr-2 text-dark"></i>Nhật ký Video Composer (Composer Log)</h3>
+                        </div>
+                        <div class="card-body p-2 bg-dark rounded-bottom">
+                            <pre class="text-light small mb-0" style="max-height: 180px; overflow-y: auto; font-family: Consolas, monospace;"><?=htmlspecialchars($item['composer_log'])?></pre>
+                        </div>
+                    </div>
+                <?php endif; ?>
 
                 <!-- Lý do từ chối nếu có -->
                 <?php if (!empty($item['reject_reason'])): ?>

@@ -138,74 +138,59 @@ class AIVideoJobQueue {
         }
 
         $startTime = microtime(true);
-        $provider = VideoProviderFactory::create($providerName, $this->d, $this->func);
+        $composer = new VideoComposer($this->d, $this->func);
+        $mode = !empty($video['mode']) ? strtoupper($video['mode']) : VideoComposer::MODE_ECONOMY;
+        $scenes = !empty($video['scenes_data']) ? (is_array($video['scenes_data']) ? $video['scenes_data'] : json_decode($video['scenes_data'], true)) : array();
 
         // Bắt đầu xử lý Job
         if ($job['status'] === 'PENDING') {
             $this->d->rawQuery("UPDATE table_ai_video_job SET status = 'RUNNING', attempts = attempts + 1, started_at = ?, date_updated = ? WHERE id = ?", array(time(), time(), $idJob));
             $this->d->rawQuery("UPDATE table_ai_video SET status = 'PROCESSING', date_updated = ? WHERE id = ?", array(time(), $idVideo));
 
-            // Gửi render tới provider
-            $renderRes = $provider->createRenderJob($video);
-
-            if (!$renderRes['success']) {
-                $this->handleJobFailure($idJob, $idVideo, $job['attempts'] + 1, $job['max_attempts'], $renderRes['error']);
-                return array('id_job' => $idJob, 'success' => false, 'error' => $renderRes['error']);
+            // Kiểm tra Cost Guard trước khi Render
+            $costEst = $composer->estimateCost($scenes, $mode);
+            $guard = $composer->validateCostGuard($costEst, false);
+            if (!$guard['allowed']) {
+                $this->handleJobFailure($idJob, $idVideo, $job['attempts'] + 1, $job['max_attempts'], $guard['error']);
+                return array('id_job' => $idJob, 'success' => false, 'error' => $guard['error']);
             }
 
-            $providerJobId = $renderRes['provider_job_id'];
-            $costEstimate = !empty($renderRes['cost']) ? (float)$renderRes['cost'] : 0.0;
+            // Kích hoạt VideoComposer Pipeline (Economy / Hybrid / Premium)
+            $composeRes = $composer->composeVideo($video);
 
-            $this->d->rawQuery("UPDATE table_ai_video SET provider_job_id = ?, cost_estimate = ?, date_updated = ? WHERE id = ?", array(
-                $providerJobId,
-                $costEstimate,
-                time(),
-                $idVideo
-            ));
-            $this->d->rawQuery("UPDATE table_ai_video_job SET provider_job_id = ?, next_poll_at = ?, date_updated = ? WHERE id = ?", array(
-                $providerJobId,
-                time() + 5, // Poll sau 5 giây
-                time(),
-                $idJob
-            ));
-        }
-
-        // Kiểm tra kết quả từ Provider
-        $providerJobId = !empty($job['provider_job_id']) ? $job['provider_job_id'] : (!empty($video['provider_job_id']) ? $video['provider_job_id'] : '');
-        $statusRes = $provider->checkJobStatus($providerJobId);
-
-        if ($statusRes['status'] === 'READY') {
-            // Tải video và thumbnail về lưu trữ cục bộ
-            $safeFilename = 'fitnado_vid_' . $idVideo . '_' . time() . '.mp4';
-            $localVideoPath = 'upload/video/' . $safeFilename;
-            $downloadRes = $provider->downloadVideoAsset($statusRes['video_url'], $localVideoPath);
-
-            if (!$downloadRes['success']) {
-                $this->handleJobFailure($idJob, $idVideo, $job['attempts'] + 1, $job['max_attempts'], 'Download video failed: ' . $downloadRes['error']);
-                return array('id_job' => $idJob, 'success' => false, 'error' => $downloadRes['error']);
+            if (!$composeRes['success']) {
+                $this->handleJobFailure($idJob, $idVideo, $job['attempts'] + 1, $job['max_attempts'], $composeRes['error']);
+                return array('id_job' => $idJob, 'success' => false, 'error' => $composeRes['error']);
             }
 
-            // Thumbnail
-            $thumbFilename = preg_replace('/\.mp4$/i', '.jpg', $safeFilename);
-            $localThumbPath = 'upload/video/' . $thumbFilename;
+            $localVideoPath = $composeRes['video_file'];
+            $localThumbPath = $composeRes['thumbnail'];
+            $costReport = $composeRes['cost_report'];
+            $composerLog = $composeRes['composer_log'];
 
             // Kiểm định chất lượng Media Validation
             $expectedMeta = array(
                 'target_duration' => $video['target_duration'],
-                'duration_actual' => $statusRes['duration']
+                'duration_actual' => $composeRes['duration_actual']
             );
             $qcReport = $this->videoEngine->validateRenderedMedia($localVideoPath, $expectedMeta);
-
             $durationSec = round(microtime(true) - $startTime, 2);
 
-            // Cập nhật video sang REVIEW_REQUIRED
-            $this->d->rawQuery("UPDATE table_ai_video SET status = 'REVIEW_REQUIRED', video_file = ?, thumbnail = ?, duration_actual = ?, width = ?, height = ?, file_size = ?, quality_report = ?, date_updated = ? WHERE id = ?", array(
+            // Cập nhật video sang REVIEW_REQUIRED (Strict Human Gate)
+            $this->d->rawQuery("UPDATE table_ai_video SET status = 'REVIEW_REQUIRED', video_file = ?, thumbnail = ?, duration_actual = ?, width = ?, height = ?, file_size = ?, local_render_cost = ?, ai_video_seconds = ?, ai_video_cost = ?, tts_cost = ?, total_external_api_cost = ?, cost_estimate = ?, composer_log = ?, quality_report = ?, date_updated = ? WHERE id = ?", array(
                 $localVideoPath,
                 file_exists($localThumbPath) ? $localThumbPath : null,
-                $statusRes['duration'],
-                $statusRes['width'],
-                $statusRes['height'],
-                $downloadRes['file_size'],
+                !empty($composeRes['duration_actual']) ? (float)$composeRes['duration_actual'] : 30.0,
+                !empty($composeRes['width']) ? (int)$composeRes['width'] : 1080,
+                !empty($composeRes['height']) ? (int)$composeRes['height'] : 1920,
+                !empty($composeRes['file_size']) ? (int)$composeRes['file_size'] : 0,
+                !empty($costReport['local_render_cost']) ? (float)$costReport['local_render_cost'] : 0.0,
+                !empty($costReport['ai_video_seconds']) ? (int)$costReport['ai_video_seconds'] : (!empty($costReport['ai_seconds']) ? (int)$costReport['ai_seconds'] : 0),
+                !empty($costReport['ai_video_cost']) ? (float)$costReport['ai_video_cost'] : 0.0,
+                !empty($costReport['tts_cost']) ? (float)$costReport['tts_cost'] : 0.0,
+                !empty($costReport['total_external_api_cost']) ? (float)$costReport['total_external_api_cost'] : 0.0,
+                !empty($costReport['total_external_api_cost']) ? (float)$costReport['total_external_api_cost'] : 0.0,
+                $composerLog,
                 json_encode($qcReport, JSON_UNESCAPED_UNICODE),
                 time(),
                 $idVideo
@@ -215,7 +200,7 @@ class AIVideoJobQueue {
             $this->d->rawQuery("UPDATE table_ai_video_job SET status = 'SUCCESS', completed_at = ?, duration = ?, results_summary = ?, date_updated = ? WHERE id = ?", array(
                 time(),
                 $durationSec,
-                'Rendered and downloaded successfully (' . $downloadRes['file_size'] . ' bytes)',
+                'Composed successfully in ' . $mode . ' mode (' . $composeRes['file_size'] . ' bytes, API Cost: ' . number_format($costReport['total_external_api_cost']) . ' VND)',
                 time(),
                 $idJob
             ));
@@ -226,20 +211,12 @@ class AIVideoJobQueue {
                 'success' => true,
                 'status' => 'REVIEW_REQUIRED',
                 'video_file' => $localVideoPath,
-                'duration' => $durationSec
+                'duration' => $durationSec,
+                'cost_report' => $costReport
             );
-        } elseif ($statusRes['status'] === 'FAILED') {
-            $this->handleJobFailure($idJob, $idVideo, $job['attempts'] + 1, $job['max_attempts'], $statusRes['error']);
-            return array('id_job' => $idJob, 'success' => false, 'error' => $statusRes['error']);
-        } else {
-            // Vẫn đang PROCESSING -> Đặt lịch polling tiếp theo
-            $this->d->rawQuery("UPDATE table_ai_video_job SET poll_count = poll_count + 1, next_poll_at = ?, date_updated = ? WHERE id = ?", array(
-                time() + 10,
-                time(),
-                $idJob
-            ));
-            return array('id_job' => $idJob, 'id_video' => $idVideo, 'success' => true, 'status' => 'PROCESSING');
         }
+
+        return array('id_job' => $idJob, 'id_video' => $idVideo, 'success' => true, 'status' => 'PROCESSING');
     }
 
     /**
