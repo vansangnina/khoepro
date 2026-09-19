@@ -62,77 +62,86 @@ $linkMan = "index.php?com=ai_video&act=man";
             </div>
         </div>
 
-        <div class="card card-outline card-primary">
-            <div class="card-header">
+        <div class="card card-outline card-primary shadow-sm text-sm">
+            <div class="card-header py-2">
                 <h3 class="card-title font-weight-bold"><i class="fas fa-list mr-2"></i>Danh sách Tác vụ Render</h3>
             </div>
-            <div class="card-body table-responsive p-0">
-                <table class="table table-hover table-striped mb-0 text-nowrap">
+            <div class="card-body p-0">
+                <table class="table table-hover table-striped align-middle mb-0" style="width: 100%; table-layout: auto;">
                     <thead class="thead-light">
-                        <tr>
+                        <tr class="text-center" style="font-size: 13px;">
                             <th style="width: 50px;">ID</th>
-                            <th>Dự án Video</th>
-                            <th>Provider</th>
-                            <th>Trạng thái</th>
-                            <th>Lần thử (Attempts)</th>
-                            <th>Thời gian bắt đầu / Hoàn tất</th>
-                            <th>Kết quả / Lỗi</th>
-                            <th style="width: 100px;" class="text-center">Thao tác</th>
+                            <th class="text-left" style="min-width: 200px;">Dự án Video & Sản phẩm</th>
+                            <th style="width: 100px;">Provider</th>
+                            <th style="width: 120px;">Trạng thái</th>
+                            <th style="width: 90px;">Lần thử</th>
+                            <th style="width: 130px;">Thời gian chạy</th>
+                            <th class="text-left" style="min-width: 200px;">Kết quả / Chi tiết lỗi</th>
+                            <th style="width: 90px;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if (!empty($jobs)): foreach ($jobs as $jb): ?>
                             <tr>
-                                <td>#<?=$jb['id']?></td>
-                                <td>
-                                    <a href="index.php?com=ai_video&act=view&id=<?=$jb['id_video']?>">
-                                        <strong><?=htmlspecialchars($jb['video_title'] ?: 'Video #'.$jb['id_video'])?></strong>
+                                <td class="text-center align-middle font-weight-bold text-muted">#<?=$jb['id']?></td>
+                                <td class="align-middle">
+                                    <a href="index.php?com=ai_video&act=view&id=<?=$jb['id_video']?>" class="font-weight-bold text-primary" style="word-break: break-word;">
+                                        <?=htmlspecialchars($jb['video_title'] ?: 'Video #'.$jb['id_video'])?>
                                     </a>
-                                    <div class="small text-muted"><?=htmlspecialchars($jb['product_name'] ?: '')?></div>
+                                    <div class="small text-muted mt-1" style="word-break: break-word;"><i class="fas fa-box mr-1"></i><?=htmlspecialchars($jb['product_name'] ?: '')?></div>
                                 </td>
-                                <td><span class="badge badge-light border"><?=$jb['provider']?></span></td>
-                                <td>
+                                <td class="text-center align-middle"><span class="badge badge-light border text-uppercase font-weight-bold"><?=$jb['provider']?></span></td>
+                                <td class="text-center align-middle">
                                     <?php
                                     $st = $jb['status'];
-                                    if ($st === 'PENDING') echo '<span class="badge badge-warning">PENDING</span>';
-                                    elseif ($st === 'RUNNING') echo '<span class="badge badge-primary"><i class="fas fa-spinner fa-spin mr-1"></i>RUNNING</span>';
-                                    elseif ($st === 'SUCCESS') echo '<span class="badge badge-success">SUCCESS</span>';
-                                    elseif ($st === 'FAILED') echo '<span class="badge badge-danger">FAILED</span>';
-                                    else echo '<span class="badge badge-secondary">'.$st.'</span>';
+                                    if ($st === 'PENDING') echo '<span class="badge badge-warning p-1 text-wrap d-block">PENDING</span>';
+                                    elseif ($st === 'RUNNING') echo '<span class="badge badge-primary p-1 text-wrap d-block"><i class="fas fa-spinner fa-spin mr-1"></i>RUNNING</span>';
+                                    elseif ($st === 'SUCCESS') echo '<span class="badge badge-success p-1 text-wrap d-block">SUCCESS</span>';
+                                    elseif ($st === 'FAILED') echo '<span class="badge badge-danger p-1 text-wrap d-block">FAILED</span>';
+                                    else echo '<span class="badge badge-secondary p-1 text-wrap d-block">'.$st.'</span>';
                                     ?>
                                 </td>
-                                <td><?=$jb['attempts']?> / <?=$jb['max_attempts']?></td>
-                                <td>
-                                    <small>
-                                        Bắt đầu: <?=$jb['started_at'] ? date('H:i:s d/m', $jb['started_at']) : 'Chưa'?><br>
-                                        Hoàn tất: <?=$jb['completed_at'] ? date('H:i:s d/m', $jb['completed_at']) : 'Chưa'?>
-                                    </small>
+                                <td class="text-center align-middle text-xs">
+                                    <span class="badge badge-light border"><?=$jb['attempts']?> / <?=$jb['max_attempts']?></span>
                                 </td>
-                                <td>
+                                <td class="text-center align-middle text-muted" style="font-size: 11px; line-height: 1.3;">
+                                    <?php if ($jb['started_at']): ?>
+                                        <div><i class="fas fa-play fa-xs text-muted mr-1"></i><?=date('H:i:s d/m', $jb['started_at'])?></div>
+                                    <?php endif; ?>
+                                    <?php if ($jb['completed_at']): ?>
+                                        <div><i class="fas fa-check fa-xs text-success mr-1"></i><?=date('H:i:s d/m', $jb['completed_at'])?></div>
+                                    <?php endif; ?>
+                                    <?php if (!$jb['started_at'] && !$jb['completed_at']): ?>
+                                        <span class="text-muted">Chưa chạy</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="align-middle text-xs" style="word-break: break-word;">
                                     <?php if (!empty($jb['error_message'])): ?>
-                                        <span class="text-danger small"><i class="fas fa-exclamation-triangle"></i> <?=htmlspecialchars($jb['error_message'])?></span>
+                                        <div class="text-danger" style="word-break: break-word;"><i class="fas fa-exclamation-triangle mr-1"></i> <?=htmlspecialchars($jb['error_message'])?></div>
                                     <?php else: ?>
-                                        <span class="text-success small"><?=htmlspecialchars($jb['results_summary'] ?: 'Hoàn thành tốt')?></span>
+                                        <div class="text-success" style="word-break: break-word;"><i class="fas fa-check-circle mr-1"></i> <?=htmlspecialchars($jb['results_summary'] ?: 'Hoàn thành tốt')?></div>
                                     <?php endif; ?>
                                 </td>
-                                <td class="text-center">
-                                    <?php if ($jb['status'] === 'PENDING' || $jb['status'] === 'RUNNING'): ?>
-                                        <a href="index.php?com=ai_video&act=job_process&id=<?=$jb['id']?>" class="btn btn-xs btn-primary mr-1" title="Xử lý / Kiểm tra tiến độ ngay"><i class="fas fa-play"></i></a>
-                                    <?php endif; ?>
-                                    <?php if ($jb['status'] === 'FAILED'): ?>
-                                        <a href="index.php?com=ai_video&act=job_retry&id=<?=$jb['id']?>" class="btn btn-xs btn-warning mr-1" title="Thử lại"><i class="fas fa-redo"></i></a>
-                                    <?php endif; ?>
-                                    <a href="index.php?com=ai_video&act=job_delete&id=<?=$jb['id']?>" class="btn btn-xs btn-danger" onclick="return confirm('Xóa tác vụ này?');" title="Xóa"><i class="fas fa-trash"></i></a>
+                                <td class="text-center align-middle">
+                                    <div class="d-inline-flex flex-wrap justify-content-center" style="gap: 3px;">
+                                        <?php if ($jb['status'] === 'PENDING' || $jb['status'] === 'RUNNING'): ?>
+                                            <a href="index.php?com=ai_video&act=job_process&id=<?=$jb['id']?>" class="btn btn-xs btn-primary" title="Xử lý / Kiểm tra tiến độ ngay"><i class="fas fa-play"></i></a>
+                                        <?php endif; ?>
+                                        <?php if ($jb['status'] === 'FAILED'): ?>
+                                            <a href="index.php?com=ai_video&act=job_retry&id=<?=$jb['id']?>" class="btn btn-xs btn-warning" title="Thử lại"><i class="fas fa-redo"></i></a>
+                                        <?php endif; ?>
+                                        <a href="index.php?com=ai_video&act=job_delete&id=<?=$jb['id']?>" class="btn btn-xs btn-danger" onclick="return confirm('Xóa tác vụ này?');" title="Xóa"><i class="fas fa-trash"></i></a>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; else: ?>
-                            <tr><td colspan="8" class="text-center py-4 text-muted">Hàng đợi trống.</td></tr>
+                            <tr><td colspan="8" class="text-center py-5 text-muted"><i class="fas fa-check-circle fa-2x mb-2 text-success d-block"></i>Hàng đợi hiện đang trống.</td></tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
             </div>
             <?php if (!empty($paging)): ?>
-                <div class="card-footer clearfix"><?=$paging?></div>
+                <div class="card-footer clearfix py-2"><?=$paging?></div>
             <?php endif; ?>
         </div>
     </div>

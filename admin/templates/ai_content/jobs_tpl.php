@@ -30,67 +30,71 @@ $linkDelete = "index.php?com=ai_content&act=job_delete";
             </div>
         </div>
 
-        <div class="card-body table-responsive p-0">
-            <table class="table table-hover table-striped text-nowrap">
-                <thead>
-                    <tr class="text-center bg-light">
-                        <th style="width: 50px;">#Job ID</th>
-                        <th class="text-left" style="width: 250px;">Sản phẩm</th>
-                        <th class="text-left">Các loại nội dung yêu cầu</th>
-                        <th>Trạng thái</th>
-                        <th>Thử lại</th>
-                        <th>Thời gian chạy</th>
-                        <th>Thời điểm tạo</th>
-                        <th style="width: 120px;">Thao tác</th>
+        <div class="card-body p-0">
+            <table class="table table-hover table-striped align-middle mb-0" style="width: 100%; table-layout: auto;">
+                <thead class="thead-light">
+                    <tr class="text-center" style="font-size: 13px;">
+                        <th style="width: 60px;">#Job ID</th>
+                        <th class="text-left" style="min-width: 200px;">Sản phẩm</th>
+                        <th class="text-left" style="min-width: 250px;">Các loại nội dung yêu cầu</th>
+                        <th style="width: 130px;">Trạng thái</th>
+                        <th style="width: 80px;">Thử lại</th>
+                        <th style="width: 90px;">Thời gian</th>
+                        <th style="width: 130px;">Thời điểm tạo</th>
+                        <th style="width: 90px;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (!empty($jobs)) {
                         foreach ($jobs as $j) {
                             $statusMap = array(
-                                'PENDING' => '<span class="badge badge-warning p-1"><i class="fas fa-hourglass-start mr-1"></i> Đang chờ (Pending)</span>',
-                                'RUNNING' => '<span class="badge badge-info p-1"><i class="fas fa-spinner fa-spin mr-1"></i> Đang xử lý (Running)</span>',
-                                'SUCCESS' => '<span class="badge badge-success p-1"><i class="fas fa-check-circle mr-1"></i> Hoàn thành (Success)</span>',
-                                'FAILED' => '<span class="badge badge-danger p-1"><i class="fas fa-times-circle mr-1"></i> Thất bại (Failed)</span>'
+                                'PENDING' => '<span class="badge badge-warning p-1 text-wrap d-block"><i class="fas fa-hourglass-start mr-1"></i> Đang chờ</span>',
+                                'RUNNING' => '<span class="badge badge-info p-1 text-wrap d-block"><i class="fas fa-spinner fa-spin mr-1"></i> Đang xử lý</span>',
+                                'SUCCESS' => '<span class="badge badge-success p-1 text-wrap d-block"><i class="fas fa-check-circle mr-1"></i> Hoàn thành</span>',
+                                'FAILED' => '<span class="badge badge-danger p-1 text-wrap d-block"><i class="fas fa-times-circle mr-1"></i> Thất bại</span>'
                             );
-                            $badge = $statusMap[$j['status']] ?? '<span class="badge badge-secondary">' . $j['status'] . '</span>';
+                            $badge = $statusMap[$j['status']] ?? '<span class="badge badge-secondary p-1 text-wrap d-block">' . $j['status'] . '</span>';
                     ?>
                         <tr>
-                            <td class="text-center font-weight-bold text-muted">#<?= $j['id'] ?></td>
-                            <td class="text-left font-weight-bold text-wrap" style="max-width: 250px;">
-                                <a href="index.php?com=product&act=edit&type=san-pham&id=<?= $j['id_product'] ?>" target="_blank" class="text-primary">
+                            <td class="text-center align-middle font-weight-bold text-muted">#<?= $j['id'] ?></td>
+                            <td class="align-middle">
+                                <a href="index.php?com=product&act=edit&type=san-pham&id=<?= $j['id_product'] ?>" target="_blank" class="font-weight-bold text-primary" style="word-break: break-word;">
                                     <?= htmlspecialchars($j['product_name'] ?? 'Sản phẩm #' . $j['id_product']) ?>
                                 </a>
                             </td>
-                            <td class="text-left text-wrap text-xs" style="max-width: 320px;">
-                                <?= htmlspecialchars(str_replace(',', ' | ', $j['content_types'])) ?>
+                            <td class="align-middle text-xs" style="word-break: break-word;">
+                                <div class="font-weight-bold text-dark"><?= htmlspecialchars(str_replace(',', ' | ', $j['content_types'])) ?></div>
                                 <?php if (!empty($j['error_message'])) { ?>
-                                    <div class="text-danger mt-1"><i class="fas fa-exclamation-triangle mr-1"></i> <?= htmlspecialchars($j['error_message']) ?></div>
+                                    <div class="text-danger mt-1" style="word-break: break-word;"><i class="fas fa-exclamation-triangle mr-1"></i> <?= htmlspecialchars($j['error_message']) ?></div>
                                 <?php } ?>
                             </td>
-                            <td class="text-center"><?= $badge ?></td>
-                            <td class="text-center text-xs">
+                            <td class="text-center align-middle"><?= $badge ?></td>
+                            <td class="text-center align-middle text-xs">
                                 <span class="badge badge-light border"><?= $j['attempts'] ?> / <?= $j['max_attempts'] ?></span>
                             </td>
-                            <td class="text-center text-xs font-weight-bold">
+                            <td class="text-center align-middle text-xs font-weight-bold">
                                 <?= ($j['duration']) ? $j['duration'] . 's' : '-' ?>
                             </td>
-                            <td class="text-center text-xs text-muted">
-                                <?= date('d/m/Y H:i:s', $j['date_created']) ?>
+                            <td class="text-center align-middle text-muted" style="font-size: 11px; line-height: 1.25;">
+                                <?= date('d/m/Y', $j['date_created']) ?><br>
+                                <span class="text-xs"><?= date('H:i:s', $j['date_created']) ?></span>
                             </td>
-                            <td class="text-center">
-                                <?php if ($j['status'] === 'FAILED' || $j['status'] === 'PENDING') { ?>
-                                    <a href="<?= $linkRetry ?>&id=<?= $j['id'] ?>" class="btn btn-sm btn-warning" title="Chạy ngay / Thử lại"><i class="fas fa-play"></i></a>
-                                <?php } ?>
-                                <a href="<?= $linkDelete ?>&id=<?= $j['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Xóa Job #<?= $j['id'] ?> khỏi hàng đợi?')" title="Xóa"><i class="fas fa-trash-alt"></i></a>
+                            <td class="text-center align-middle">
+                                <div class="d-inline-flex flex-wrap justify-content-center" style="gap: 3px;">
+                                    <?php if ($j['status'] === 'FAILED' || $j['status'] === 'PENDING') { ?>
+                                        <a href="<?= $linkRetry ?>&id=<?= $j['id'] ?>" class="btn btn-xs btn-warning" title="Chạy ngay / Thử lại"><i class="fas fa-play"></i></a>
+                                    <?php } ?>
+                                    <a href="<?= $linkDelete ?>&id=<?= $j['id'] ?>" class="btn btn-xs btn-danger" onclick="return confirm('Xóa Job #<?= $j['id'] ?> khỏi hàng đợi?')" title="Xóa"><i class="fas fa-trash-alt"></i></a>
+                                </div>
                             </td>
                         </tr>
                     <?php }
                     } else { ?>
                         <tr>
-                            <td colspan="8" class="text-center py-4 text-muted">
-                                <i class="fas fa-check-double fa-3x mb-2 text-success"></i><br>
-                                Hàng đợi hiện đang trống! Không có tác vụ nào đang chờ.
+                            <td colspan="8" class="text-center py-5 text-muted">
+                                <i class="fas fa-check-double fa-3x mb-2 text-success" style="opacity: 0.5;"></i><br>
+                                <h5>Hàng đợi hiện đang trống!</h5>
+                                <p class="mb-0">Không có tác vụ nào đang chờ xử lý.</p>
                             </td>
                         </tr>
                     <?php } ?>
@@ -99,7 +103,7 @@ $linkDelete = "index.php?com=ai_content&act=job_delete";
         </div>
 
         <?php if (!empty($paging)) { ?>
-            <div class="card-footer clearfix">
+            <div class="card-footer clearfix py-2">
                 <?= $paging ?>
             </div>
         <?php } ?>

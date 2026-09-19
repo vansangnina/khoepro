@@ -353,3 +353,70 @@ div.show-video video{
 @media(max-width:401px){
 	.main-header .navbar-nav .nav-item.nav-item-hello span,.label-filer{display:none;}
 }
+
+/* ==========================================================================
+   FITNADO ADMIN RESPONSIVE & NO-HORIZONTAL-SCROLL RULES
+   ========================================================================== */
+.card-body.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Default table behavior across admin */
+.table {
+    width: 100% !important;
+    margin-bottom: 0;
+}
+
+/* Allow text in table cells to wrap naturally instead of stretching screens */
+.table th,
+.table td {
+    white-space: normal !important;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    vertical-align: middle;
+}
+
+/* Specific elements that can maintain nowrap */
+.table .nowrap,
+.table .badge.nowrap,
+.table th.col-id,
+.table td.col-id {
+    white-space: nowrap !important;
+}
+
+/* Product names, titles, and URLs wrapping */
+.table a.text-primary,
+.table strong a,
+.table .font-weight-bold {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.35;
+}
+
+/* Small text details */
+.table .small,
+.table .text-xs,
+.table .text-muted {
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Badges inside tables wrap cleanly if needed */
+.table .badge {
+    line-height: 1.25;
+    font-weight: 600;
+}
+
+/* Form controls and filter bars responsive layout */
+.card-header .form-row {
+    row-gap: 0.5rem;
+}
+
+/* Action button clusters */
+.btn-group-action {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    justify-content: center;
+}

@@ -56,68 +56,68 @@ $linkAddSeed = "index.php?com=product_research&act=add_seed";
 
     <!-- Seeds Table -->
     <div class="card card-primary card-outline text-sm shadow-sm mb-0">
-        <div class="card-header">
+        <div class="card-header py-2">
             <h3 class="card-title font-weight-bold"><i class="fas fa-seedling mr-1"></i> Danh sách Hạt giống Khám phá Sản phẩm (Seeds)</h3>
             <div class="card-tools">
                 <span class="badge badge-secondary"><?= number_format($countTotal) ?> hạt giống</span>
             </div>
         </div>
-        <div class="card-body table-responsive p-0">
-            <table class="table table-hover text-nowrap align-middle">
-                <thead>
-                    <tr>
-                        <th class="align-middle text-center" width="5%">ID</th>
-                        <th class="align-middle" width="30%">Tiêu đề & Từ khóa hạt giống</th>
-                        <th class="align-middle text-center" width="12%">Phân loại</th>
-                        <th class="align-middle text-center" width="10%">Nền tảng / Chiều sâu</th>
-                        <th class="align-middle text-center" width="10%">Tần suất</th>
-                        <th class="align-middle text-center" width="12%">Lần chạy gần nhất</th>
-                        <th class="align-middle text-center" width="8%">Trạng thái</th>
-                        <th class="align-middle text-center" width="13%">Thao tác</th>
+        <div class="card-body p-0">
+            <table class="table table-hover table-striped align-middle mb-0" style="width: 100%; table-layout: auto;">
+                <thead class="thead-light">
+                    <tr class="text-center" style="font-size: 13px;">
+                        <th style="width: 50px;">ID</th>
+                        <th class="text-left" style="min-width: 250px;">Tiêu đề & Từ khóa hạt giống</th>
+                        <th style="width: 110px;">Phân loại</th>
+                        <th style="width: 120px;">Nền tảng / Chiều sâu</th>
+                        <th style="width: 100px;">Tần suất</th>
+                        <th style="width: 130px;">Lần chạy gần nhất</th>
+                        <th style="width: 100px;">Trạng thái</th>
+                        <th style="width: 120px;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (!empty($items)) { ?>
                         <?php foreach ($items as $v) { ?>
                             <tr>
-                                <td class="align-middle text-center text-muted">#<?= $v['id'] ?></td>
+                                <td class="align-middle text-center font-weight-bold text-muted">#<?= $v['id'] ?></td>
                                 <td class="align-middle">
-                                    <a href="index.php?com=product_research&act=edit_seed&id=<?= $v['id'] ?>" class="font-weight-bold text-primary">
+                                    <a href="index.php?com=product_research&act=edit_seed&id=<?= $v['id'] ?>" class="font-weight-bold text-primary" style="word-break: break-word;">
                                         <?= htmlspecialchars($v['title']) ?>
                                     </a>
-                                    <div class="text-xs text-muted mt-1">
-                                        <i class="fas fa-key mr-1"></i>Từ khóa: <strong class="text-dark"><?= htmlspecialchars($v['keyword']) ?></strong>
+                                    <div class="text-xs text-muted mt-1" style="word-break: break-word;">
+                                        <i class="fas fa-key mr-1 text-secondary"></i>Từ khóa: <strong class="text-dark"><?= htmlspecialchars($v['keyword']) ?></strong>
                                     </div>
                                 </td>
                                 <td class="align-middle text-center">
-                                    <span class="badge badge-info text-uppercase px-2 py-1"><?= $v['seed_type'] ?></span>
+                                    <span class="badge badge-info text-uppercase p-1 text-wrap d-block"><?= $v['seed_type'] ?></span>
                                 </td>
                                 <td class="align-middle text-center text-xs">
-                                    <div><span class="badge badge-light border text-uppercase"><?= $v['platform'] ?></span></div>
-                                    <div class="text-muted mt-1">Độ sâu: <strong><?= $v['depth'] ?></strong></div>
+                                    <div><span class="badge badge-light border text-uppercase font-weight-bold"><?= $v['platform'] ?></span></div>
+                                    <div class="text-muted text-xs mt-1">Độ sâu: <strong><?= $v['depth'] ?></strong></div>
                                 </td>
                                 <td class="align-middle text-center text-xs">
                                     <span class="badge badge-secondary"><?= ucfirst($v['frequency']) ?></span>
-                                    <div class="text-muted mt-1">Max: <?= $v['max_results'] ?> SP</div>
+                                    <div class="text-muted text-xs mt-1">Max: <?= $v['max_results'] ?> SP</div>
                                 </td>
-                                <td class="align-middle text-center text-xs text-muted">
-                                    <?= !empty($v['last_run']) ? date('d/m/Y H:i', $v['last_run']) : 'Chưa chạy' ?>
+                                <td class="align-middle text-center text-xs text-muted" style="font-size: 11px; line-height: 1.25;">
+                                    <?= !empty($v['last_run']) ? date('d/m/Y H:i', $v['last_run']) : '<span class="text-muted">Chưa chạy</span>' ?>
                                     <?php if (!empty($v['next_run']) && $v['frequency'] !== 'manual') { ?>
-                                        <div class="text-info mt-1">Kế tiếp: <?= date('d/m/Y', $v['next_run']) ?></div>
+                                        <div class="text-info mt-1 text-xs">Kế tiếp: <?= date('d/m/Y', $v['next_run']) ?></div>
                                     <?php } ?>
                                 </td>
                                 <td class="align-middle text-center">
-                                    <span class="badge <?= ($v['status'] == 'active') ? 'badge-success' : 'badge-danger' ?> px-2 py-1">
+                                    <span class="badge <?= ($v['status'] == 'active') ? 'badge-success' : 'badge-danger' ?> p-1 text-wrap d-block">
                                         <?= strtoupper($v['status']) ?>
                                     </span>
                                 </td>
                                 <td class="align-middle text-center">
-                                    <div class="btn-group btn-group-sm">
-                                        <a href="index.php?com=product_research&act=run_seed&id=<?= $v['id'] ?>" class="btn btn-warning text-dark font-weight-bold" onclick="return confirm('Kích hoạt tác vụ nghiên cứu ngay cho hạt giống này?')" title="Nghiên cứu ngay (Run Now)">
+                                    <div class="d-inline-flex flex-wrap justify-content-center" style="gap: 3px;">
+                                        <a href="index.php?com=product_research&act=run_seed&id=<?= $v['id'] ?>" class="btn btn-xs btn-warning text-dark font-weight-bold" onclick="return confirm('Kích hoạt tác vụ nghiên cứu ngay cho hạt giống này?')" title="Nghiên cứu ngay (Run Now)">
                                             <i class="fas fa-play mr-1"></i> Chạy
                                         </a>
-                                        <a href="index.php?com=product_research&act=edit_seed&id=<?= $v['id'] ?>" class="btn btn-default" title="Chỉnh sửa"><i class="fas fa-edit"></i></a>
-                                        <a href="index.php?com=product_research&act=delete_seed&id=<?= $v['id'] ?>" class="btn btn-default text-danger" onclick="return confirm('Bạn có chắc muốn xóa hạt giống này?')" title="Xóa"><i class="fas fa-trash-alt"></i></a>
+                                        <a href="index.php?com=product_research&act=edit_seed&id=<?= $v['id'] ?>" class="btn btn-xs btn-default border" title="Chỉnh sửa"><i class="fas fa-edit"></i></a>
+                                        <a href="index.php?com=product_research&act=delete_seed&id=<?= $v['id'] ?>" class="btn btn-xs btn-default text-danger border" onclick="return confirm('Bạn có chắc muốn xóa hạt giống này?')" title="Xóa"><i class="fas fa-trash-alt"></i></a>
                                     </div>
                                 </td>
                             </tr>
@@ -125,15 +125,16 @@ $linkAddSeed = "index.php?com=product_research&act=add_seed";
                     <?php } else { ?>
                         <tr>
                             <td colspan="8" class="text-center text-muted py-5">
-                                <i class="fas fa-seedling fa-2x mb-2 text-muted"></i>
-                                <div>Chưa có hạt giống nghiên cứu nào. Nhấn <strong>"Thêm Hạt giống mới"</strong> để bắt đầu.</div>
+                                <i class="fas fa-seedling fa-2x mb-2 text-muted" style="opacity: 0.5;"></i>
+                                <h5>Chưa có hạt giống nghiên cứu nào</h5>
+                                <p class="mb-0">Nhấn <strong>"Thêm Hạt giống mới"</strong> để bắt đầu.</p>
                             </td>
                         </tr>
                     <?php } ?>
                 </tbody>
             </table>
         </div>
-        <div class="card-footer text-sm pb-0">
+        <div class="card-footer text-sm pb-0 py-2">
             <?= (!empty($paging)) ? $paging : '' ?>
         </div>
     </div>

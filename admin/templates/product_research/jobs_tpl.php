@@ -89,24 +89,24 @@ $linkJobs = "index.php?com=product_research&act=jobs";
 
     <!-- Jobs Table -->
     <div class="card card-primary card-outline text-sm shadow-sm mb-0">
-        <div class="card-header">
+        <div class="card-header py-2">
             <h3 class="card-title font-weight-bold"><i class="fas fa-tasks mr-1"></i> Nhật ký Hàng đợi Tác vụ Nghiên cứu</h3>
             <div class="card-tools">
                 <span class="badge badge-secondary"><?= number_format($countTotal) ?> jobs</span>
             </div>
         </div>
-        <div class="card-body table-responsive p-0">
-            <table class="table table-hover text-nowrap align-middle">
-                <thead>
-                    <tr>
-                        <th class="align-middle text-center" width="5%">ID</th>
-                        <th class="align-middle" width="25%">Hạt giống / Từ khóa</th>
-                        <th class="align-middle text-center" width="10%">Nhà cung cấp</th>
-                        <th class="align-middle text-center" width="10%">Trạng thái</th>
-                        <th class="align-middle text-center" width="8%">Số lần thử</th>
-                        <th class="align-middle" width="22%">Kết quả & Tóm tắt</th>
-                        <th class="align-middle text-center" width="10%">Thời gian thực thi</th>
-                        <th class="align-middle text-center" width="10%">Thao tác</th>
+        <div class="card-body p-0">
+            <table class="table table-hover table-striped align-middle mb-0" style="width: 100%; table-layout: auto;">
+                <thead class="thead-light">
+                    <tr class="text-center" style="font-size: 13px;">
+                        <th style="width: 50px;">ID</th>
+                        <th class="text-left" style="min-width: 220px;">Hạt giống / Từ khóa</th>
+                        <th style="width: 110px;">Nhà cung cấp</th>
+                        <th style="width: 110px;">Trạng thái</th>
+                        <th style="width: 80px;">Số lần thử</th>
+                        <th class="text-left" style="min-width: 230px;">Kết quả & Tóm tắt</th>
+                        <th style="width: 120px;">Thời gian</th>
+                        <th style="width: 90px;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -119,38 +119,39 @@ $linkJobs = "index.php?com=product_research&act=jobs";
                             elseif ($v['status'] == 'PENDING') $statusBadge = 'badge-info';
                         ?>
                             <tr>
-                                <td class="align-middle text-center text-muted">#<?= $v['id'] ?></td>
+                                <td class="align-middle text-center font-weight-bold text-muted">#<?= $v['id'] ?></td>
                                 <td class="align-middle">
                                     <?php if (!empty($v['seed_title'])) { ?>
-                                        <div class="font-weight-bold text-dark"><?= htmlspecialchars($v['seed_title']) ?></div>
-                                        <div class="text-xs text-muted"><i class="fas fa-key mr-1"></i><?= htmlspecialchars($v['seed_keyword']) ?></div>
+                                        <div class="font-weight-bold text-dark" style="word-break: break-word;"><?= htmlspecialchars($v['seed_title']) ?></div>
+                                        <div class="text-xs text-muted mt-1" style="word-break: break-word;"><i class="fas fa-key mr-1 text-secondary"></i><?= htmlspecialchars($v['seed_keyword']) ?></div>
                                     <?php } else { ?>
                                         <span class="text-muted font-italic">Quét trực tiếp không dùng seed</span>
                                     <?php } ?>
                                 </td>
                                 <td class="align-middle text-center">
-                                    <span class="badge badge-light border text-uppercase px-2 py-1"><?= $v['provider'] ?></span>
+                                    <span class="badge badge-light border text-uppercase font-weight-bold px-2 py-1"><?= $v['provider'] ?></span>
                                     <div class="text-xs text-muted mt-1"><?= $v['depth'] ?></div>
                                 </td>
                                 <td class="align-middle text-center">
-                                    <span class="badge <?= $statusBadge ?> px-2 py-1"><?= $v['status'] ?></span>
+                                    <span class="badge <?= $statusBadge ?> p-1 text-wrap d-block"><?= $v['status'] ?></span>
                                 </td>
                                 <td class="align-middle text-center text-xs">
-                                    <strong><?= $v['attempts'] ?></strong> / <?= $v['max_attempts'] ?>
+                                    <span class="badge badge-light border"><?= $v['attempts'] ?> / <?= $v['max_attempts'] ?></span>
                                 </td>
-                                <td class="align-middle text-xs">
+                                <td class="align-middle text-xs" style="word-break: break-word;">
                                     <?php if ($v['status'] == 'SUCCESS') { ?>
-                                        <div class="text-success font-weight-bold"><i class="fas fa-check mr-1"></i><?= htmlspecialchars($v['result_summary'] ?: 'Hoàn thành') ?></div>
+                                        <div class="text-success font-weight-bold" style="word-break: break-word;"><i class="fas fa-check-circle mr-1"></i><?= htmlspecialchars($v['result_summary'] ?: 'Hoàn thành') ?></div>
                                         <div class="text-muted mt-1">Tìm: <strong><?= $v['candidates_found'] ?></strong> | Mới: <strong class="text-primary"><?= $v['candidates_created'] ?></strong> | Trùng: <strong><?= $v['duplicates_count'] ?></strong></div>
                                     <?php } elseif ($v['status'] == 'FAILED') { ?>
-                                        <div class="text-danger font-weight-bold"><i class="fas fa-times mr-1"></i>Thất bại:</div>
-                                        <div class="text-danger text-truncate" style="max-width:250px;" title="<?= htmlspecialchars($v['error_message'] ?? '') ?>"><?= htmlspecialchars($v['error_message'] ?? 'Lỗi không xác định') ?></div>
+                                        <div class="text-danger font-weight-bold"><i class="fas fa-times-circle mr-1"></i>Thất bại:</div>
+                                        <div class="text-danger mt-1" style="word-break: break-word;"><?= htmlspecialchars($v['error_message'] ?? 'Lỗi không xác định') ?></div>
                                     <?php } else { ?>
-                                        <span class="text-muted">Đang xếp hàng thực thi...</span>
+                                        <span class="text-muted"><i class="fas fa-spinner fa-spin mr-1"></i>Đang xếp hàng thực thi...</span>
                                     <?php } ?>
                                 </td>
-                                <td class="align-middle text-center text-xs text-muted">
-                                    <?= date('d/m/Y H:i:s', $v['date_created']) ?>
+                                <td class="align-middle text-center text-muted" style="font-size: 11px; line-height: 1.25;">
+                                    <?= date('d/m/Y', $v['date_created']) ?><br>
+                                    <span class="text-xs"><?= date('H:i:s', $v['date_created']) ?></span>
                                     <?php if ($v['duration'] > 0) { ?>
                                         <div class="text-info font-weight-bold mt-1"><?= $v['duration'] ?>s</div>
                                     <?php } ?>
@@ -161,7 +162,7 @@ $linkJobs = "index.php?com=product_research&act=jobs";
                                             <i class="fas fa-redo mr-1"></i> Thử lại
                                         </a>
                                     <?php } else { ?>
-                                        <span class="text-muted text-xs"><i class="fas fa-check text-success"></i> Xong</span>
+                                        <span class="text-muted text-xs"><i class="fas fa-check text-success mr-1"></i> Xong</span>
                                     <?php } ?>
                                 </td>
                             </tr>
@@ -169,15 +170,16 @@ $linkJobs = "index.php?com=product_research&act=jobs";
                     <?php } else { ?>
                         <tr>
                             <td colspan="8" class="text-center text-muted py-5">
-                                <i class="fas fa-tasks fa-2x mb-2 text-muted"></i>
-                                <div>Chưa có tác vụ nghiên cứu nào trong hàng đợi.</div>
+                                <i class="fas fa-tasks fa-2x mb-2 text-muted" style="opacity: 0.5;"></i>
+                                <h5>Hàng đợi trống</h5>
+                                <p class="mb-0">Chưa có tác vụ nghiên cứu nào trong hàng đợi.</p>
                             </td>
                         </tr>
                     <?php } ?>
                 </tbody>
             </table>
         </div>
-        <div class="card-footer text-sm pb-0">
+        <div class="card-footer text-sm pb-0 py-2">
             <?= (!empty($paging)) ? $paging : '' ?>
         </div>
     </div>

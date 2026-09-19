@@ -4,6 +4,23 @@ Tài liệu ghi nhận toàn bộ các thay đổi được thực hiện bởi 
 
 ---
 
+## [2026-09-19] - UI/UX REFINEMENT: ADMIN RESPONSIVE TABLES & MULTI-LINE TEXT WRAPPING (NO HORIZONTAL SCROLL)
+
+### MODIFIED & ENHANCED
+* `admin/assets/css/adminlte-style.css`: Thêm bộ quy chuẩn CSS toàn cục `FITNADO ADMIN RESPONSIVE & NO-HORIZONTAL-SCROLL RULES` (`table th, td { white-space: normal !important; word-break: break-word; }`), giúp toàn bộ bảng dữ liệu co giãn tự nhiên theo chiều ngang màn hình mà không bị tràn hay ép kéo ngang.
+* `admin/templates/ai_video/mans_tpl.php`: Xóa bỏ `text-nowrap`, thiết lập tỷ lệ cột tối ưu, cho phép tên sản phẩm/tiêu đề video tự động xuống dòng khi dài, cải tiến widget thống kê dạng lưới `col-xl-2 col-lg-4 col-sm-6` và thanh lọc responsive.
+* `admin/templates/ai_video/jobs_tpl.php`: Tối ưu bảng hàng đợi render video, tự động bẻ dòng các thông báo lỗi dài và chi tiết kết quả.
+* `admin/templates/ai_video/assets_tpl.php`: Bỏ `text-nowrap`, hỗ trợ xuống dòng cho tiêu đề video, tên sản phẩm và ghi chú tài nguyên.
+* `admin/templates/ai_content/mans_tpl.php`: Tối ưu bảng kho nội dung AI, loại bỏ `text-nowrap`, hỗ trợ bẻ dòng tên sản phẩm, tiêu đề và góc tiếp cận.
+* `admin/templates/ai_content/jobs_tpl.php`: Tối ưu bảng hàng đợi AI Content, cho phép danh sách loại nội dung và lỗi xuống dòng tự nhiên.
+* `admin/templates/product_research/mans_tpl.php`: Xóa `text-nowrap`, bỏ `text-truncate` cứng, cho phép tên ứng viên nghiên cứu hiển thị đầy đủ và xuống dòng mượt mà.
+* `admin/templates/product_research/seeds_tpl.php` & `jobs_tpl.php`: Chuẩn hóa bảng Seeds và Jobs nghiên cứu với giao diện gọn gàng, vừa vặn 100% màn hình.
+
+### RESULT
+* 100% các trang quản trị AI Video, AI Content, Nghiên cứu sản phẩm hiển thị vừa vặn trên mọi độ phân giải màn hình Desktop/Laptop/Tablet, không bị cuộn ngang (no horizontal scrollbar), các văn bản/tiêu đề dài tự động ngắt xuống dòng rõ ràng, trực quan.
+
+---
+
 ## [2026-09-19] - PHASE 06: AI VIDEO PRODUCTION ENGINE (APPROVED CONTENT -> VIDEO PROJECT -> ASSET PREP -> RENDER -> QC -> PREVIEW -> HUMAN APPROVAL)
 
 ### CREATED

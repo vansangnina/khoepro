@@ -139,25 +139,25 @@ $linkWeights = "index.php?com=product_research&act=weights";
 
     <!-- Candidates Table -->
     <div class="card card-primary card-outline text-sm shadow-sm mb-0">
-        <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-list mr-1"></i> Danh sách Ứng viên Nghiên cứu Sản phẩm</h3>
+        <div class="card-header py-2">
+            <h3 class="card-title font-weight-bold"><i class="fas fa-list mr-1"></i> Danh sách Ứng viên Nghiên cứu Sản phẩm</h3>
             <div class="card-tools">
                 <span class="badge badge-secondary"><?= number_format($countTotal) ?> kết quả</span>
             </div>
         </div>
-        <div class="card-body table-responsive p-0">
-            <table class="table table-hover text-nowrap align-middle">
-                <thead>
-                    <tr>
-                        <th class="align-middle text-center" width="5%">ID</th>
-                        <th class="align-middle" width="30%">Sản phẩm / Nền tảng</th>
-                        <th class="align-middle text-center" width="10%">Giá bán</th>
-                        <th class="align-middle text-center" width="10%">Tín hiệu thị trường</th>
-                        <th class="align-middle text-center" width="8%">Hoa hồng</th>
-                        <th class="align-middle text-center" width="15%">Điểm thành phần</th>
-                        <th class="align-middle text-center" width="8%">Tổng điểm</th>
-                        <th class="align-middle text-center" width="10%">Trạng thái</th>
-                        <th class="align-middle text-center" width="8%">Thao tác</th>
+        <div class="card-body p-0">
+            <table class="table table-hover table-striped align-middle mb-0" style="width: 100%; table-layout: auto;">
+                <thead class="thead-light">
+                    <tr class="text-center" style="font-size: 13px;">
+                        <th style="width: 50px;">ID</th>
+                        <th class="text-left" style="min-width: 230px;">Sản phẩm / Nền tảng</th>
+                        <th style="width: 100px;">Giá bán</th>
+                        <th style="width: 120px;">Tín hiệu thị trường</th>
+                        <th style="width: 90px;">Hoa hồng</th>
+                        <th style="width: 140px;">Điểm thành phần</th>
+                        <th style="width: 80px;">Tổng điểm</th>
+                        <th style="width: 110px;">Trạng thái</th>
+                        <th style="width: 100px;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -179,19 +179,19 @@ $linkWeights = "index.php?com=product_research&act=weights";
                             elseif ($v['status'] == 'PRODUCT_CREATED') $statusBadge = 'badge-dark';
                         ?>
                             <tr>
-                                <td class="align-middle text-center text-muted">#<?= $v['id'] ?></td>
+                                <td class="align-middle text-center font-weight-bold text-muted">#<?= $v['id'] ?></td>
                                 <td class="align-middle">
-                                    <div class="d-flex align-items-center">
+                                    <div class="d-flex align-items-start">
                                         <?php if (!empty($v['image_url'])) { ?>
-                                            <img src="<?= htmlspecialchars($v['image_url']) ?>" class="rounded mr-2 border" style="width:48px;height:48px;object-fit:cover;" onerror="this.src='assets/images/noimage.png'">
+                                            <img src="<?= htmlspecialchars($v['image_url']) ?>" class="rounded mr-2 border shadow-sm flex-shrink-0" style="width:48px;height:48px;object-fit:cover;" onerror="this.src='assets/images/noimage.png'">
                                         <?php } else { ?>
-                                            <div class="rounded mr-2 bg-light d-flex align-items-center justify-content-center text-muted border" style="width:48px;height:48px;"><i class="fas fa-box"></i></div>
+                                            <div class="rounded mr-2 bg-light d-flex align-items-center justify-content-center text-muted border flex-shrink-0" style="width:48px;height:48px;"><i class="fas fa-box"></i></div>
                                         <?php } ?>
-                                        <div>
-                                            <a href="index.php?com=product_research&act=edit&id=<?= $v['id'] ?>" class="font-weight-bold text-primary d-block text-truncate" style="max-width:320px;" title="<?= htmlspecialchars($v['name']) ?>">
+                                        <div style="min-width: 0;">
+                                            <a href="index.php?com=product_research&act=edit&id=<?= $v['id'] ?>" class="font-weight-bold text-primary d-block" style="word-break: break-word; line-height: 1.35;" title="<?= htmlspecialchars($v['name']) ?>">
                                                 <?= htmlspecialchars($v['name']) ?>
                                             </a>
-                                            <div class="text-xs text-muted d-flex align-items-center flex-wrap gap-1 mt-1">
+                                            <div class="text-xs text-muted d-flex align-items-center flex-wrap mt-1" style="gap: 3px;">
                                                 <?php if (($v['discovery_source'] ?? 'manual') === 'ai_agent') { ?>
                                                     <span class="badge badge-info mr-1" title="Khám phá bởi AI Research Agent"><i class="fas fa-robot mr-1"></i>AI</span>
                                                 <?php } elseif (($v['discovery_source'] ?? 'manual') === 'tiktok_crawler') { ?>
@@ -223,9 +223,9 @@ $linkWeights = "index.php?com=product_research&act=weights";
                                 </td>
                                 <td class="align-middle text-center text-xs">
                                     <div><strong>Đã bán:</strong> <?= ($v['sales_count'] !== null) ? number_format($v['sales_count']) : '<span class="text-muted">-</span>' ?></div>
-                                    <div><strong>Rating:</strong> <?= ($v['rating'] !== null) ? '⭐ ' . number_format($v['rating'], 1) : '<span class="text-muted">-</span>' ?> (<?= ($v['review_count'] !== null) ? number_format($v['review_count']) : '-' ?>)</div>
+                                    <div class="mt-1"><strong>Rating:</strong> <?= ($v['rating'] !== null) ? '⭐ ' . number_format($v['rating'], 1) : '<span class="text-muted">-</span>' ?> (<?= ($v['review_count'] !== null) ? number_format($v['review_count']) : '-' ?>)</div>
                                     <?php if (!empty($v['top_video_views'])) { ?>
-                                        <div><strong>Top Video:</strong> <span class="text-info"><?= number_format($v['top_video_views']) ?> view</span></div>
+                                        <div class="mt-1"><strong>Top Video:</strong> <span class="text-info"><?= number_format($v['top_video_views']) ?> view</span></div>
                                     <?php } ?>
                                 </td>
                                 <td class="align-middle text-center">
@@ -239,7 +239,7 @@ $linkWeights = "index.php?com=product_research&act=weights";
                                     <?php } ?>
                                 </td>
                                 <td class="align-middle text-center text-xs">
-                                    <div class="d-flex justify-content-center flex-wrap" style="gap:4px;">
+                                    <div class="d-flex justify-content-center flex-wrap" style="gap:3px;">
                                         <span class="badge badge-light border" title="Nhu cầu (Demand)">Dem: <strong><?= $v['demand_score'] !== null ? $v['demand_score'] : '-' ?></strong></span>
                                         <span class="badge badge-light border" title="Tiềm năng nội dung (Content)">Cont: <strong><?= $v['content_score'] !== null ? $v['content_score'] : '-' ?></strong></span>
                                         <span class="badge badge-light border" title="Hoa hồng (Commission)">Comm: <strong><?= $v['commission_score'] !== null ? $v['commission_score'] : '-' ?></strong></span>
@@ -256,31 +256,31 @@ $linkWeights = "index.php?com=product_research&act=weights";
                                     </div>
                                 </td>
                                 <td class="align-middle text-center">
-                                    <span class="badge <?= $statusBadge ?> px-2 py-1"><?= $v['status'] ?></span>
+                                    <span class="badge <?= $statusBadge ?> p-1 text-wrap d-block"><?= $v['status'] ?></span>
                                     <?php if (!empty($v['id_product'])) { ?>
                                         <div class="mt-1">
                                             <a href="index.php?com=product&act=edit&type=san-pham&id=<?= $v['id_product'] ?>" class="badge badge-primary" target="_blank" title="Xem sản phẩm thật">SP #<?= $v['id_product'] ?></a>
                                         </div>
                                     <?php } ?>
                                     <?php if ($v['status'] == 'REJECTED' && !empty($v['reject_reason'])) { ?>
-                                        <div class="text-xs text-danger mt-1 text-truncate" style="max-width:120px;" title="<?= htmlspecialchars($v['reject_reason']) ?>"><?= htmlspecialchars($v['reject_reason']) ?></div>
+                                        <div class="text-xs text-danger mt-1" style="word-break: break-word;" title="<?= htmlspecialchars($v['reject_reason']) ?>"><?= htmlspecialchars($v['reject_reason']) ?></div>
                                     <?php } ?>
                                 </td>
                                 <td class="align-middle text-center">
-                                    <div class="btn-group btn-group-sm">
-                                        <a href="index.php?com=product_research&act=edit&id=<?= $v['id'] ?>" class="btn btn-default" title="Xem chi tiết & Sửa"><i class="fas fa-edit"></i></a>
+                                    <div class="d-inline-flex flex-wrap justify-content-center" style="gap: 3px;">
+                                        <a href="index.php?com=product_research&act=edit&id=<?= $v['id'] ?>" class="btn btn-xs btn-default border" title="Xem chi tiết & Sửa"><i class="fas fa-edit"></i></a>
                                         
                                         <?php if ($v['status'] == 'APPROVED' && empty($v['id_product'])) { ?>
-                                            <a href="index.php?com=product_research&act=create_product&id=<?= $v['id'] ?>" class="btn btn-success" title="Tạo sản phẩm thật"><i class="fas fa-magic"></i></a>
+                                            <a href="index.php?com=product_research&act=create_product&id=<?= $v['id'] ?>" class="btn btn-xs btn-success" title="Tạo sản phẩm thật"><i class="fas fa-magic"></i></a>
                                         <?php } ?>
                                         
                                         <?php if ($v['status'] == 'RESEARCHED' || $v['status'] == 'DISCOVERED') { ?>
-                                            <a href="index.php?com=product_research&act=approve&id=<?= $v['id'] ?>" class="btn btn-outline-success" onclick="return confirm('Xác nhận duyệt ứng viên này?')" title="Duyệt ứng viên (Approve)"><i class="fas fa-check"></i></a>
-                                            <button type="button" class="btn btn-outline-danger" onclick="openRejectModal(<?= $v['id'] ?>)" title="Từ chối (Reject)"><i class="fas fa-times"></i></button>
+                                            <a href="index.php?com=product_research&act=approve&id=<?= $v['id'] ?>" class="btn btn-xs btn-outline-success" onclick="return confirm('Xác nhận duyệt ứng viên này?')" title="Duyệt ứng viên (Approve)"><i class="fas fa-check"></i></a>
+                                            <button type="button" class="btn btn-xs btn-outline-danger" onclick="openRejectModal(<?= $v['id'] ?>)" title="Từ chối (Reject)"><i class="fas fa-times"></i></button>
                                         <?php } ?>
 
                                         <?php if (empty($v['id_product'])) { ?>
-                                            <a href="index.php?com=product_research&act=delete&id=<?= $v['id'] ?>" class="btn btn-default text-danger" onclick="return confirm('Bạn có chắc muốn xóa ứng viên này?')" title="Xóa"><i class="fas fa-trash-alt"></i></a>
+                                            <a href="index.php?com=product_research&act=delete&id=<?= $v['id'] ?>" class="btn btn-xs btn-default text-danger border" onclick="return confirm('Bạn có chắc muốn xóa ứng viên này?')" title="Xóa"><i class="fas fa-trash-alt"></i></a>
                                         <?php } ?>
                                     </div>
                                 </td>
@@ -289,7 +289,7 @@ $linkWeights = "index.php?com=product_research&act=weights";
                     <?php } else { ?>
                         <tr>
                             <td colspan="9" class="text-center text-muted py-5">
-                                <i class="fas fa-search-dollar fa-2x mb-2 text-muted"></i>
+                                <i class="fas fa-search-dollar fa-2x mb-2 text-muted" style="opacity: 0.5;"></i>
                                 <div>Chưa có ứng viên nghiên cứu sản phẩm nào. Nhấn <strong>"Thêm mới"</strong> để bắt đầu.</div>
                             </td>
                         </tr>
@@ -297,7 +297,7 @@ $linkWeights = "index.php?com=product_research&act=weights";
                 </tbody>
             </table>
         </div>
-        <div class="card-footer text-sm pb-0">
+        <div class="card-footer text-sm pb-0 py-2">
             <?= (!empty($paging)) ? $paging : '' ?>
         </div>
     </div>

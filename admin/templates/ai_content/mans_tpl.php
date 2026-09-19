@@ -122,22 +122,22 @@ $linkDelete = "index.php?com=ai_content&act=delete";
 
     <!-- Table Card -->
     <div class="card card-outline card-info shadow-sm text-sm">
-        <div class="card-header">
+        <div class="card-header py-2">
             <h3 class="card-title font-weight-bold"><i class="fas fa-list mr-1"></i> Danh sách Gói Nội dung AI (<?= count($items) ?> mục)</h3>
         </div>
-        <div class="card-body table-responsive p-0">
-            <table class="table table-hover table-striped text-nowrap">
-                <thead>
-                    <tr class="text-center bg-light">
-                        <th style="width: 50px;">#ID</th>
-                        <th class="text-left" style="width: 280px;">Sản phẩm</th>
-                        <th class="text-left">Loại nội dung & Tiêu đề</th>
-                        <th>Phiên bản</th>
-                        <th>Active</th>
-                        <th>Trạng thái</th>
-                        <th>Model / Token</th>
-                        <th>Cập nhật</th>
-                        <th style="width: 130px;">Thao tác</th>
+        <div class="card-body p-0">
+            <table class="table table-hover table-striped align-middle mb-0" style="width: 100%; table-layout: auto;">
+                <thead class="thead-light">
+                    <tr class="text-center" style="font-size: 13px;">
+                        <th style="width: 50px;">ID</th>
+                        <th class="text-left" style="min-width: 200px;">Sản phẩm</th>
+                        <th class="text-left" style="min-width: 250px;">Loại nội dung & Tiêu đề</th>
+                        <th style="width: 70px;">Version</th>
+                        <th style="width: 70px;">Active</th>
+                        <th style="width: 130px;">Trạng thái</th>
+                        <th style="width: 110px;">Model / Token</th>
+                        <th style="width: 100px;">Cập nhật</th>
+                        <th style="width: 100px;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -153,61 +153,65 @@ $linkDelete = "index.php?com=ai_content&act=delete";
                             $typeBadge = $typeBadges[$v['content_type']] ?? '<span class="badge badge-secondary">' . $v['content_type'] . '</span>';
 
                             $statusBadges = array(
-                                'REVIEW_REQUIRED' => '<span class="badge badge-warning p-1"><i class="fas fa-clock mr-1"></i> Chờ duyệt</span>',
-                                'APPROVED' => '<span class="badge badge-success p-1"><i class="fas fa-check mr-1"></i> Đã duyệt</span>',
-                                'APPLIED' => '<span class="badge badge-purple p-1"><i class="fas fa-check-double mr-1"></i> Đã áp dụng</span>',
-                                'REJECTED' => '<span class="badge badge-danger p-1"><i class="fas fa-times mr-1"></i> Từ chối</span>'
+                                'REVIEW_REQUIRED' => '<span class="badge badge-warning p-1 text-wrap d-block"><i class="fas fa-clock mr-1"></i> Chờ duyệt</span>',
+                                'APPROVED' => '<span class="badge badge-success p-1 text-wrap d-block"><i class="fas fa-check mr-1"></i> Đã duyệt</span>',
+                                'APPLIED' => '<span class="badge badge-purple p-1 text-wrap d-block"><i class="fas fa-check-double mr-1"></i> Đã áp dụng</span>',
+                                'REJECTED' => '<span class="badge badge-danger p-1 text-wrap d-block"><i class="fas fa-times mr-1"></i> Từ chối</span>'
                             );
-                            $statusBadge = $statusBadges[$v['status']] ?? '<span class="badge badge-secondary">' . $v['status'] . '</span>';
+                            $statusBadge = $statusBadges[$v['status']] ?? '<span class="badge badge-secondary p-1 text-wrap d-block">' . $v['status'] . '</span>';
                             if ($v['is_outdated']) {
-                                $statusBadge .= ' <span class="badge badge-warning" title="Dữ liệu nghiên cứu đã thay đổi"><i class="fas fa-exclamation-triangle"></i> Cũ</span>';
+                                $statusBadge .= '<span class="badge badge-warning text-xs mt-1 d-block" title="Dữ liệu nghiên cứu đã thay đổi"><i class="fas fa-exclamation-triangle"></i> Cũ hơn dữ liệu</span>';
                             }
                     ?>
                         <tr>
-                            <td class="text-center font-weight-bold text-muted">#<?= $v['id'] ?></td>
-                            <td class="text-left text-wrap" style="max-width: 280px;">
-                                <div class="font-weight-bold text-primary">
+                            <td class="text-center align-middle font-weight-bold text-muted">#<?= $v['id'] ?></td>
+                            <td class="align-middle">
+                                <div class="font-weight-bold text-primary" style="word-break: break-word; line-height: 1.35;">
                                     <a href="index.php?com=product&act=edit&type=san-pham&id=<?= $v['id_product'] ?>" target="_blank">
                                         <?= htmlspecialchars($v['product_name'] ?? 'Sản phẩm #' . $v['id_product']) ?>
                                     </a>
                                 </div>
-                                <div class="text-xs text-muted">SKU: <?= $v['product_code'] ?? 'N/A' ?></div>
+                                <div class="text-xs text-muted mt-1">SKU: <?= $v['product_code'] ?? 'N/A' ?></div>
                             </td>
-                            <td class="text-left text-wrap" style="max-width: 320px;">
+                            <td class="align-middle">
                                 <div class="mb-1"><?= $typeBadge ?></div>
-                                <div class="font-weight-bold text-dark"><?= htmlspecialchars($v['title']) ?></div>
+                                <div class="font-weight-bold text-dark" style="word-break: break-word; line-height: 1.35;"><?= htmlspecialchars($v['title']) ?></div>
                                 <?php if (!empty($v['content_angle'])) { ?>
-                                    <span class="badge badge-light border text-xs">Góc: <?= htmlspecialchars($v['content_angle']) ?></span>
+                                    <span class="badge badge-light border text-xs mt-1">Góc: <?= htmlspecialchars($v['content_angle']) ?></span>
                                 <?php } ?>
                             </td>
-                            <td class="text-center font-weight-bold">
+                            <td class="text-center align-middle font-weight-bold">
                                 <span class="badge badge-secondary">v<?= $v['version'] ?></span>
                             </td>
-                            <td class="text-center">
+                            <td class="text-center align-middle">
                                 <?= ($v['is_active']) ? '<span class="badge badge-success"><i class="fas fa-star text-warning"></i> Active</span>' : '<span class="text-muted text-xs">-</span>' ?>
                             </td>
-                            <td class="text-center"><?= $statusBadge ?></td>
-                            <td class="text-center text-xs">
+                            <td class="text-center align-middle"><?= $statusBadge ?></td>
+                            <td class="text-center align-middle text-xs">
                                 <div><i class="fas fa-microchip mr-1"></i><?= htmlspecialchars($v['model'] ?? $v['provider']) ?></div>
-                                <div class="text-muted"><?= htmlspecialchars($v['prompt_version']) ?></div>
+                                <div class="text-muted text-xs mt-1"><?= htmlspecialchars($v['prompt_version']) ?></div>
                             </td>
-                            <td class="text-center text-xs text-muted">
-                                <?= date('d/m/Y H:i', $v['date_created']) ?>
+                            <td class="text-center align-middle text-muted" style="font-size: 11px; line-height: 1.25;">
+                                <?= date('d/m/Y', $v['date_created']) ?><br>
+                                <span class="text-xs"><?= date('H:i', $v['date_created']) ?></span>
                             </td>
-                            <td class="text-center">
-                                <a href="<?= $linkView ?>&id=<?= $v['id'] ?>" class="btn btn-sm btn-info" title="Xem & Kiểm duyệt"><i class="fas fa-eye"></i></a>
-                                <?php if ($v['status'] === 'APPROVED') { ?>
-                                    <a href="index.php?com=ai_content&act=diff&id=<?= $v['id'] ?>" class="btn btn-sm btn-success" title="So sánh & Áp dụng"><i class="fas fa-share-square"></i></a>
-                                <?php } ?>
-                                <a href="<?= $linkDelete ?>&id=<?= $v['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa bản ghi nội dung này?')" title="Xóa"><i class="fas fa-trash-alt"></i></a>
+                            <td class="text-center align-middle">
+                                <div class="d-inline-flex flex-wrap justify-content-center" style="gap: 3px;">
+                                    <a href="<?= $linkView ?>&id=<?= $v['id'] ?>" class="btn btn-xs btn-info" title="Xem & Kiểm duyệt"><i class="fas fa-eye"></i></a>
+                                    <?php if ($v['status'] === 'APPROVED') { ?>
+                                        <a href="index.php?com=ai_content&act=diff&id=<?= $v['id'] ?>" class="btn btn-xs btn-success" title="So sánh & Áp dụng"><i class="fas fa-share-square"></i></a>
+                                    <?php } ?>
+                                    <a href="<?= $linkDelete ?>&id=<?= $v['id'] ?>" class="btn btn-xs btn-danger" onclick="return confirm('Bạn có chắc muốn xóa bản ghi nội dung này?')" title="Xóa"><i class="fas fa-trash-alt"></i></a>
+                                </div>
                             </td>
                         </tr>
                     <?php }
                     } else { ?>
                         <tr>
-                            <td colspan="9" class="text-center py-4 text-muted">
-                                <i class="fas fa-folder-open fa-3x mb-2 text-secondary"></i><br>
-                                Chưa có nội dung AI nào trong thư viện. Hãy bấm <strong>"Tạo nội dung AI mới"</strong> để bắt đầu!
+                            <td colspan="9" class="text-center py-5 text-muted">
+                                <i class="fas fa-folder-open fa-3x mb-2 text-secondary d-block" style="opacity: 0.5;"></i>
+                                <h5>Chưa có nội dung AI nào trong thư viện</h5>
+                                <p class="mb-0">Hãy bấm <strong>"Tạo nội dung AI mới"</strong> để bắt đầu!</p>
                             </td>
                         </tr>
                     <?php } ?>
@@ -215,7 +219,7 @@ $linkDelete = "index.php?com=ai_content&act=delete";
             </table>
         </div>
         <?php if (!empty($paging)) { ?>
-            <div class="card-footer clearfix">
+            <div class="card-footer clearfix py-2">
                 <?= $paging ?>
             </div>
         <?php } ?>

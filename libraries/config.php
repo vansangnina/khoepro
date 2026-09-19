@@ -108,7 +108,7 @@ $config = array(
     ),
 );
 error_reporting(($config['website']['error-reporting']) ? E_ALL : 0);
-$http = 'https://';
+$http = 'http://';
 
 /* Cấu hình base */
 $configUrl = $config['database']['server-name'] . $config['database']['url'];
