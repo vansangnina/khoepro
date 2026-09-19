@@ -373,4 +373,73 @@
   * `created_by`: Admin thực hiện áp dụng VARCHAR(100)
   * `date_created`: Unix timestamp thời điểm sao lưu
 
+---
+
+## 12. BẢNG AI VIDEO PRODUCTION ENGINE (PHASE 06)
+
+### `table_ai_video` (Dự án Video & Thành phẩm AI)
+* **Mục đích**: Lưu trữ thông tin các dự án video, phân cảnh, file video thành phẩm, thumbnail, trạng thái, và điểm kiểm định chất lượng Media QC.
+* **Cấu trúc**:
+  * `id`: Khóa chính INT(11) UNSIGNED AUTO_INCREMENT
+  * `id_product`: Khóa ngoại liên kết `table_product.id` (bắt buộc)
+  * `id_content`: Khóa ngoại liên kết `table_ai_content.id` (bắt buộc status = 'APPROVED')
+  * `title`: Tiêu đề dự án video VARCHAR(255)
+  * `video_type`: Loại video (`TIKTOK_9_16`, `YOUTUBE_SHORTS`, `PRODUCT_SHOWCASE`)
+  * `aspect_ratio`: Tỷ lệ khung hình (`9:16`, `1:1`, `16:9`) DEFAULT '9:16'
+  * `target_duration`: Thời lượng mục tiêu (giây, vd: 15, 30, 45, 60)
+  * `voice_id`: Giọng đọc TTS (`vi-VN-Standard-A`...)
+  * `template_id`: Mẫu visual presentation (`PROBLEM_SOLUTION`, `PRODUCT_REVIEW`, `COMPARISON`...)
+  * `scenes_data`: Mảng phân cảnh chuẩn hóa JSON (Scene 1..N kèm asset mapping)
+  * `script_hash`: Mã băm SHA-256 kịch bản tại thời điểm cấu hình dự án
+  * `version`: Phiên bản video INT(11) DEFAULT 1
+  * `is_active`: TINYINT(1) DEFAULT 1 - Cờ phiên bản chính
+  * `is_outdated`: TINYINT(1) DEFAULT 0 - Đánh dấu khi kịch bản gốc bị sửa đổi
+  * `provider`: Nhà cung cấp render (`mock`, `creatify`, `arcads`, `heygen`, `manual`)
+  * `provider_job_id`: ID tác vụ phía provider bên ngoài
+  * `status`: Trạng thái (`DRAFT`, `WAITING_ASSET`, `READY`, `QUEUED`, `PROCESSING`, `RENDERED`, `VALIDATING`, `REVIEW_REQUIRED`, `APPROVED`, `REJECTED`, `FAILED`, `ARCHIVED`)
+  * `reject_reason`: Lý do từ chối của Admin VARCHAR(255)
+  * `video_file`: Đường dẫn file video cục bộ (`upload/video/...mp4`)
+  * `thumbnail`: Đường dẫn thumbnail cục bộ (`upload/video/...jpg`)
+  * `duration_actual`: Thời lượng thực tế (giây) DOUBLE
+  * `width`, `height`: Kích thước pixel (1080x1920)
+  * `file_size`: Dung lượng file (bytes) BIGINT(20)
+  * `cost_estimate`: Chi phí ước tính DOUBLE
+  * `quality_report`: Kết quả kiểm định Media QC JSON
+  * `reviewed_by`: Tên/ID Admin kiểm duyệt
+  * `reviewed_at`: Unix timestamp thời điểm kiểm duyệt
+  * `date_created`, `date_updated`: Unix timestamp
+
+### `table_ai_video_job` (Hàng đợi tác vụ Render nền)
+* **Mục đích**: Quản lý hàng đợi bất đồng bộ xử lý render video, polling trạng thái và retry khi gặp lỗi mạng.
+* **Cấu trúc**:
+  * `id`: Khóa chính INT(11) UNSIGNED AUTO_INCREMENT
+  * `id_video`: Khóa ngoại liên kết `table_ai_video.id`
+  * `provider`: Tên provider thực thi
+  * `provider_job_id`: ID tác vụ từ provider
+  * `status`: Trạng thái (`PENDING`, `RUNNING`, `SUCCESS`, `FAILED`, `CANCELLED`)
+  * `attempts`: Số lần thử lại INT(11) DEFAULT 0
+  * `max_attempts`: Giới hạn retry INT(11) DEFAULT 3
+  * `next_poll_at`: Unix timestamp thời điểm polling tiếp theo
+  * `poll_count`: Số lần đã polling
+  * `error_message`: Chi tiết lỗi nếu thất bại TEXT
+  * `results_summary`: Tóm tắt kết quả
+  * `started_at`, `completed_at`: Unix timestamp
+  * `duration`: Thời gian render tính bằng giây DOUBLE
+  * `date_created`, `date_updated`: Unix timestamp
+
+### `table_ai_video_asset` (Kho Tài nguyên Dự án Video)
+* **Mục đích**: Quản lý ánh xạ tài nguyên hình ảnh/video cho từng phân cảnh của dự án video.
+* **Cấu trúc**:
+  * `id`: Khóa chính INT(11) UNSIGNED AUTO_INCREMENT
+  * `id_video`: Khóa ngoại liên kết `table_ai_video.id`
+  * `scene_number`: Thứ tự phân cảnh INT(11)
+  * `asset_type`: Loại tài nguyên (`PRODUCT_PHOTO`, `PRODUCT_VIDEO`, `BROLL`, `LOGO`, `CTA_OVERLAY`, `VOICE_AUDIO`, `CAPTIONS`)
+  * `source_type`: Nguồn gốc (`PRODUCT_DB`, `GALLERY_DB`, `MANUAL_UPLOAD`, `AI_GENERATED`)
+  * `source_ref`: Đường dẫn file hoặc URL tham chiếu
+  * `file_size`: Dung lượng bytes
+  * `is_approved`: TINYINT(1) DEFAULT 1
+  * `notes`: Ghi chú nguồn gốc
+  * `date_created`: Unix timestamp
+
+
 

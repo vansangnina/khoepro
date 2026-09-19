@@ -56,4 +56,16 @@ Tài liệu này tổng hợp các bài học kinh nghiệm rút ra sau từng g
 * **Bài học 03: Thiết kế Shot Plan theo phân cảnh là chìa khóa kết nối Phase 06**:
   * Thay vì chỉ sinh ra một đoạn text kịch bản thuần túy, việc cấu trúc kịch bản TikTok thành mảng `shot_plan` gồm các scene phân đoạn (scene_number, duration, visual_instruction, voiceover, on_screen_text, asset_requirement) tạo ra định dạng chuẩn hóa, giúp giai đoạn tạo AI Video (Phase 06) có thể đọc và render cảnh quay trực tiếp mà không cần qua thêm một tầng bóc tách trung gian.
 
+---
+
+## 6. BÀI HỌC TỪ PHASE 06 (AI VIDEO PRODUCTION ENGINE & PREVIEW)
+
+* **Bài học 01: Tách biệt Video Provider Abstraction giúp hệ thống độc lập với thị trường AI Video**:
+  * Các công cụ AI Video (Creatify, Arcads, HeyGen, Runway) thay đổi API và chính sách giá rất nhanh. Việc sử dụng `VideoProviderInterface` và `VideoProviderFactory` giúp FITNADO có thể chuyển đổi hoặc bổ sung thêm nhà cung cấp mà không phải sửa đổi bất kỳ dòng code nghiệp vụ nào trong ứng dụng.
+* **Bài học 02: Bắt buộc kiểm tra Media QC sau Render trước khi hiển thị cho người dùng**:
+  * Các tác vụ render video từ xa có thể gặp sự cố mạng dẫn đến file tải về bị rỗng (0 bytes) hoặc hỏng header. Bộ kiểm định `validateRenderedMedia()` giúp phát hiện sớm các file lỗi và tự động kích hoạt retry thay vì hiển thị lỗi crash cho quản trị viên.
+* **Bài học 03: HTML5 `<video controls>` Preview là chốt chặn quan trọng nhất của Human Gate**:
+  * Trực quan hóa video 9:16 ngay trong Admin giúp Admin đánh giá chính xác độ khớp giữa hình ảnh, âm thanh lồng tiếng và chữ phụ đề trước khi quyết định duyệt phân phối, ngăn chặn 100% rủi ro nội dung lỗi hoặc sai lệch thương hiệu lọt ra ngoài.
+
+
 

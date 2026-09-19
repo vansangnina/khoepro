@@ -4,6 +4,34 @@ Tài liệu ghi nhận toàn bộ các thay đổi được thực hiện bởi 
 
 ---
 
+## [2026-09-19] - PHASE 06: AI VIDEO PRODUCTION ENGINE (APPROVED CONTENT -> VIDEO PROJECT -> ASSET PREP -> RENDER -> QC -> PREVIEW -> HUMAN APPROVAL)
+
+### CREATED
+* `database/migrations/phase06_ai_video.sql`: Migration tạo 3 bảng mới (`table_ai_video`, `table_ai_video_job`, `table_ai_video_asset`).
+* `libraries/class/class.VideoProvider.php`: Lớp trừu tượng hóa nhà cung cấp video (`VideoProviderInterface`, `MockVideoProvider`, `ExternalVideoProvider`, `ManualVideoProvider`, `VideoProviderFactory`).
+* `libraries/class/class.AIVideoEngine.php`: Lớp động cơ sản xuất video AI cốt lõi: khởi tạo dự án từ Approved TikTok Script Phase 05, bộ giải quyết tài nguyên phân cảnh (`resolveProjectAssets`), phát hiện thiếu asset (`WAITING_ASSET`), tính toán `script_hash` phát hiện video lỗi thời (`is_outdated`), bộ kiểm định chất lượng Media QC (`validateRenderedMedia`), quản lý phiên bản (`version`, `is_active`) và xử lý duyệt/từ chối từ Admin.
+* `libraries/class/class.AIVideoJobQueue.php`: Lớp quản trị hàng đợi render bất đồng bộ, concurrency locking, polling, stale recovery và retry.
+* `cron/video_render_worker.php`: Background CLI / HTTP Token worker xử lý hàng đợi render video theo lô.
+* `admin/sources/ai_video.php`: Controller quản trị dự án video, xem chi tiết & preview HTML5 `<video controls>`, tạo dự án mới, render ngay/hàng loạt, phê duyệt/từ chối, quản lý kho Assets, giám sát Job Queue và cấu hình Providers.
+* `admin/templates/ai_video/mans_tpl.php`: Thư viện dự án video với bộ lọc đa tiêu chí và widget thống kê.
+* `admin/templates/ai_video/view_tpl.php`: Màn hình chi tiết dự án với trình phát HTML5 `<video controls>`, bảng phân cảnh Shot Plan chi tiết, danh sách tài nguyên, báo cáo Media QC và nút Phê duyệt / Từ chối (kèm modal lý do).
+* `admin/templates/ai_video/create_tpl.php`: Giao diện khởi tạo dự án video từ kịch bản TikTok đã duyệt.
+* `admin/templates/ai_video/jobs_tpl.php`: Màn hình giám sát hàng đợi tác vụ render.
+* `admin/templates/ai_video/assets_tpl.php`: Màn hình quản lý kho tài nguyên trực quan video.
+* `admin/templates/ai_video/settings_tpl.php`: Giao diện cấu hình API keys và hạn mức render hàng ngày.
+* `.ai/plans/PHASE-06-AI-VIDEO.md`: Kế hoạch triển khai chi tiết Phase 06.
+* `.ai/skills/fitnado-ai-video/SKILL.md`: Kỹ năng chuyên môn về quy trình sản xuất video AI, kiểm định chất lượng và rào chắn phê duyệt của con người.
+* `test_phase06.php`: Bộ kiểm thử toàn diện Phase 06 gồm 28 test cases.
+
+### MODIFIED & ENHANCED
+* `admin/templates/layout/menu.php`: Bổ sung menu điều hướng "AI Video Engine" với đầy đủ các phân mục (Dự án Video, Tạo Video mới, Hàng đợi Render, Kho tài nguyên, Cấu hình Providers).
+* `.ai/DATABASE.md`, `.ai/BUSINESS_RULES.md`, `.ai/ARCHITECTURE.md`: Cập nhật schema Mục 12, Quy tắc Mục 9 và Kiến trúc Mục 10 cho Phase 06.
+
+### RESULT
+* Hoàn thành toàn diện Phase 06: Chuyển đổi thành công Approved TikTok Script & Shot Plan thành Video Projects có thể render, kiểm định chất lượng nghiêm ngặt và preview trực tiếp trên Admin; kiểm soát 100% bằng Human Gate (không auto-publish); đạt 28/28 Phase 06 test cases (100% PASS), vượt qua 115 test cases hồi quy của các Phase 01–05 và 0 lỗi PHP 7.4.
+
+---
+
 ## [2026-09-19] - PHASE 05: AI CONTENT ENGINE (PRODUCT ANALYSIS, HOOKS, TIKTOK SCRIPTS, SHOT PLANS & SEO PACKS)
 
 ### CREATED

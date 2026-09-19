@@ -134,4 +134,32 @@ Hệ thống phân định rõ ràng các cấp độ nội dung đánh giá:
   * Sử dụng mã băm SHA-256 (`source_hash`) của toàn bộ thông tin sản phẩm và nghiên cứu tại thời điểm sinh nội dung.
   * Nếu sản phẩm hoặc dữ liệu research bị thay đổi sau khi sinh, hệ thống hiển thị nhãn cảnh báo "Nội dung cũ hơn dữ liệu nghiên cứu (Outdated)" để Admin cân nhắc chạy lại.
 
+---
+
+## 9. QUY TẮC SẢN XUẤT VIDEO AI & KIỂM DUYỆT (AI VIDEO RULES - PHASE 06)
+
+* **Nguyên tắc Approved Content Only (Chỉ dùng Kịch bản Đã Duyệt)**:
+  * Video Project chỉ được phép khởi tạo từ các kịch bản TikTok trong `table_ai_content` đã có trạng thái `APPROVED` hoặc `APPLIED`.
+  * Nghiêm cấm tạo video từ các bản nháp `DRAFT` hoặc `REVIEW_REQUIRED`.
+* **Shot Plan là Nguồn Chân lý Duy nhất (Source of Truth)**:
+  * Video Engine tiêu thụ trực tiếp các trường `scene_number`, `duration`, `visual_instruction`, `voiceover`, `on_screen_text`, `asset_requirement` từ Phase 05.
+  * AI Video không được tự ý sáng chế thông số sản phẩm hoặc thêm testimonial không có thật.
+* **Quy chuẩn Bản quyền & An toàn Tài nguyên (Asset Safety & Rights)**:
+  * Ưu tiên tái sử dụng ảnh sản phẩm `table_product.photo` và thư viện ảnh `table_gallery`.
+  * Nếu bất kỳ phân cảnh nào thiếu tài nguyên bắt buộc, trạng thái dự án chuyển sang `WAITING_ASSET` và bị chặn không cho đưa vào hàng đợi render.
+  * Tuyệt đối không tự ý tải video lậu từ TikTok/Shopee để tránh vi phạm bản quyền thương mại.
+* **Cơ chế Quản lý Phiên bản & Lỗi thời (Versioning & Outdated)**:
+  * Khi tạo lại video cho cùng sản phẩm, hệ thống tạo bản ghi mới với `version = v+1`, giữ nguyên vẹn file video và lịch sử của các version cũ.
+  * Nếu kịch bản TikTok gốc bị sửa đổi sau thời điểm tạo dự án, hệ thống tự động gắn cờ `is_outdated = 1` và hiển thị cảnh báo trực quan trên Admin.
+* **Kiểm định Chất lượng Media (Media QC Validation)**:
+  * Mọi video sau khi tải về lưu trữ cục bộ phải qua kiểm định: không được là file rỗng (zero-byte), định dạng MP4 hợp lệ, độ dài khớp kịch bản và tỷ lệ khung hình dọc 9:16 chuẩn TikTok (1080x1920).
+* **Rào chắn Kiểm duyệt của Con người (Strict Human Approval Gate)**:
+  * Video sau khi render thành công bắt buộc dừng ở trạng thái `REVIEW_REQUIRED`.
+  * Admin xem trực tiếp video qua trình phát HTML5 `<video controls>` để duyệt (`APPROVED`) hoặc từ chối (`REJECTED`) kèm lý do cụ thể.
+* **Tuyệt đối Không Tự Động Xuất bản (No Auto-Publishing / No Auto-Post)**:
+  * Phase 06 dừng lại ở video đã được Admin phê duyệt (`APPROVED`). Tuyệt đối không tự động kết nối API xuất bản lên TikTok, YouTube Shorts hay Instagram Reels.
+* **Bảo vệ Ngân sách & Hạn mức Render (Cost Guard & Daily Limit)**:
+  * Áp dụng hạn mức sinh video hàng ngày (`daily_video_limit`) trong cấu hình để tránh chi phí ngoài ý muốn khi chạy hàng loạt.
+
+
 

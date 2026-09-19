@@ -287,4 +287,74 @@ Hệ thống cấu hình chia làm 2 lớp:
    * Đối soát & Áp dụng (`diff_apply_tpl.php`): Trình so sánh Diff trực quan song song (Side-by-Side Diff) giữa nội dung hiện tại của sản phẩm và nội dung AI đã duyệt.
    * Giám sát Job (`jobs_tpl.php`) & Cấu hình Prompts (`settings_tpl.php`).
 
+---
+
+## 10. KIẾN TRÚC AI VIDEO PRODUCTION ENGINE & LIFECYCLE (PHASE 06)
+
+### Luồng sản xuất Video hoàn chỉnh (Video Lifecycle Flow):
+
+```text
+APPROVED TIKTOK SCRIPT + SHOT PLAN (table_ai_content)
+                         │
+                         ▼
+        [VIDEO PROJECT MANAGER] (table_ai_video)
+        (Hooks, Scene Setup, 9:16 Aspect Ratio)
+                         │
+                         ▼
+             [ASSET RESOLUTION PIPELINE]
+  (Reuse table_product.photo, table_gallery, Uploads)
+     ├── All Assets Ready ──▶ [READY]
+     └── Missing Assets   ──▶ [WAITING_ASSET]
+                         │
+                         ▼
+         [VIDEO JOB QUEUE] (table_ai_video_job)
+        (Concurrency Lock, Timeout, Stale Recovery)
+                         │
+                         ▼
+          [VIDEO BACKGROUND WORKER]
+          (cron/video_render_worker.php)
+                         │
+                         ▼
+          [VIDEO PROVIDER ABSTRACTION]
+     ├── MockVideoProvider (Internal Simulation)
+     ├── ExternalVideoProvider (Creatify / Arcads / HeyGen)
+     └── ManualVideoProvider (Admin DIY Editor)
+                         │
+                         ▼
+         [DOWNLOAD & OUTPUT STORAGE]
+     (SSRF Protection, Safe Filename, /upload/video/)
+                         │
+                         ▼
+           [MEDIA VALIDATION & QC]
+  (Zero-byte Check, MIME Type, Duration, Safe Area Check)
+                         │
+                         ▼
+          [STRICT HUMAN APPROVAL GATE]
+             (Status: REVIEW_REQUIRED)
+     ├── Admin HTML5 <video> Preview
+     ├── Review Notes / Reject Reason
+     └── APPROVED -> READY_FOR_PUBLISHING (Phase 07)
+```
+
+### Thành phần lớp nghiệp vụ Phase 06:
+1. **`AIVideoEngine`** (`libraries/class/class.AIVideoEngine.php`):
+   * Khởi tạo dự án video từ kịch bản TikTok đã duyệt trong `table_ai_content` (`createProjectFromApprovedContent`).
+   * Tự động ánh xạ tài nguyên cho từng Scene từ ảnh sản phẩm và gallery (`resolveProjectAssets`).
+   * Kiểm tra tính toàn vẹn và phát hiện kịch bản gốc bị sửa đổi (`computeScriptHash`, `checkVideoOutdated`).
+   * Kiểm định chất lượng media video sau render (`validateRenderedMedia`): kiểm tra kích thước file, định dạng MP4, độ dài và tỷ lệ khung hình 9:16.
+   * Xử lý phê duyệt (`approveVideo`) và từ chối (`rejectVideo`) của Admin con người.
+2. **`VideoProviderInterface` & `VideoProviderFactory`** (`libraries/class/class.VideoProvider.php`):
+   * Lớp trừu tượng hóa cho mọi nhà cung cấp video (Mock, Creatify, Arcads, HeyGen, Manual).
+   * `MockVideoProvider`: Giả lập render cục bộ, tạo file MP4 mẫu và thumbnail hợp lệ để test offline.
+   * `ExternalVideoProvider`: Kết nối REST API video thương mại ngoài kèm bảo mật API keys và SSRF download guard.
+3. **`AIVideoJobQueue`** (`libraries/class/class.AIVideoJobQueue.php`):
+   * Quản lý hàng đợi tác vụ render `table_ai_video_job`.
+   * Khóa concurrency lock, cơ chế polling bất đồng bộ (`next_poll_at`), tự động phục hồi job treo quá 10 phút và retry lỗi mạng.
+4. **`video_render_worker.php`** (`cron/video_render_worker.php`):
+   * Background CLI / HTTP Token worker xử lý render video theo lô.
+5. **Giao diện Quản trị AI Video (`admin/sources/ai_video.php`)**:
+   * Quản lý dự án (`mans_tpl.php`), xem chi tiết & preview HTML5 `<video controls>` (`view_tpl.php`).
+   * Tạo dự án mới (`create_tpl.php`), giám sát hàng đợi (`jobs_tpl.php`), quản lý kho tài nguyên (`assets_tpl.php`) và cấu hình API / hạn mức render (`settings_tpl.php`).
+
+
 

@@ -107,6 +107,52 @@
                     </ul>
                 </li>
 
+                <!-- AI Video Engine (Phase 06) -->
+                <?php
+                $isAiVideoActive = ($com == 'ai_video');
+                ?>
+                <li class="nav-item has-treeview <?= $isAiVideoActive ? 'menu-open' : '' ?>">
+                    <a class="nav-link <?= $isAiVideoActive ? 'active' : '' ?>" href="#" title="AI Video Engine">
+                        <i class="nav-icon text-sm fas fa-video text-primary"></i>
+                        <p>
+                            AI Video Engine
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'ai_video' && in_array($act, array('man', 'view'))) ? 'active' : '' ?>" href="index.php?com=ai_video&act=man" title="Dự án Video (Projects)">
+                                <i class="nav-icon text-sm far fa-circle text-info"></i>
+                                <p>Dự án Video (Projects)</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'ai_video' && $act == 'create') ? 'active' : '' ?>" href="index.php?com=ai_video&act=create" title="Tạo dự án Video mới">
+                                <i class="nav-icon text-sm far fa-circle text-success"></i>
+                                <p>Tạo Video mới</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'ai_video' && $act == 'jobs') ? 'active' : '' ?>" href="index.php?com=ai_video&act=jobs" title="Hàng đợi Render Jobs">
+                                <i class="nav-icon text-sm far fa-circle text-warning"></i>
+                                <p>Hàng đợi Render</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'ai_video' && $act == 'assets') ? 'active' : '' ?>" href="index.php?com=ai_video&act=assets" title="Kho tài nguyên (Assets)">
+                                <i class="nav-icon text-sm far fa-circle text-secondary"></i>
+                                <p>Kho tài nguyên (Assets)</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'ai_video' && $act == 'settings') ? 'active' : '' ?>" href="index.php?com=ai_video&act=settings" title="Cấu hình Video Provider">
+                                <i class="nav-icon text-sm far fa-circle text-purple"></i>
+                                <p>Cấu hình Providers</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
                 <!-- Affiliate Clicks -->
                 <li class="nav-item <?= ($com == 'affiliate') ? 'active' : '' ?>">
                     <a class="nav-link <?= ($com == 'affiliate') ? 'active' : '' ?>" href="index.php?com=affiliate&act=man" title="Thống kê Affiliate Clicks">

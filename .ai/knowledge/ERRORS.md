@@ -61,4 +61,12 @@ Tài liệu này lưu trữ các lỗi đã phát hiện hoặc có nguy cơ ph�
 * **Biện pháp phòng ngừa**: Mọi luồng áp dụng nội dung AI hàng loạt vào dữ liệu sản phẩm chính phải có bước sao lưu tự động và cho phép Diff/Rollback.
 * **Phạm vi ảnh hưởng**: `libraries/class/class.AIContentEngine.php`, `admin/sources/ai_content.php`.
 
+### [ERR-007] Render Video khi chưa có tài nguyên trực quan gây lỗi video đen hoặc crash provider
+* **Vấn đề**: Gửi render dự án video khi sản phẩm chưa có ảnh/video gây lỗi từ chối của provider hoặc sinh video đen không có nội dung.
+* **Nguyên nhân**: Quy trình khởi tạo dự án không kiểm tra tính sẵn sàng của tài nguyên trước khi enqueue.
+* **Cách khắc phục**: Bổ sung tầng `resolveProjectAssets()`; nếu thiếu tài nguyên bắt buộc, dự án được chuyển sang trạng thái `WAITING_ASSET` và hàng đợi `AIVideoJobQueue` từ chối nhận job cho đến khi Admin upload bổ sung.
+* **Biện pháp phòng ngừa**: Luôn validate tính sẵn sàng của Asset trước khi kích hoạt hàng đợi render.
+* **Phạm vi ảnh hưởng**: `libraries/class/class.AIVideoEngine.php`, `libraries/class/class.AIVideoJobQueue.php`.
+
+
 

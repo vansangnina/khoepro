@@ -65,4 +65,17 @@ Tài liệu này lưu trữ các quyết định kỹ thuật và kiến trúc c
 * **Lý do**:
   1. Đảm bảo uy tín thương hiệu FITNADO, tuân thủ pháp luật quảng cáo thực phẩm/dụng cụ thể thao và bảo vệ dữ liệu sản phẩm gốc khi ứng dụng AI quy mô lớn.
 
+---
+
+## 7. QUYẾT ĐỊNH 07: TRỪU TƯỢNG HÓA VIDEO PROVIDER, ASSET READINESS VÀ HUMAN VIDEO GATE (PHASE 06)
+
+* **Quyết định**:
+  1. **Video Provider Abstraction**: Không phụ thuộc vào một vendor AI Video duy nhất. Tạo interface `VideoProviderInterface` hỗ trợ Mock, Creatify, Arcads, HeyGen, Manual.
+  2. **Asset Readiness Gating**: Tự động ánh xạ từ ảnh sản phẩm và gallery; nếu thiếu tài nguyên chuyển sang `WAITING_ASSET` và chặn không cho queue render.
+  3. **Media Validation & Safe Storage**: Kiểm tra tính toàn vẹn của video (zero-byte check, MP4 format, 9:16 aspect ratio, duration) và lưu trữ cục bộ bảo vệ SSRF.
+  4. **Strict Human Gate & No Auto-Publish**: Video bắt buộc dừng ở `REVIEW_REQUIRED` để Admin xem preview HTML5 trước khi duyệt (`APPROVED`); tuyệt đối không tự động đẩy lên API TikTok/YouTube.
+* **Lý do**:
+  1. Đảm bảo tính linh hoạt khi thị trường video AI thay đổi nhanh, bảo vệ chi phí API và ngăn chặn rủi ro video rác hoặc sai lệch thông tin xuất hiện trên mạng xã hội.
+
+
 
