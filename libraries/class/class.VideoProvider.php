@@ -569,7 +569,15 @@ class BeeknoeeVideoProvider implements VideoProviderInterface {
         }
 
         $videoUrl = !empty($resData['video_url']) ? $resData['video_url'] : (!empty($resData['output']['video_url']) ? $resData['output']['video_url'] : (!empty($resData['download_url']) ? $resData['download_url'] : null));
+        if (!empty($videoUrl) && strpos($videoUrl, 'http') !== 0) {
+            $videoUrl = $this->baseUrl . $videoUrl;
+        }
+
         $thumbUrl = !empty($resData['thumbnail_url']) ? $resData['thumbnail_url'] : (!empty($resData['output']['thumbnail_url']) ? $resData['output']['thumbnail_url'] : null);
+        if (!empty($thumbUrl) && strpos($thumbUrl, 'http') !== 0) {
+            $thumbUrl = $this->baseUrl . $thumbUrl;
+        }
+
         $costVnd = !empty($resData['cost_vnd']) ? (float)$resData['cost_vnd'] : (!empty($resData['cost']) ? (float)$resData['cost'] : 0.0);
 
         return array(
@@ -578,7 +586,7 @@ class BeeknoeeVideoProvider implements VideoProviderInterface {
             'progress' => !empty($resData['progress']) ? (int)$resData['progress'] : ($status === 'READY' ? 100 : 50),
             'video_url' => $videoUrl,
             'thumbnail_url' => $thumbUrl,
-            'duration' => !empty($resData['duration']) ? (float)$resData['duration'] : $this->duration,
+            'duration' => !empty($resData['duration']) ? (float)$resData['duration'] : (float)$this->duration,
             'width' => !empty($resData['width']) ? (int)$resData['width'] : 1080,
             'height' => !empty($resData['height']) ? (int)$resData['height'] : 1920,
             'file_size' => !empty($resData['file_size']) ? (int)$resData['file_size'] : 0,
@@ -589,8 +597,45 @@ class BeeknoeeVideoProvider implements VideoProviderInterface {
     }
 
     public function downloadVideoAsset($remoteUrl, $localDestination) {
-        $mock = new MockVideoProvider();
-        return $mock->downloadVideoAsset($remoteUrl, $localDestination);
+        $dir = dirname($localDestination);
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0777, true);
+        }
+
+        $fp = fopen($localDestination, 'w+');
+        if (!$fp) {
+            return array('success' => false, 'local_path' => null, 'file_size' => 0, 'error' => 'Cannot create file: ' . $localDestination);
+        }
+
+        $headers = array('Accept: */*');
+        if (!empty($this->apiKey)) {
+            $headers[] = 'Authorization: Bearer ' . $this->apiKey;
+        }
+
+        $ch = curl_init($remoteUrl);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 180);
+        curl_setopt($ch, CURLOPT_FILE, $fp);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_MAXREDIRS, 5);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        $exec = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlErr = curl_error($ch);
+        curl_close($ch);
+        fclose($fp);
+
+        if (!$exec || $httpCode < 200 || $httpCode >= 300) {
+            @unlink($localDestination);
+            return array('success' => false, 'local_path' => null, 'file_size' => 0, 'error' => 'Download failed (HTTP ' . $httpCode . '): ' . $curlErr);
+        }
+
+        return array(
+            'success' => true,
+            'local_path' => $localDestination,
+            'file_size' => filesize($localDestination),
+            'error' => null
+        );
     }
 
     public function cancelRenderJob($providerJobId) {

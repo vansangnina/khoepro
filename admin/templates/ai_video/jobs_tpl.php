@@ -13,7 +13,8 @@ $linkMan = "index.php?com=ai_video&act=man";
                 </h1>
             </div>
             <div class="col-sm-6 text-right">
-                <a href="<?=$linkJobs?>" class="btn btn-outline-primary"><i class="fas fa-sync mr-1"></i> Làm mới</a>
+                <a href="index.php?com=ai_video&act=process_queue" class="btn btn-primary mr-2"><i class="fas fa-play mr-1"></i> Chạy Hàng đợi Ngay</a>
+                <a href="<?=$linkJobs?>" class="btn btn-outline-secondary"><i class="fas fa-sync mr-1"></i> Làm mới</a>
             </div>
         </div>
     </div>
@@ -115,8 +116,11 @@ $linkMan = "index.php?com=ai_video&act=man";
                                     <?php endif; ?>
                                 </td>
                                 <td class="text-center">
+                                    <?php if ($jb['status'] === 'PENDING' || $jb['status'] === 'RUNNING'): ?>
+                                        <a href="index.php?com=ai_video&act=job_process&id=<?=$jb['id']?>" class="btn btn-xs btn-primary mr-1" title="Xử lý / Kiểm tra tiến độ ngay"><i class="fas fa-play"></i></a>
+                                    <?php endif; ?>
                                     <?php if ($jb['status'] === 'FAILED'): ?>
-                                        <a href="index.php?com=ai_video&act=job_retry&id=<?=$jb['id']?>" class="btn btn-xs btn-warning" title="Thử lại"><i class="fas fa-redo"></i></a>
+                                        <a href="index.php?com=ai_video&act=job_retry&id=<?=$jb['id']?>" class="btn btn-xs btn-warning mr-1" title="Thử lại"><i class="fas fa-redo"></i></a>
                                     <?php endif; ?>
                                     <a href="index.php?com=ai_video&act=job_delete&id=<?=$jb['id']?>" class="btn btn-xs btn-danger" onclick="return confirm('Xóa tác vụ này?');" title="Xóa"><i class="fas fa-trash"></i></a>
                                 </td>

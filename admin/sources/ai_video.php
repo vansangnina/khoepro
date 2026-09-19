@@ -65,6 +65,14 @@ switch ($act) {
         $template = "ai_video/jobs";
         break;
 
+    case "process_queue":
+        processQueueJobs();
+        break;
+
+    case "job_process":
+        processSingleJob();
+        break;
+
     case "job_retry":
         retryVideoJob();
         break;
@@ -274,9 +282,15 @@ function renderVideoNow() {
 
     $res = $videoQueue->enqueueVideoRender($id);
     if ($res['success']) {
-        // Kích hoạt ngay 1 lượt xử lý worker
-        $videoQueue->processNextJob();
-        $func->transfer("Đã đưa vào hàng đợi và kích hoạt tiến trình sản xuất video!", "index.php?com=ai_video&act=view&id=" . $id);
+        $idJob = (int)$res['id_job'];
+        // Kích hoạt ngay đúng Job vừa tạo
+        $procRes = $videoQueue->processNextJob($idJob);
+        if (!empty($procRes) && !$procRes['success']) {
+            $msg = "Đã đưa vào hàng đợi (Job #$idJob). Phản hồi từ AI Provider: " . $procRes['error'];
+            $func->transfer($msg, "index.php?com=ai_video&act=view&id=" . $id, false);
+        } else {
+            $func->transfer("Đã khởi chạy tiến trình sản xuất video thành công (Job #$idJob)!", "index.php?com=ai_video&act=view&id=" . $id);
+        }
     } else {
         $func->transfer("Lỗi đưa vào hàng đợi: " . $res['error'], "index.php?com=ai_video&act=view&id=" . $id, false);
     }
@@ -379,12 +393,33 @@ function viewJobsMonitor() {
     $paging = $func->pagination($totalRecords, $perPage, $curPage, $url);
 }
 
+function processSingleJob() {
+    global $d, $func, $videoQueue;
+    $id = !empty($_GET['id']) ? (int)$_GET['id'] : 0;
+    if (!$id) {
+        $func->transfer("Tác vụ không hợp lệ", "index.php?com=ai_video&act=jobs", false);
+    }
+    $res = $videoQueue->processNextJob($id);
+    if (!empty($res) && !$res['success']) {
+        $func->transfer("Xử lý thất bại: " . $res['error'], "index.php?com=ai_video&act=jobs", false);
+    } else {
+        $func->transfer("Đã cập nhật tiến độ tác vụ #" . $id . " thành công!", "index.php?com=ai_video&act=jobs");
+    }
+}
+
+function processQueueJobs() {
+    global $d, $func, $videoQueue;
+    $res = $videoQueue->processBatch(5);
+    $msg = "Đã xử lý " . $res['processed'] . " tác vụ trong hàng đợi (Thành công: " . $res['success'] . ", Thất bại: " . $res['failed'] . ").";
+    $func->transfer($msg, "index.php?com=ai_video&act=jobs");
+}
+
 function retryVideoJob() {
     global $d, $func, $videoQueue;
     $id = !empty($_GET['id']) ? (int)$_GET['id'] : 0;
     $d->rawQuery("UPDATE table_ai_video_job SET status = 'PENDING', attempts = 0, error_message = NULL, date_updated = ? WHERE id = ?", array(time(), $id));
-    $videoQueue->processNextJob();
-    $func->transfer("Đã khởi động lại tác vụ render!", "index.php?com=ai_video&act=jobs");
+    $videoQueue->processNextJob($id);
+    $func->transfer("Đã khởi động lại tác vụ render #" . $id . "!", "index.php?com=ai_video&act=jobs");
 }
 
 function deleteVideoJob() {
