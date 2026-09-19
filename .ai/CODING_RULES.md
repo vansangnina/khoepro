@@ -49,3 +49,16 @@ Tất cả dữ liệu phải được truyền qua biến từ tầng `sources/
 1. **Không tự ý refactor**: Không sửa các file không liên quan đến phạm vi của task hiện tại.
 2. **Không thêm comment rác**: Tuyệt đối không chèn các chú thích như `// AI GENERATED`, `// GEMINI CODE`, `// NEW CODE 2026`, `// TODO BY AGENT` vào source code.
 3. **Bảo tồn comment gốc**: Giữ nguyên toàn bộ comment và chú thích kiến trúc ban đầu của hệ thống.
+
+---
+
+## 5. QUY TẮC TỰ ĐỘNG ĐỒNG BỘ GITHUB (AUTOMATIC GIT SYNC)
+
+1. **Auto-Push mọi thay đổi**: Sau khi hoàn thành và verify bất kỳ tác vụ nào, Agent **BẮT BUỘC** phải tự động commit và push toàn bộ thay đổi lên GitHub:
+   ```bash
+   git add .
+   git commit -m "<type>: <mô tả ngắn gọn>"
+   git push origin main
+   ```
+2. **Repository đích**: `https://github.com/vansangnina/khoepro` (origin / branch `main`).
+3. **Đảm bảo tính toàn vẹn**: Luôn chạy kiểm tra cú pháp `php -l` và test suites thành công trước khi commit và push.

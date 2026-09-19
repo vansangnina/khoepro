@@ -33,6 +33,7 @@ Khi thực thi bất kỳ task nào, AI Agent **PHẢI** đọc qua các tài li
 6. REGRESSION       -> Kiểm tra các module phụ thuộc xung quanh
 7. UPDATE KNOWLEDGE -> Ghi nhận bài học hoặc lỗi mới vào .ai/knowledge/
 8. CHANGELOG        -> Cập nhật nhật ký công việc vào .ai/CHANGELOG.md
+9. GIT SYNC         -> Tự động commit và push toàn bộ thay đổi lên GitHub (origin/main)
 ```
 
 ---
@@ -42,3 +43,16 @@ Khi thực thi bất kỳ task nào, AI Agent **PHẢI** đọc qua các tài li
 * **PHP 7.4 Hard Requirement**: Không dùng cú pháp PHP 8+ (`match`, `str_contains`, `str_starts_with`, `?->`, `union types`, `named arguments`...).
 * **Không làm gãy kiến trúc cũ**: Sử dụng `$d` (PDODb), `$func` (Functions), `$cache` (Cache), AltoRouter và template includes.
 * **No Mockup in PHP**: Không bao giờ hardcode dữ liệu giả trên Frontend.
+
+---
+
+## 4. QUY TẮC TỰ ĐỘNG ĐỒNG BỘ GITHUB (MANDATORY GIT AUTO-PUSH)
+
+* **Bắt buộc đồng bộ**: Sau khi hoàn thành bất kỳ tác vụ nào (tính năng mới, sửa lỗi, cập nhật tài liệu, test...), Agent **BẮT BUỘC** phải tự động chạy lệnh commit và đẩy lên GitHub remote:
+  ```bash
+  git add .
+  git commit -m "<type>: <mô tả thay đổi súc tích>"
+  git push origin main
+  ```
+* **Repository đích**: `https://github.com/vansangnina/khoepro` (branch `main`).
+* **Không để đọng thay đổi (Zero Uncommitted Changes)**: Kết thúc mỗi phiên làm việc, working tree phải hoàn toàn sạch (`working tree clean`).
