@@ -25,26 +25,47 @@ if (empty($destUrl) || !isValidAffiliateUrl($destUrl)) {
     exit;
 }
 
-/* Record click tracking */
+/* Record click tracking & attribution */
 $sourcePage = (!empty($_GET['src'])) ? htmlspecialchars($_GET['src']) : 'product_detail';
 $referer = (!empty($_SERVER['HTTP_REFERER'])) ? htmlspecialchars($_SERVER['HTTP_REFERER']) : '';
 $ip = (!empty($_SERVER['REMOTE_ADDR'])) ? $_SERVER['REMOTE_ADDR'] : '127.0.0.1';
 $userAgent = (!empty($_SERVER['HTTP_USER_AGENT'])) ? htmlspecialchars(substr($_SERVER['HTTP_USER_AGENT'], 0, 255)) : '';
 $device = (isset($deviceType)) ? $deviceType : 'desktop';
 
-$clickData = [
-    'id_product' => (int)$offer['id_product'],
-    'id_affiliate' => (int)$offer['id'],
-    'platform' => htmlspecialchars($offer['platform']),
-    'source_page' => htmlspecialchars($sourcePage),
-    'device_type' => $device,
-    'ip_hash' => hash('sha256', $ip),
-    'user_agent' => $userAgent,
-    'referer' => $referer,
-    'date_created' => time()
-];
+$attr = !empty($_SESSION['fitnado_attribution']) ? $_SESSION['fitnado_attribution'] : array();
+$sessId = !empty($_SESSION['fitnado_session_id']) ? $_SESSION['fitnado_session_id'] : null;
 
-$d->insert('affiliate_click', $clickData);
+if (empty($attr['tracking_code']) && !empty($_COOKIE['fitnado_ref']) && isset($analytics)) {
+    $attr = $analytics->resolveLandingAttribution(array('ref' => $_COOKIE['fitnado_ref']), null);
+}
+$attr['session_id'] = $sessId;
+
+if (isset($analytics)) {
+    $analytics->recordAffiliateClick($offer['id'], $attr, array(
+        'source_page' => $sourcePage,
+        'ip' => $ip,
+        'user_agent' => $userAgent,
+        'device_type' => $device
+    ));
+} else {
+    $clickData = array(
+        'id_product' => (int)$offer['id_product'],
+        'id_affiliate' => (int)$offer['id'],
+        'tracking_code' => $attr['tracking_code'] ?? null,
+        'session_id' => $sessId,
+        'id_post' => $attr['id_post'] ?? null,
+        'id_video' => $attr['id_video'] ?? null,
+        'id_content' => $attr['id_content'] ?? null,
+        'platform' => htmlspecialchars($offer['platform']),
+        'source_page' => htmlspecialchars($sourcePage),
+        'device_type' => $device,
+        'ip_hash' => hash('sha256', $ip),
+        'user_agent' => $userAgent,
+        'referer' => $referer,
+        'date_created' => time()
+    );
+    $d->insert('affiliate_click', $clickData);
+}
 
 /* Set SEO & Security headers */
 header("X-Robots-Tag: noindex, nofollow, noarchive", true);

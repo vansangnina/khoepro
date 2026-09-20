@@ -119,7 +119,11 @@ $config = array(
         'caption_font_size' => 36,
         'safe_area_bottom_pct' => 20,
         'enable_branding' => true,
-        'brand_name' => 'FITNADO'
+        'brand_name' => 'FITNADO',
+        'default_voice_provider' => 'beeknoee',
+        'default_voice' => 'onyx',
+        'default_voice_speed' => 1.0,
+        'default_voice_model' => 'openai/tts-1-hd'
     ),
 );
 error_reporting(($config['website']['error-reporting']) ? E_ALL : 0);

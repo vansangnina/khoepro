@@ -4,6 +4,139 @@ Tài liệu ghi nhận toàn bộ các thay đổi được thực hiện bởi 
 
 ---
 
+## [2026-09-20] - PHASE 08: ANALYTICS, AFFILIATE ATTRIBUTION & WINNER DETECTION (PRODUCT -> HOOK/SCRIPT -> VIDEO -> POST -> FITNADO VISIT -> PRODUCT PAGE -> AFFILIATE CLICK -> CONVERSION -> ATTRIBUTION -> PERFORMANCE -> WINNER DETECTION)
+
+### CREATED
+* `database/migrations/phase08_analytics_attribution.sql`: Migration CSDL tạo 5 bảng mới và bổ sung các cột theo dõi:
+  - `table_analytics_event`: Bảng nhật ký sự kiện hành vi chuẩn hóa (`PAGE_VIEW`, `PRODUCT_VIEW`, `AFFILIATE_CLICK`, `POST_VIEW`, `VIDEO_VIEW`, `ENGAGEMENT`, `ADD_TO_CART`, `CONVERSION`, `REVENUE`) kèm UTM params, `device_type`, `is_internal`, `ip_hash`, `session_id`, `tracking_code`.
+  - `table_affiliate_conversion`: Bảng đối soát đơn hàng và doanh thu hoa hồng nhập từ sàn TMĐT (Shopee, TikTok Shop, Lazada, Brand Store), hỗ trợ `status` (`PENDING`, `CONFIRMED`, `CANCELLED`, `REVERSED`), đa tiền tệ (`VND`, `USD`), `attribution_type`, `is_manual_matched`, `matched_by`.
+  - `table_conversion_import_log`: Nhật ký theo dõi lịch sử tải lên file CSV đối soát kèm thống kê số dòng, đơn khớp, đơn chưa rõ nguồn và đơn trùng lặp.
+  - `table_winner_evaluation`: Snapshot đóng băng dữ liệu kiểm thử hiệu suất (`WINNER`, `PROMISING`, `TESTING`, `UNDERPERFORMING`, `INSUFFICIENT_DATA`), phân cấp tín hiệu (`REVENUE`, `CONVERSION`, `CLICK`, `TRAFFIC`, `NONE`), đề xuất hành động tối ưu hóa, và snapshot các quy tắc tại thời điểm đánh giá.
+  - `table_analytics_setting`: Cấu hình tham số ngưỡng kiểm thử, thời gian attribution window, và IP nội bộ.
+  - Cập nhật `table_publish_post`: Thêm cột `tracking_code` (VARCHAR 64 UNIQUE NULL).
+  - Cập nhật `table_affiliate_click`: Thêm các cột `tracking_code`, `session_id`, `id_post`, `id_video`, `id_content`, `is_internal`.
+* `libraries/class/class.AnalyticsService.php`: Dịch vụ phân tích & phân giải nguồn chuyển tiếp:
+  - Phân giải nguồn `resolveLandingAttribution()` theo mô hình **Last Eligible Fitnado Content Touch** với Attribution Window 30 ngày.
+  - Ghi nhận sự kiện chuẩn hóa `logEvent()`.
+  - Làm giàu dữ liệu click chuyển hướng tiếp thị `recordAffiliateClick()` với định danh bài đăng, video, nội dung và phiên người dùng.
+  - Bộ tổng hợp báo cáo đa chiều: Tổng quan (`getOverviewMetrics`), Sản phẩm (`getProductMetrics`), Bài đăng (`getPostMetrics`), Video (`getVideoMetrics`), Nội dung & Hook (`getContentHookMetrics`).
+  - Safe Math & Zero Division Guard: Đảm bảo toàn bộ phép tính CTR, CVR, EPC, ROI an toàn tuyệt đối khi mẫu số = 0.
+  - Cô lập tiền tệ VND/USD và lọc traffic nội bộ (`isInternalIp`).
+* `libraries/class/class.WinnerDetectionEngine.php`: Động cơ phát hiện Winner dựa trên tập quy tắc minh bạch:
+  - Rào chắn kiểm soát kích thước mẫu nghiêm ngặt (`min_landing_sessions >= 30`, `min_affiliate_clicks >= 10`): Nếu chưa đủ mẫu, giữ trạng thái `INSUFFICIENT_DATA`, tuyệt đối không kết luận sớm.
+  - Phân cấp tín hiệu hiệu suất 5 mức (`REVENUE`, `CONVERSION`, `CLICK`, `TRAFFIC`, `NONE`).
+  - Đánh giá trạng thái (`WINNER`, `PROMISING`, `TESTING`, `UNDERPERFORMING`).
+  - Sinh đề xuất hành động rõ ràng (`UPGRADE_TO_HYBRID`, `CREATE_VARIATION`, `CREATE_NEW_HOOK`, `KEEP_TESTING`), không bao giờ tự ý chi tiền hay tự ý đăng bài.
+  - Đóng băng snapshot lịch sử đánh giá vào `table_winner_evaluation`.
+* `libraries/class/class.ConversionImporter.php`: Hộp công cụ nhập dữ liệu đối soát đơn hàng từ CSV:
+  - Hỗ trợ định dạng Shopee, TikTok Shop, Lazada và CSV chuẩn.
+  - Xem trước dữ liệu (`previewCsv`), kiểm tra tính hợp lệ của cột và cấu trúc.
+  - Phòng chống trùng lặp dữ liệu (`executeImport` an toàn tuyệt đối, không nhân đôi doanh thu khi tải lại file).
+  - Phân giải mã tracking sub_id tự động hoặc gắn nhãn `UNATTRIBUTED`.
+  - Hỗ trợ cập nhật hoàn trả/hủy đơn (`REVERSED`, `CANCELLED`).
+  - Tính năng gán nguồn thủ công (`manualMatchConversion`) có lưu vết người thực hiện.
+* `admin/sources/analytics.php`: Controller điều phối giao diện quản trị Analytics & Winner Detection (Overview, Products, Posts, Videos, Content/Hooks, Conversions, CSV Import, Winner Dashboard, Run Evaluation, Rules Config).
+* `admin/templates/analytics/`: 9 giao diện quản trị AdminLTE hiện đại, thẩm mỹ cao:
+  - `overview_tpl.php`: Tổng quan đo lường khép kín, thẻ KPI, cảnh báo dữ liệu đơn hàng chưa kết nối, Top 5 sản phẩm & bài đăng hiệu quả nhất.
+  - `products_tpl.php`: Bảng hiệu suất sản phẩm so sánh giữa Điểm Nghiên cứu (Phase 03) và Hiệu suất Thực tế (Phase 08).
+  - `posts_tpl.php`: Bảng hiệu suất từng bài đăng video, liên kết link bài đăng TikTok và mã tracking.
+  - `videos_tpl.php`: Bảng hiệu suất video so khớp chi phí kết xuất API và hoa hồng thu về.
+  - `content_tpl.php`: Bảng đo lường hiệu quả kịch bản AI và 7 loại Hook.
+  - `conversions_tpl.php`: Bảng đối soát đơn hàng, lọc theo trạng thái/sàn và modal gán nguồn thủ công.
+  - `conversion_import_tpl.php`: Màn hình tải file CSV đối soát, xem trước số liệu và lịch sử các lần nhập trước.
+  - `winner_detection_tpl.php`: Bảng điều khiển Winner Detection, thẻ thống kê trạng thái, bảng phân loại sản phẩm, nút Đánh giá lại toàn bộ và Đánh giá từng sản phẩm.
+  - `winner_rules_tpl.php`: Màn hình cấu hình quy tắc ngưỡng kiểm thử, kích thước mẫu và IP nội bộ.
+* `.ai/skills/fitnado-analytics/SKILL.md`: Kỹ năng chuyên môn về phân bổ attribution, quy tắc dữ liệu thực tế, rào chắn kích thước mẫu và phát hiện sản phẩm Thắng.
+* `.ai/plans/PHASE-08-ANALYTICS-ATTRIBUTION.md`: Kế hoạch kỹ thuật chi tiết Phase 08.
+* `test_phase08.php`: Bộ kiểm thử tự động 31 assertions kiểm tra toàn bộ 19 hạng mục nghiệp vụ Phase 08 (100% PASS).
+* `test_http_analytics.php`: Bộ kiểm thử HTTP endpoint xác thực 11 đường dẫn admin & frontend (100% PASS).
+* `test_admin_views.php`: Bộ kiểm thử trực tiếp kết xuất toàn bộ 9 template AdminLTE (100% PASS).
+
+### MODIFIED & ENHANCED
+* `libraries/class/class.PublishingCenter.php`: Tích hợp tự động sinh `tracking_code` độc nhất và sinh URL trang đích chuẩn UTM parameters khi tạo Post Package.
+* `sources/allpage.php`: Bắt tham số `?ref=...` hoặc `utm_*`, lưu phiên & cookie phân bổ người dùng, ghi nhận sự kiện `PAGE_VIEW`.
+* `sources/product.php`: Tích hợp ghi nhận sự kiện `PRODUCT_VIEW` chuẩn hóa kèm ngữ cảnh attribution.
+* `sources/affiliate.php`: Nâng cấp luồng chuyển tiếp click affiliate để làm giàu dữ liệu (`tracking_code`, `session_id`, `id_post`, `id_video`, `id_content`) trước khi thực hiện chuyển hướng 302 sang sàn TMĐT.
+* `index.php`: Khởi tạo đối tượng toàn cục `$analytics = new AnalyticsService($d, $func)`.
+* `admin/templates/layout/menu.php`: Bổ sung cây menu "Đo lường & Hiệu suất" (Tổng quan, Sản phẩm, Bài đăng, Video, Kịch bản & Hook, Đơn hàng & Hoa hồng, Nhập CSV đơn hàng, Winner Detection, Cấu hình quy tắc).
+* `dem22y2024_master.sql`: Cập nhật schema chuẩn cho tất cả các bảng Phase 08.
+* `.ai/DATABASE.md`, `.ai/ARCHITECTURE.md`, `.ai/BUSINESS_RULES.md`: Cập nhật tài liệu kỹ thuật đồng bộ với Phase 08.
+
+### RESULT
+* **100% HOÀN THÀNH MỤC TIÊU PHASE 08**: Thiết lập thành công chu trình đo lường khép kín từ Sản phẩm → Nội dung/Hook → Video → Bài đăng → Lượt truy cập Fitnado → Trang sản phẩm → Click Affiliate → Đơn hàng & Hoa hồng → Phân bổ Attribution → Hiệu suất → Phát hiện Winner. Vượt qua 31/31 tests Phase 08 (100% PASS), 11/11 HTTP tests, 9/9 admin view tests, 100% regression tests từ Phase 01 đến Phase 07, và 0 lỗi cú pháp PHP 7.4.
+
+---
+
+## [2026-09-20] - PHASE 07: PUBLISHING CENTER & TIKTOK PUBLISHING FOUNDATION (APPROVED VIDEO -> POST PACKAGE -> SCHEDULE -> PROVIDER -> MANUAL/API -> PUBLISHED)
+
+### CREATED
+* `database/migrations/phase07_publishing.sql`: Non-destructive DDL migration tạo 3 bảng mới:
+  - `table_publish_post`: Quản lý toàn bộ vòng đời gói bài đăng (video đã duyệt, caption, hashtags, thumbnail, lịch đăng, trạng thái, provider, snapshot đóng băng khi sẵn sàng, concurrency lock).
+  - `table_publish_account`: Quản lý danh mục kênh/tài khoản mạng xã hội (`TIKTOK`, `YOUTUBE_SHORTS`, `INSTAGRAM_REELS`, `FACEBOOK_REELS`), trạng thái, metadata và credentials được bảo mật.
+  - `table_publish_log`: Lưu vết toàn bộ lịch sử kiểm toán (Audit Trail) cho từng thao tác xuất bản, đổi trạng thái và sự kiện hệ thống.
+* `libraries/class/class.PublishProvider.php`: Kiến trúc trừu tượng hóa nhà cung cấp xuất bản:
+  - `PublishProviderInterface`: Giao diện chuẩn hóa chung cho mọi provider.
+  - `ManualPublishProvider`: 100% production-ready manual workflow hỗ trợ tải video MP4 cục bộ, nút copy 1-click (Caption, Hashtags, Full Package), xác thực RFC URL và TikTok Post ID (chỉ chấp nhận domain tiktok.com).
+  - `TikTokPublishProvider`: Triển khai kết nối TikTok Content Posting API với cơ chế báo cáo trung thực `NOT CONFIGURED` (`isConfigured() === false`) khi chưa có OAuth credentials, tuyệt đối không fake/mock success.
+  - `PublishProviderFactory`: Factory pattern đăng ký và khởi tạo provider theo loại.
+* `libraries/class/class.PublishingCenter.php`: Lớp động cơ lõi điều phối toàn bộ quy trình xuất bản:
+  - Human Gate: Chỉ cho phép tạo bài đăng từ video có `status = 'APPROVED'`.
+  - Outdated Gate: Tự động cảnh báo nếu video gốc bị gắn cờ lỗi thời (`is_outdated = 1`).
+  - Pre-publish Checklist: Tự động kiểm tra 5 tiêu chí trước khi cho phép chuyển sang `READY`.
+  - Immutable Snapshot: Đóng băng dữ liệu bài đăng tại thời điểm `READY`.
+  - Edit Invalidation: Chỉnh sửa bài `READY`/`SCHEDULED` tự động hạ trạng thái về `DRAFT` và xóa snapshot.
+  - Published Post Immutability: Chặn chỉnh sửa trực tiếp bài `PUBLISHED`, cung cấp phương thức `duplicatePost()` để nhân bản thành bản nháp mới.
+  - Concurrency Lock: Khóa `publish_lock` chống đăng trùng lặp và tự động thu hồi stale locks sau 10 phút.
+  - `markManualPublished()`: Xác nhận xuất bản thủ công kèm kiểm định định dạng TikTok Video URL và Post ID.
+* `libraries/class/class.PublishJobQueue.php`: Quản trị hàng đợi lịch xuất bản tự động, tự động quét bài đăng đến hạn (`status = 'SCHEDULED' AND scheduled_at <= NOW()`), thu hồi stale locks và cơ chế thử lại (`retryFailedPost`).
+* `cron/publish_worker.php`: Background worker hỗ trợ cả hai phương thức chạy CLI và HTTP token-protected endpoint (`?token=fitnado_secure_cron_2026`).
+* `admin/sources/publishing.php`: Controller điều phối giao diện quản trị AdminLTE: danh sách bài đăng theo tab trạng thái, xem chi tiết bài đăng, tạo bài mới từ video đã duyệt, sao chép bài, chuyển trạng thái, xuất bản ngay, xác nhận xuất bản thủ công, hủy lịch, thử lại, quản lý hàng đợi, lịch phát hành (Calendar timeline), quản lý kênh/tài khoản và cấu hình TikTok API.
+* `admin/templates/publishing/mans_tpl.php`: Danh sách bài đăng với tab trạng thái, widget thống kê, bộ lọc nhanh theo kênh và trạng thái.
+* `admin/templates/publishing/view_tpl.php`: Màn hình xem chi tiết bài đăng với HTML5 Video Player, nút Tải Video MP4, nút Copy 1-Click (Caption, Hashtags, Trọn gói), Pre-publish Checklist trực quan, Snapshot Viewer, Modal xác nhận Đã Đăng Thủ Công (nhập TikTok URL & Post ID), và Timeline Audit Log.
+* `admin/templates/publishing/create_tpl.php`: Giao diện đóng gói bài đăng mới từ danh sách Video đã được phê duyệt.
+* `admin/templates/publishing/queue_tpl.php`: Màn hình theo dõi hàng đợi lịch đăng, cảnh báo stale locks, nút kích hoạt worker thủ công và khôi phục tác vụ.
+* `admin/templates/publishing/calendar_tpl.php`: Giao diện dòng thời gian lịch xuất bản theo ngày/tuần.
+* `admin/templates/publishing/accounts_tpl.php`: Quản lý danh sách kênh mạng xã hội, thêm/sửa tài khoản, đổi trạng thái và bảo mật thông tin bí mật.
+* `admin/templates/publishing/settings_tpl.php`: Cài đặt trung tâm xuất bản và bảng chẩn đoán kết nối TikTok Content Posting API.
+* `.ai/skills/fitnado-publishing/SKILL.md`: Kỹ năng chuyên môn về quy trình xuất bản, pre-publish checklist, cơ chế snapshot và rào chắn kiểm soát của con người.
+* `test_phase07.php`: Bộ kiểm thử tự động toàn diện Phase 07 gồm 22 assertions xác thực toàn bộ các quy tắc nghiệp vụ, checklist, snapshot, concurrency lock, validation, duplication và audit logging.
+
+### MODIFIED & ENHANCED
+* `libraries/class/class.VoiceService.php`:
+  - Thêm phương thức `verifyFactualClaims($productId, $text)` để đối soát từng claim sự thật với các nguồn `PRODUCT_ADMIN`, `PRODUCT_SPEC`, `RESEARCH_FACT`, `RESEARCH_EVIDENCE`, `EDITOR_APPROVED_FACT`.
+  - Tự động gắn cờ `UNVERIFIED` cho các claim không có trong Product Evidence.
+* `libraries/class/class.VideoComposer.php`:
+  - Thêm `+0.6s` outro padding cho các phân cảnh CTA (`$outroPadding = 0.6`) và bộ lọc audio padding `apad=whole_dur=%f` trong FFmpeg, đảm bảo voice CTA không bao giờ bị cắt ngắn đột ngột.
+* `admin/templates/layout/menu.php`: Tích hợp phân hệ "Publishing Center" vào menu AdminLTE (Danh sách bài đăng, Tạo bài mới, Hàng đợi xuất bản, Lịch phát hành, Kênh xuất bản, Cấu hình API).
+* `.ai/DATABASE.md`, `.ai/ARCHITECTURE.md`, `.ai/BUSINESS_RULES.md`: Cập nhật schema Mục 13, kiến trúc Mục 12 và quy tắc nghiệp vụ Mục 11.
+
+### RESULT
+* **100% HOÀN THÀNH MỤC TIÊU PHASE 07**: Xây dựng thành công Trung tâm Xuất bản Đa kênh (Publishing Center) quản lý trọn vẹn vòng đời xuất bản từ Video đã duyệt đến bài đăng thực tế; tích hợp quy trình Manual Publishing hoàn chỉnh 1-click clipboard và validation nghiêm ngặt; thiết lập nền tảng TikTok Content Posting API minh bạch báo cáo `NOT CONFIGURED` khi chưa có credentials; vượt qua 22/22 tests Phase 07 (100% PASS), 239/239 tests toàn bộ hệ thống từ Phase 01–06.4.1 và 0 lỗi cú pháp PHP 7.4.
+
+---
+
+## [2026-09-19] - PHASE 06.4.1: CREATOR-STYLE SPOKEN SCRIPT & FACT EVIDENCE TRACEABILITY HOTFIX
+
+### MODIFIED & ENHANCED
+* `libraries/class/class.VoiceService.php`:
+  - Tinh chỉnh phong cách Spoken Script chuẩn Creator/Reviewer thể hình Việt Nam tự nhiên, bỏ hoàn toàn văn phong quảng cáo cường điệu, sales copy và AI cliches.
+  - Tích hợp bộ kiểm định `verifyFactualClaims()` đối soát từng câu nói với Product Evidence.
+* `libraries/class/class.VideoComposer.php`:
+  - Bổ sung đệm kết thúc (outro padding +0.6s) và FFmpeg `apad` filter để voiceover CTA kết thúc trọn vẹn và tự nhiên.
+
+---
+
+## [2026-09-19] - PHASE 06.4: NATURAL VIETNAMESE VOICE BENCHMARK (ONYX VOICE C SELECTION)
+
+### MODIFIED & ENHANCED
+* Khởi tạo bộ Benchmark A/B/C với Beeknoee TTS (`openai/tts-1-hd`): Voice A (`alloy`), Voice B (`fable`), Voice C (`onyx`).
+* Admin đã nghe và chọn **Voice C (`onyx`)** làm Default FITNADO Voice cho phong cách Creator/Reviewer thể hình tự nhiên, trầm ấm và uy tín.
+* Cập nhật cấu hình mặc định trong `table_setting` và `VoiceService`.
+
+---
+
+
+
 ## [2026-09-19] - PHASE 06.3: REAL ECONOMY VIDEO VALIDATION (FFMPEG ENGINE + VIETNAMESE TTS + REAL PRODUCT MEDIA)
 
 ### CREATED

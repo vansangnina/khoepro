@@ -25,6 +25,7 @@ $cart = new Cart($d);
 $detect = new MobileDetect();
 $addons = new AddonsOnline();
 $affiliate = new Affiliate($d);
+$analytics = new AnalyticsService($d, $func);
 $css = new CssMinify($config['website']['debug-css'], $func);
 $js = new JsMinify($config['website']['debug-js'], $func);
 

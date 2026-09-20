@@ -448,5 +448,174 @@
   * `notes`: Ghi chú nguồn gốc
   * `date_created`: Unix timestamp
 
+---
 
+## 13. BẢNG PUBLISHING CENTER & PHÂN PHỐI ĐA KÊNH (PHASE 07)
 
+### `table_publish_post` (Gói Xuất bản Post Package)
+* **Mục đích**: Quản lý toàn diện vòng đời gói bài đăng video xuất bản lên TikTok, Facebook, Instagram, YouTube Shorts, Web (Video + Caption + Hashtags + Affiliate Offer + Landing URL + Lịch trình + Báo cáo kết quả).
+* **Cấu trúc**:
+  * `id`: Khóa chính INT(11) UNSIGNED AUTO_INCREMENT
+  * `id_product`: Khóa ngoại liên kết `table_product.id` (bắt buộc)
+  * `id_video`: Khóa ngoại liên kết `table_ai_video.id` (bắt buộc status = 'APPROVED')
+  * `id_ai_content`: Khóa ngoại liên kết `table_ai_content.id` (nếu có)
+  * `platform`: Nền tảng đích (`tiktok`, `facebook`, `instagram`, `youtube_shorts`, `website`) DEFAULT 'tiktok'
+  * `post_type`: Loại bài đăng (`VIDEO_POST`, `SHORT_REEL`, `STORY`, `PRODUCT_PAGE`) DEFAULT 'VIDEO_POST'
+  * `title`: Tiêu đề gói xuất bản VARCHAR(255) NOT NULL
+  * `caption`: Nội dung caption bài đăng TEXT NOT NULL (Được đóng băng Snapshot khi READY)
+  * `hashtags`: Danh sách hashtags VARCHAR(500) (Snapshot)
+  * `affiliate_offer_id`: Khóa ngoại liên kết `table_product_affiliate.id`
+  * `landing_url`: Đường dẫn trang sản phẩm/review FITNADO VARCHAR(500)
+  * `disclosure_text`: Câu tuyên bố affiliate tiếp thị liên kết VARCHAR(255)
+  * `provider`: Nhà cung cấp xuất bản (`manual`, `tiktok_api`, `facebook_api`) DEFAULT 'manual'
+  * `account_id`: Khóa ngoại liên kết `table_publish_account.id`
+  * `status`: Trạng thái vòng đời (`DRAFT`, `READY`, `SCHEDULED`, `QUEUED`, `PUBLISHING`, `PUBLISHED`, `FAILED`, `CANCELLED`) DEFAULT 'DRAFT'
+  * `scheduled_at`: Unix timestamp thời điểm lên lịch xuất bản
+  * `published_at`: Unix timestamp thời điểm xuất bản thực tế thành công
+  * `external_post_id`: ID bài đăng do nền tảng ngoài (TikTok) trả về VARCHAR(255)
+  * `external_post_url`: Đường dẫn URL bài đăng công khai thực tế trên TikTok VARCHAR(500)
+  * `provider_response`: JSON phản hồi chi tiết từ Provider (Sanitized)
+  * `error_message`: Chi tiết lỗi nếu xuất bản thất bại TEXT
+  * `attempts`: Số lần thử lại INT(11) DEFAULT 0
+  * `is_outdated`: Cờ cảnh báo nội dung gốc bị thay đổi TINYINT(1) DEFAULT 0
+  * `snapshot_data`: Bản ghi JSON đóng băng toàn bộ dữ liệu lúc chuyển READY (Immutability)
+  * `publish_lock`: Khóa bảo vệ chống xuất bản trùng lặp (Concurrency Lock) VARCHAR(64)
+  * `date_created`, `date_updated`: Unix timestamp
+
+### `table_publish_account` (Tài khoản & Kênh Xuất bản)
+* **Mục đích**: Quản lý đa tài khoản kênh xuất bản trên các mạng xã hội (TikTok `@fitnado.vn`, Facebook Page...).
+* **Cấu trúc**:
+  * `id`: Khóa chính INT(11) UNSIGNED AUTO_INCREMENT
+  * `platform`: Nền tảng (`tiktok`, `facebook`, `instagram`, `youtube_shorts`, `website`)
+  * `account_name`: Tên hiển thị kênh (Ví dụ: FITNADO Official TikTok) VARCHAR(255)
+  * `account_handle`: Handle / Username (Ví dụ: `@fitnado.vn`) VARCHAR(255)
+  * `channel_id`: ID kênh/kênh phụ
+  * `provider`: Phương thức xuất bản (`manual`, `tiktok_api`)
+  * `status`: Trạng thái (`active`, `inactive`)
+  * `auth_status`: Trạng thái xác thực (`NOT_CONFIGURED`, `AUTHORIZED`, `EXPIRED`, `MANUAL_ONLY`)
+  * `auth_data`: Dữ liệu token mã hóa TEXT NULL
+  * `token_expires_at`: Unix timestamp hết hạn token
+  * `is_default`: Cờ tài khoản mặc định TINYINT(1) DEFAULT 0
+  * `date_created`, `date_updated`: Unix timestamp
+
+### `table_publish_log` (Nhật ký Tiến trình & Audit Trail)
+* **Mục đích**: Ghi nhận toàn bộ biến động trạng thái xuất bản phục vụ đối soát, truy vết và audit bảo mật.
+* **Cấu trúc**:
+  * `id`: Khóa chính BIGINT(20) UNSIGNED AUTO_INCREMENT
+  * `id_post`: Khóa ngoại liên kết `table_publish_post.id`
+  * `event`: Tên sự kiện (`CREATED`, `EDIT`, `READY`, `SCHEDULED`, `QUEUED`, `PUBLISHING`, `PUBLISHED`, `FAILED`, `RETRIED`, `CANCELLED`, `MANUAL_MARK`, `LOCK_RECOVERED`)
+  * `old_status`: Trạng thái trước khi chuyển đổi VARCHAR(50)
+  * `new_status`: Trạng thái mới VARCHAR(50) NOT NULL
+  * `actor`: Tác nhân thực thi (`admin`, `cli_worker`, `http_worker`, `api`)
+  * `details`: Dữ liệu chi tiết JSON (Loại bỏ toàn bộ bí mật/token)
+  * `date_created`: Unix timestamp
+
+---
+
+## 14. BẢNG ANALYTICS, AFFILIATE ATTRIBUTION & WINNER DETECTION (PHASE 08)
+
+### Cập nhật bổ sung trên các bảng hiện hữu
+* **`table_publish_post`**:
+  * `tracking_code` (VARCHAR 64 UNIQUE NULL): Mã định danh chiến dịch độc nhất (Format: `fp_<platform>_<post_id>_<hash8>`) dùng trong landing URL `?ref=...` hoặc `utm_content`.
+* **`table_affiliate_click`**:
+  * `tracking_code` (VARCHAR 64 NULL): Mã tracking của bài đăng tạo ra touch chuyển hướng.
+  * `session_id` (VARCHAR 64 NULL): Phiên ẩn danh của người dùng.
+  * `id_post` (INT UNSIGNED NULL): Khóa ngoại liên kết `table_publish_post.id`.
+  * `id_video` (INT UNSIGNED NULL): Khóa ngoại liên kết `table_ai_video.id`.
+  * `id_content` (INT UNSIGNED NULL): Khóa ngoại liên kết `table_ai_content.id`.
+  * `is_internal` (TINYINT 1 DEFAULT 0): Cờ đánh dấu traffic nội bộ / IP admin (để lọc khỏi báo cáo).
+
+### `table_analytics_event` (Nhật ký Sự kiện Hành vi Chuẩn hóa)
+* **Mục đích**: Ghi nhận toàn bộ sự kiện hành vi tương tác trên FITNADO (`PAGE_VIEW`, `PRODUCT_VIEW`, `AFFILIATE_CLICK`, `POST_VIEW`, `VIDEO_VIEW`, `ENGAGEMENT`, `ADD_TO_CART`, `CONVERSION`, `REVENUE`).
+* **Cấu trúc**:
+  * `id`: Khóa chính BIGINT(20) UNSIGNED AUTO_INCREMENT
+  * `event_type`: Loại sự kiện VARCHAR(50) NOT NULL
+  * `id_product`: Khóa ngoại liên kết `table_product.id` NULL
+  * `id_post`: Khóa ngoại liên kết `table_publish_post.id` NULL
+  * `id_video`: Khóa ngoại liên kết `table_ai_video.id` NULL
+  * `id_content`: Khóa ngoại liên kết `table_ai_content.id` NULL
+  * `id_affiliate_offer`: Khóa ngoại liên kết `table_product_affiliate.id` NULL
+  * `tracking_code`: Mã tracking độc nhất VARCHAR(64) NULL
+  * `session_id`: Phiên người dùng ẩn danh VARCHAR(64) NULL
+  * `source`: Nguồn truy cập VARCHAR(50) NULL (Ví dụ: `tiktok`, `facebook`, `direct`)
+  * `medium`: Kênh trung gian VARCHAR(50) NULL (Ví dụ: `organic_video`, `affiliate_redirect`)
+  * `campaign`: Chiến dịch VARCHAR(100) NULL
+  * `content_ref`: Nội dung tham chiếu VARCHAR(100) NULL
+  * `referrer`: Đường dẫn trang giới thiệu VARCHAR(500) NULL
+  * `ip_hash`: Mã băm SHA-256 của IP VARCHAR(64) NULL
+  * `user_agent`: Thông tin trình duyệt VARCHAR(255) NULL
+  * `device_type`: Loại thiết bị (`desktop`, `mobile`, `tablet`) DEFAULT 'desktop'
+  * `is_internal`: Cờ traffic nội bộ TINYINT(1) DEFAULT 0
+  * `metadata`: Dữ liệu bổ sung MEDIUMTEXT NULL (JSON)
+  * `event_time`: Unix timestamp thời điểm sự kiện
+  * `date_created`: Unix timestamp thời điểm ghi nhận
+
+### `table_affiliate_conversion` (Đối soát Đơn hàng & Hoa hồng Thực tế)
+* **Mục đích**: Lưu trữ dữ liệu đối soát đơn hàng từ các sàn TMĐT (Shopee, TikTok Shop, Lazada, Brand Store) nhập từ file CSV hoặc API.
+* **Cấu trúc**:
+  * `id`: Khóa chính BIGINT(20) UNSIGNED AUTO_INCREMENT
+  * `conversion_id`: Mã đơn hàng / ID chuyển đổi duy nhất từ sàn VARCHAR(100) NOT NULL (UNIQUE)
+  * `platform`: Nền tảng sàn TMĐT (`shopee`, `tiktok_shop`, `lazada`, `tiki`, `brand`, `other`) NOT NULL
+  * `tracking_code`: Mã tracking FITNADO nhận dạng từ sub_id / sub4 VARCHAR(64) NULL
+  * `id_product`: Khóa ngoại liên kết `table_product.id` NULL
+  * `id_post`: Khóa ngoại liên kết `table_publish_post.id` NULL
+  * `id_video`: Khóa ngoại liên kết `table_ai_video.id` NULL
+  * `id_content`: Khóa ngoại liên kết `table_ai_content.id` NULL
+  * `id_affiliate_offer`: Khóa ngoại liên kết `table_product_affiliate.id` NULL
+  * `order_value`: Giá trị đơn hàng DECIMAL(15,2) DEFAULT 0.00
+  * `commission_value`: Hoa hồng thực nhận DECIMAL(15,2) DEFAULT 0.00
+  * `currency`: Đơn vị tiền tệ (`VND`, `USD`) DEFAULT 'VND'
+  * `status`: Trạng thái đơn (`PENDING`, `CONFIRMED`, `CANCELLED`, `REVERSED`) DEFAULT 'CONFIRMED'
+  * `attribution_type`: Kiểu gán nguồn (`AUTO_MATCHED`, `MANUAL_MATCHED`, `UNATTRIBUTED`) DEFAULT 'AUTO_MATCHED'
+  * `conversion_at`: Unix timestamp thời điểm đơn hàng phát sinh
+  * `settled_at`: Unix timestamp thời điểm hoa hồng được tất toán NULL
+  * `raw_reference`: Bản sao JSON dữ liệu gốc dòng CSV MEDIUMTEXT NULL
+  * `is_manual_matched`: TINYINT(1) DEFAULT 0
+  * `matched_by`: Username admin thực hiện gán nguồn thủ công VARCHAR(50) NULL
+  * `date_created`, `date_updated`: Unix timestamp
+
+### `table_conversion_import_log` (Nhật ký Tiến trình Nhập File CSV Đối soát)
+* **Mục đích**: Lưu lịch sử tải lên và đối soát các tệp báo cáo đơn hàng định kỳ.
+* **Cấu trúc**:
+  * `id`: Khóa chính INT(11) UNSIGNED AUTO_INCREMENT
+  * `filename`: Tên file gốc VARCHAR(255) NOT NULL
+  * `platform`: Sàn thương mại tương ứng VARCHAR(50) NOT NULL
+  * `total_rows`: Tổng số dòng trong file INT(11) DEFAULT 0
+  * `imported_count`: Số đơn hàng được nhập mới INT(11) DEFAULT 0
+  * `matched_count`: Số đơn hàng khớp chính xác bài đăng/sản phẩm INT(11) DEFAULT 0
+  * `unattributed_count`: Số đơn hàng chưa rõ nguồn tracking INT(11) DEFAULT 0
+  * `duplicate_count`: Số đơn hàng bị trùng lặp bị bỏ qua INT(11) DEFAULT 0
+  * `total_order_value`: Tổng giá trị đơn hàng DECIMAL(15,2) DEFAULT 0.00
+  * `total_commission`: Tổng hoa hồng ghi nhận DECIMAL(15,2) DEFAULT 0.00
+  * `currency`: Đơn vị tiền tệ VARCHAR(10) DEFAULT 'VND'
+  * `summary_json`: Chi tiết tóm tắt thống kê MEDIUMTEXT NULL
+  * `imported_by`: Username người thực hiện tải lên VARCHAR(50) DEFAULT 'admin'
+  * `date_created`: Unix timestamp
+
+### `table_winner_evaluation` (Nhật ký & Snapshot Đánh giá Winner Detection)
+* **Mục đích**: Lưu trữ snapshot đóng băng dữ liệu kiểm thử hiệu suất và đề xuất hành động tối ưu hóa sản phẩm/nội dung.
+* **Cấu trúc**:
+  * `id`: Khóa chính BIGINT(20) UNSIGNED AUTO_INCREMENT
+  * `id_product`: Khóa ngoại liên kết `table_product.id` NOT NULL
+  * `id_post`: Khóa ngoại liên kết `table_publish_post.id` NULL
+  * `id_video`: Khóa ngoại liên kết `table_ai_video.id` NULL
+  * `id_content`: Khóa ngoại liên kết `table_ai_content.id` NULL
+  * `winner_status`: Kết luận trạng thái (`WINNER`, `PROMISING`, `TESTING`, `UNDERPERFORMING`, `INSUFFICIENT_DATA`) NOT NULL
+  * `signal_level`: Mức độ tín hiệu (`REVENUE`, `CONVERSION`, `CLICK`, `TRAFFIC`, `NONE`) DEFAULT 'NONE'
+  * `metrics_snapshot`: Snapshot JSON đóng băng toàn bộ chỉ số tại thời điểm đánh giá (sessions, clicks, CTR, conversions, CVR, commission, cost, ROI) MEDIUMTEXT NOT NULL
+  * `rules_snapshot`: Snapshot JSON đóng băng các quy tắc và ngưỡng tại thời điểm đánh giá MEDIUMTEXT NOT NULL
+  * `recommendation`: Snapshot JSON đề xuất hành động tiếp theo MEDIUMTEXT NOT NULL
+  * `ai_analysis`: Ghi chú phân tích chuyên sâu TEXT NULL
+  * `evaluated_at`: Unix timestamp thời điểm đánh giá
+  * `evaluated_by`: Username admin hoặc worker thực thi VARCHAR(50) DEFAULT 'admin'
+  * `date_created`: Unix timestamp
+
+### `table_analytics_setting` (Cấu hình Tham số Analytics & Quy tắc Ngưỡng)
+* **Mục đích**: Lưu trữ tập trung các tham số ngưỡng kiểm thử, phân bổ attribution window và lọc traffic nội bộ.
+* **Cấu trúc**:
+  * `id`: Khóa chính INT(11) UNSIGNED AUTO_INCREMENT
+  * `setting_key`: Khóa cấu hình VARCHAR(100) NOT NULL UNIQUE
+  * `setting_value`: Giá trị TEXT NOT NULL
+  * `setting_group`: Nhóm cấu hình (`attribution`, `winner_rules`, `traffic`, `general`) DEFAULT 'general'
+  * `description`: Mô tả ý nghĩa tham số VARCHAR(255) NULL
+  * `date_updated`: Unix timestamp

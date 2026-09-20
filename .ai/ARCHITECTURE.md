@@ -408,6 +408,186 @@ APPROVED SCRIPT + SHOT PLAN (Phase 05)
 2. **`BeeknoeeVideoProvider`** (`libraries/class/class.VideoProvider.php`):
    * Định vị lại thành **Optional AI Scene Generator**, chỉ được kích hoạt khi phân cảnh cụ thể yêu cầu `render_method = 'AI_VIDEO'`.
 
+---
 
+## 12. KIẾN TRÚC PUBLISHING CENTER & TIKTOK PUBLISHING FOUNDATION (PHASE 07)
 
+### Luồng Quản lý Xuất bản Đa Kênh (Publishing Lifecycle Flow):
 
+```text
+APPROVED VIDEO (table_ai_video, status = 'APPROVED')
+                    │
+                    ▼
+          [STRICT HUMAN GATE]
+         (Chặn video DRAFT/REJECTED)
+                    │
+                    ▼
+     [POST PACKAGE INITIALIZATION] (table_publish_post)
+  ├── Video MP4 + Thumbnail + Duration
+  ├── Product Info + Specifications + Fitnado Score
+  ├── Caption + 7-Hook Content Snapshot
+  ├── Hashtags Snapshot (#fitnado #daicung #reviewgym)
+  ├── Affiliate Destination + Disclosure Text
+  └── Platform Target (TikTok / Facebook / Instagram / YouTube / Web)
+                    │
+                    ▼
+       [PRE-PUBLISH CHECKLIST GATE]
+  ├── 1. Video Approved & MP4 Valid (>1KB)
+  ├── 2. Product Exists & Active
+  ├── 3. Caption Non-empty
+  ├── 4. Platform & Channel Selected
+  └── 5. Fact Evidence Traceability Confirmed
+                    │ (Pass Checklist)
+                    ▼
+      [IMMUTABLE SNAPSHOT ON READY]
+  (Đóng băng snapshot_data JSON - Chống biến động lịch sử)
+                    │
+         ┌──────────┴──────────┐
+         ▼                     ▼
+    [PUBLISH NOW]       [SCHEDULE QUEUE]
+         │              (table_publish_post.scheduled_at)
+         │                     │
+         │                     ▼
+         │            [PUBLISH JOB QUEUE & WORKER]
+         │            (cron/publish_worker.php - Idempotency Lock)
+         │                     │ (When Due: scheduled_at <= now)
+         └──────────┬──────────┘
+                    │
+                    ▼
+      [PUBLISH PROVIDER FACTORY]
+         ├── ManualPublishProvider (100% Production Usable Fallback)
+         │     ├── Download Video MP4
+         │     ├── 1-Click Copy Caption
+         │     ├── 1-Click Copy Hashtags
+         │     ├── Open TikTok Creator Center
+         │     └── Mark as Published (Validate URL & Extract Post ID)
+         │
+         └── TikTokPublishProvider (API Foundation)
+               ├── Status: NOT CONFIGURED (Báo cáo trung thực khi chưa có Secret)
+               └── Content Posting API Ready (Khi có Authorization thật)
+                    │
+                    ▼
+         [PUBLISHED / POST ID / URL]
+  (table_publish_post.status = 'PUBLISHED', published_at, external_post_url)
+                    │
+                    ▼
+         [PUBLISH AUDIT LOG TRAIL]
+  (table_publish_log: CREATED, EDIT, READY, SCHEDULED, PUBLISHED, RETRIED)
+```
+
+### Thành phần lớp nghiệp vụ Phase 07:
+1. **`PublishingCenter`** (`libraries/class/class.PublishingCenter.php`):
+   * Quản lý toàn diện vòng đời Post Package (`createPostFromApprovedVideo`, `updatePost`, `markPostReady`, `schedulePost`, `publishNow`, `markManualPublished`, `duplicatePost`).
+   * Rào chắn Human Gate: Chỉ video có `status = 'APPROVED'` mới được khởi tạo bài đăng.
+   * Rào chắn Outdated Gate: Tự động cảnh báo khi dữ liệu video hoặc sản phẩm gốc thay đổi.
+   * Rào chắn Immutability: Đóng băng toàn bộ nội dung thành `snapshot_data` khi chuyển sang `READY`.
+   * Rào chắn Phục hồi DRAFT: Tự động hoàn nguyên về `DRAFT` nếu bài đăng `READY` bị chỉnh sửa.
+   * Rào chắn Toàn vẹn Lịch sử: Không cho phép sửa trực tiếp bài đã `PUBLISHED` (bắt buộc `duplicatePost`).
+   * Khóa Idempotency (`publish_lock`): Ngăn chặn đăng trùng lặp khi có 2 request gửi đồng thời.
+2. **`PublishProviderInterface`, `ManualPublishProvider`, `TikTokPublishProvider`** (`libraries/class/class.PublishProvider.php`):
+   * Lớp trừu tượng hóa cho các kênh và phương thức xuất bản.
+   * `ManualPublishProvider`: Động cơ xuất bản thủ công hoàn chỉnh, xác thực URL bài đăng TikTok (chống URL độc hại, kiểm tra domain hợp lệ, trích xuất Video ID).
+   * `TikTokPublishProvider`: Cung cấp nền tảng API, báo cáo trung thực trạng thái `NOT CONFIGURED` nếu chưa có OAuth credentials.
+3. **`PublishJobQueue`** (`libraries/class/class.PublishJobQueue.php`):
+   * Quản lý hàng đợi tác vụ lên lịch xuất bản `table_publish_post`.
+   * Tự động phục hồi khóa bị treo quá 10 phút (`recoverStaleLocks`).
+   * Cơ chế thử lại bài lỗi (`retryFailedPost`).
+4. **`publish_worker.php`** (`cron/publish_worker.php`):
+   * Background CLI / Token-protected HTTP worker xử lý quét bài đăng đến hạn theo lô.
+5. **Giao diện Quản trị Publishing Center (`admin/sources/publishing.php`)**:
+---
+
+## 11. KIẾN TRÚC ANALYTICS, AFFILIATE ATTRIBUTION & WINNER DETECTION (PHASE 08)
+
+### Sơ đồ Vòng đời Đo lường & Phát hiện Winner (Closed Loop Measurement):
+
+```text
+       [PUBLISHED POST] (Phase 07)
+   (Unique tracking_code: fp_tikt_99_25b4470f)
+              │
+              ▼
+   [TIKTOK / SOCIAL TRAFFIC]
+   (Click Landing URL: /product-slug?ref=fp_tikt_99_...&utm_source=tiktok...)
+              │
+              ▼
+   [FITNADO WEB VISIT / SOURCES/ALLPAGE.PHP]
+   ├── 1. Parse & Resolve Landing Attribution (AnalyticsService::resolveLandingAttribution)
+   ├── 2. Persist Anonymous Session & Cookie Attribution Window (Default: 30 days)
+   └── 3. Log Normalized Event (table_analytics_event: PAGE_VIEW / PRODUCT_VIEW)
+              │
+              ▼
+   [PRODUCT DETAIL / SOURCES/PRODUCT.PHP]
+   ├── Hiển thị bài đánh giá chuyên sâu + Ưu đãi tiếp thị
+   └── Log Normalized Event (table_analytics_event: PRODUCT_VIEW)
+              │
+              ▼
+   [AFFILIATE CTA CLICK / SOURCES/AFFILIATE.PHP]
+   ├── 1. Retrieve Active Session Attribution Context
+   ├── 2. Record Transactional Log (table_affiliate_click with tracking_code, id_post, id_video, id_content)
+   ├── 3. Project Normalized Event (table_analytics_event: AFFILIATE_CLICK)
+   └── 4. 302 Instant Redirect to Shopee / TikTok Shop / Brand Store with Sub-Tracking Parameter
+              │
+              ▼
+   [COMMERCE PLATFORM / CONVERSION EVENT]
+   (Shopee / TikTok Shop / Lazada ghi nhận đơn hàng phát sinh)
+              │
+              ▼
+   [CONVERSION DATA INGESTION]
+   ├── Method A: Periodic CSV Report Upload (Shopee / TikTok Affiliate CSV)
+   │     ├── ConversionImporter::previewCsv (Kiểm tra định dạng, xem trước dữ liệu)
+   │     ├── Duplicate Protection (Tránh tính trùng doanh thu)
+   │     ├── Tracking Identity Resolution (Khớp đơn hàng qua sub_id tracking_code)
+   │     └── Reversal / Refund Handling (Cập nhật trạng thái REVERSED)
+   │
+   └── Method B: Manual Attribution Match (Admin gán nguồn cho đơn chưa khớp sub_id)
+              │
+              ▼
+   [CLOSED-LOOP AGGREGATION & ATTRIBUTION ENGINE]
+   (AnalyticsService::getOverviewMetrics, getProductMetrics, getPostMetrics, getVideoMetrics, getContentHookMetrics)
+   ├── Last Eligible Content Touch Model
+   ├── Direct Traffic Isolation (Không gán nhầm cho TikTok)
+   ├── Multiple Posts Isolation (Phân định rạch ròi giữa các video cùng sản phẩm)
+   ├── Safe Math & Zero Division Guard (CTR, CVR, EPC, ROI luôn an toàn khi mẫu = 0)
+   ├── Multi-Currency Isolation (Tách biệt VND và USD)
+   └── Internal Traffic Filtering (Lọc IP Admin / Dev khỏi thống kê)
+              │
+              ▼
+   [WINNER DETECTION ENGINE] (WinnerDetectionEngine)
+   ├── 1. Sample Size Gate (min_landing_sessions >= 30, min_affiliate_clicks >= 10)
+   │     └── Nếu chưa đủ mẫu: Giữ trạng thái INSUFFICIENT_DATA (Chống kết luận sớm)
+   │
+   ├── 2. Signal Level Hierarchy:
+   │     REVENUE (Doanh thu > Chi phí) > CONVERSION (Có đơn) > CLICK (CTR cao) > TRAFFIC > NONE
+   │
+   ├── 3. Performance Status Evaluation:
+   │     ├── WINNER (CTR >= 10% + CVR >= 5% hoặc High ROI)
+   │     ├── PROMISING (CTR >= 5%, Ý định mua cao)
+   │     ├── TESTING (Đang kiểm thử, tiệm cận ngưỡng)
+   │     └── UNDERPERFORMING (CTR < 1% sau thời gian tối thiểu)
+   │
+   ├── 4. Actionable Next-Step Recommendations (Không tự ý chi tiền / tự ý đăng bài):
+   │     ├── UPGRADE_TO_HYBRID: Nâng cấp sản xuất video HYBRID cho sản phẩm Thắng
+   │     ├── CREATE_VARIATION: Tạo thêm biến thể kịch bản Hook cho sản phẩm Tiềm năng
+   │     ├── CREATE_NEW_HOOK: Đổi Hook mở đầu cho nội dung kém hiệu quả
+   │     └── KEEP_TESTING: Tiếp tục theo dõi đủ độ lớn mẫu
+   │
+   └── 5. Frozen Evaluation Snapshot (table_winner_evaluation: Metrics + Rules + Recommendation)
+```
+
+### Thành phần Lớp Dịch vụ Phase 08:
+1. **`AnalyticsService`** (`libraries/class/class.AnalyticsService.php`):
+   * Định danh và ghi nhận sự kiện chuẩn hóa vào `table_analytics_event`.
+   * Phân giải nguồn chuyển tiếp `resolveLandingAttribution` theo mô hình Last Eligible Content Touch và thời gian Attribution Window cấu hình được.
+   * Làm giàu dữ liệu click chuyển tiếp `recordAffiliateClick` với đầy đủ `id_post`, `id_video`, `id_content`, `tracking_code`.
+   * Tổng hợp báo cáo đa chiều: Tổng quan (`getOverviewMetrics`), Sản phẩm (`getProductMetrics`), Bài đăng (`getPostMetrics`), Video (`getVideoMetrics`), Nội dung & Hook (`getContentHookMetrics`).
+   * Phân tách độc lập điểm nghiên cứu thị trường (Research Score) và chỉ số hiệu suất quan sát thực tế (Observed Performance Metrics).
+2. **`WinnerDetectionEngine`** (`libraries/class/class.WinnerDetectionEngine.php`):
+   * Động cơ đánh giá dựa trên tập quy tắc minh bạch (Rule-Based Evaluation).
+   * Rào chắn kiểm soát kích thước mẫu nghiêm ngặt (Strict Sample Size Gating).
+   * Phân cấp tín hiệu hiệu suất và sinh snapshot lịch sử đóng băng.
+3. **`ConversionImporter`** (`libraries/class/class.ConversionImporter.php`):
+   * Phân tích và nạp tệp CSV đối soát từ các sàn TMĐT.
+   * Cơ chế phòng chống trùng lặp dữ liệu (Idempotent Ingestion).
+   * Hỗ trợ xử lý hoàn trả/hủy đơn và gán nguồn thủ công có vết kiểm toán (Audit Trail).
+4. **Bộ điều khiển & Giao diện Quản trị Analytics (`admin/sources/analytics.php` & `admin/templates/analytics/`)**:
+   * Tổng quan hiệu suất (`overview_tpl.php`), Bảng chỉ số sản phẩm (`products_tpl.php`), Bài đăng (`posts_tpl.php`), Video (`videos_tpl.php`), Phân tích Hook & Content (`content_tpl.php`), Danh sách đối soát đơn hàng (`conversions_tpl.php`), Hộp công cụ nhập CSV (`conversion_import_tpl.php`), Bảng điều khiển Winner Detection (`winner_detection_tpl.php`), Cấu hình quy tắc & ngưỡng (`winner_rules_tpl.php`).

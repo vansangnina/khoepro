@@ -101,6 +101,11 @@ switch ($act) {
         saveSettings();
         break;
 
+    /* 12. Live Voice Preview (AJAX) */
+    case "ajax_voice_preview":
+        ajaxVoicePreview();
+        break;
+
     default:
         $template = "404";
 }
@@ -460,7 +465,7 @@ function viewAssetsManager() {
  * 11. Cấu hình Cài đặt Provider & Hạn mức
  */
 function viewSettings() {
-    global $d, $func, $settingOptions, $aiVideoConfig, $templatesList, $voicesList, $ffmpegAudit;
+    global $d, $func, $settingOptions, $aiVideoConfig, $templatesList, $voicesList, $ffmpegAudit, $pronunciationDict, $voiceCapabilities;
 
     $settingRow = $d->rawQueryOne("SELECT options FROM table_setting LIMIT 1");
     $settingOptions = !empty($settingRow['options']) ? json_decode($settingRow['options'], true) : array();
@@ -471,6 +476,11 @@ function viewSettings() {
 
     $composer = new VideoComposer($d, $func);
     $ffmpegAudit = $composer->auditFFmpeg();
+
+    $voiceService = new VoiceService($d, $func);
+    $pronunciationDict = $voiceService->getPronunciationDictionary();
+    $beeknoeeProvider = new BeeknoeeVoiceProvider();
+    $voiceCapabilities = $beeknoeeProvider->getCapabilities();
 }
 
 function saveSettings() {
@@ -484,15 +494,79 @@ function saveSettings() {
         'default_mode' => !empty($_POST['default_mode']) ? strtoupper(trim($_POST['default_mode'])) : 'ECONOMY',
         'max_ai_video_cost_per_video' => !empty($_POST['max_ai_video_cost_per_video']) ? (float)$_POST['max_ai_video_cost_per_video'] : 60000,
         'daily_video_limit' => !empty($_POST['daily_video_limit']) ? (int)$_POST['daily_video_limit'] : 20,
-        'default_voice' => !empty($_POST['default_voice']) ? trim($_POST['default_voice']) : 'vi-VN-Standard-A',
+        'default_voice_provider' => !empty($_POST['default_voice_provider']) ? trim($_POST['default_voice_provider']) : 'beeknoee',
+        'default_voice' => !empty($_POST['default_voice']) ? trim($_POST['default_voice']) : 'nova',
+        'default_voice_speed' => !empty($_POST['default_voice_speed']) ? (float)$_POST['default_voice_speed'] : 1.0,
         'default_template' => !empty($_POST['default_template']) ? trim($_POST['default_template']) : 'PROBLEM_SOLUTION',
+        'beeknoee_api_key' => !empty($_POST['beeknoee_api_key']) ? trim($_POST['beeknoee_api_key']) : (!empty($options['ai_video_config']['beeknoee_api_key']) ? $options['ai_video_config']['beeknoee_api_key'] : ''),
         'creatify_api_key' => !empty($_POST['creatify_api_key']) ? trim($_POST['creatify_api_key']) : (!empty($options['ai_video_config']['creatify_api_key']) ? $options['ai_video_config']['creatify_api_key'] : ''),
         'arcads_api_key' => !empty($_POST['arcads_api_key']) ? trim($_POST['arcads_api_key']) : (!empty($options['ai_video_config']['arcads_api_key']) ? $options['ai_video_config']['arcads_api_key'] : ''),
         'heygen_api_key' => !empty($_POST['heygen_api_key']) ? trim($_POST['heygen_api_key']) : (!empty($options['ai_video_config']['heygen_api_key']) ? $options['ai_video_config']['heygen_api_key'] : '')
     );
 
+    // Cập nhật từ điển phát âm tùy chỉnh nếu có
+    if (isset($_POST['pronunciation_words']) && is_array($_POST['pronunciation_words'])) {
+        $newDict = array();
+        foreach ($_POST['pronunciation_words'] as $k => $w) {
+            $w = trim($w);
+            $r = !empty($_POST['pronunciation_replacements'][$k]) ? trim($_POST['pronunciation_replacements'][$k]) : '';
+            if (!empty($w) && !empty($r)) {
+                $newDict[$w] = $r;
+            }
+        }
+        $options['pronunciation_dictionary'] = $newDict;
+    }
+
     $d->rawQuery("UPDATE table_setting SET options = ? WHERE id = 1", array(json_encode($options, JSON_UNESCAPED_UNICODE)));
-    $func->transfer("Cập nhật cấu hình AI Video Engine thành công!", "index.php?com=ai_video&act=settings");
+    $func->transfer("Cập nhật cấu hình AI Video Engine & Voice Settings thành công!", "index.php?com=ai_video&act=settings");
+}
+
+/**
+ * 12. Live Voice Preview (AJAX)
+ */
+function ajaxVoicePreview() {
+    global $d, $func;
+    header('Content-Type: application/json; charset=utf-8');
+
+    $text = !empty($_POST['text']) ? trim($_POST['text']) : (!empty($_GET['text']) ? trim($_GET['text']) : '');
+    $provider = !empty($_POST['provider']) ? trim($_POST['provider']) : 'beeknoee';
+    $voice = !empty($_POST['voice']) ? trim($_POST['voice']) : 'nova';
+    $speed = !empty($_POST['speed']) ? (float)$_POST['speed'] : 1.0;
+    $model = !empty($_POST['model']) ? trim($_POST['model']) : 'openai/tts-1-hd';
+
+    if (empty($text)) {
+        echo json_encode(array('success' => false, 'error' => 'Văn bản xem trước không được để trống.'));
+        exit;
+    }
+
+    $voiceService = new VoiceService($d, $func);
+    $result = $voiceService->synthesize($text, array(
+        'provider' => $provider,
+        'voice' => $voice,
+        'speed' => $speed,
+        'model' => $model,
+        'bypass_cache' => false
+    ));
+
+    if (!empty($result['success']) && !empty($result['audio_path'])) {
+        $audioUrl = '../' . $result['audio_path'];
+        echo json_encode(array(
+            'success' => true,
+            'audio_url' => $audioUrl,
+            'duration' => $result['duration'] ?? 0,
+            'characters' => $result['characters'] ?? 0,
+            'cost' => $result['cost'] ?? 0,
+            'spoken_script' => $result['spoken_script'] ?? $text,
+            'cached' => !empty($result['cached']),
+            'error' => null
+        ));
+    } else {
+        echo json_encode(array(
+            'success' => false,
+            'error' => !empty($result['error']) ? $result['error'] : 'Không thể sinh âm thanh xem trước.'
+        ));
+    }
+    exit;
 }
 
 /**

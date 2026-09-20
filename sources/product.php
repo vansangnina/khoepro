@@ -29,6 +29,25 @@ if ($id != '') {
     $d->where('id', $rowDetail['id']);
     $d->update('product', $views);
 
+    /* Log Analytics PRODUCT_VIEW Event */
+    if (isset($analytics)) {
+        $attr = !empty($_SESSION['fitnado_attribution']) ? $_SESSION['fitnado_attribution'] : array();
+        $sessId = !empty($_SESSION['fitnado_session_id']) ? $_SESSION['fitnado_session_id'] : null;
+        $analytics->logEvent(AnalyticsService::EVENT_PRODUCT_VIEW, array(
+            'id_product' => (int)$rowDetail['id'],
+            'id_post' => $attr['id_post'] ?? null,
+            'id_video' => $attr['id_video'] ?? null,
+            'id_content' => $attr['id_content'] ?? null,
+            'tracking_code' => $attr['tracking_code'] ?? null,
+            'session_id' => $sessId,
+            'source' => $attr['source'] ?? 'direct',
+            'medium' => $attr['medium'] ?? 'direct',
+            'campaign' => $attr['campaign'] ?? null,
+            'content_ref' => $attr['content_ref'] ?? null,
+            'referrer' => !empty($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : null
+        ));
+    }
+
     /* Parse specs JSON */
     $productSpecs = !empty($rowDetail['specs']) ? json_decode($rowDetail['specs'], true) : [];
     if (!is_array($productSpecs) && !empty($rowDetail['specifications_' . $lang])) {

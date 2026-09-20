@@ -153,6 +153,125 @@
                     </ul>
                 </li>
 
+                <!-- Publishing Center & TikTok Distribution (Phase 07) -->
+                <?php
+                $isPublishingActive = ($com == 'publishing');
+                ?>
+                <li class="nav-item has-treeview <?= $isPublishingActive ? 'menu-open' : '' ?>">
+                    <a class="nav-link <?= $isPublishingActive ? 'active' : '' ?>" href="#" title="Publishing Center">
+                        <i class="nav-icon text-sm fas fa-paper-plane text-info"></i>
+                        <p>
+                            Xuất bản & TikTok
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'publishing' && in_array($act, array('man', 'view'))) ? 'active' : '' ?>" href="index.php?com=publishing&act=man" title="Danh sách bài đăng (Posts)">
+                                <i class="nav-icon text-sm far fa-circle text-info"></i>
+                                <p>Danh sách bài đăng</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'publishing' && $act == 'create') ? 'active' : '' ?>" href="index.php?com=publishing&act=create" title="Tạo Post Package mới">
+                                <i class="nav-icon text-sm far fa-circle text-success"></i>
+                                <p>Tạo Post Package</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'publishing' && $act == 'queue') ? 'active' : '' ?>" href="index.php?com=publishing&act=queue" title="Hàng đợi xuất bản">
+                                <i class="nav-icon text-sm far fa-circle text-warning"></i>
+                                <p>Hàng đợi xuất bản</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'publishing' && $act == 'calendar') ? 'active' : '' ?>" href="index.php?com=publishing&act=calendar" title="Lịch xuất bản (Calendar)">
+                                <i class="nav-icon text-sm far fa-circle text-primary"></i>
+                                <p>Lịch xuất bản</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'publishing' && $act == 'accounts') ? 'active' : '' ?>" href="index.php?com=publishing&act=accounts" title="Tài khoản kênh xuất bản">
+                                <i class="nav-icon text-sm far fa-circle text-purple"></i>
+                                <p>Tài khoản kênh</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'publishing' && $act == 'settings') ? 'active' : '' ?>" href="index.php?com=publishing&act=settings" title="Cấu hình xuất bản & TikTok API">
+                                <i class="nav-icon text-sm far fa-circle text-secondary"></i>
+                                <p>Cấu hình & TikTok API</p>
+                            </a>
+                        </li>
+                <!-- Analytics, Affiliate Attribution & Winner Detection (Phase 08) -->
+                <?php
+                $isAnalyticsActive = ($com == 'analytics');
+                ?>
+                <li class="nav-item has-treeview <?= $isAnalyticsActive ? 'menu-open' : '' ?>">
+                    <a class="nav-link <?= $isAnalyticsActive ? 'active' : '' ?>" href="#" title="Đo lường & Winner Detection">
+                        <i class="nav-icon text-sm fas fa-chart-line text-warning"></i>
+                        <p>
+                            Đo lường & Winner
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'analytics' && $act == 'overview') ? 'active' : '' ?>" href="index.php?com=analytics&act=overview" title="Tổng quan đo lường">
+                                <i class="nav-icon text-sm far fa-circle text-primary"></i>
+                                <p>Tổng quan hiệu suất</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'analytics' && $act == 'products') ? 'active' : '' ?>" href="index.php?com=analytics&act=products" title="Hiệu quả sản phẩm">
+                                <i class="nav-icon text-sm far fa-circle text-info"></i>
+                                <p>Hiệu quả sản phẩm</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'analytics' && $act == 'posts') ? 'active' : '' ?>" href="index.php?com=analytics&act=posts" title="Hiệu quả bài đăng">
+                                <i class="nav-icon text-sm far fa-circle text-success"></i>
+                                <p>Hiệu quả bài đăng</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'analytics' && $act == 'videos') ? 'active' : '' ?>" href="index.php?com=analytics&act=videos" title="Hiệu quả Video AI">
+                                <i class="nav-icon text-sm far fa-circle text-purple"></i>
+                                <p>Hiệu quả Video AI</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'analytics' && $act == 'content') ? 'active' : '' ?>" href="index.php?com=analytics&act=content" title="Phân tích Hooks & Kịch bản">
+                                <i class="nav-icon text-sm far fa-circle text-danger"></i>
+                                <p>Phân tích Hooks AI</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'analytics' && $act == 'conversions') ? 'active' : '' ?>" href="index.php?com=analytics&act=conversions" title="Đơn hàng chuyển đổi">
+                                <i class="nav-icon text-sm far fa-circle text-success"></i>
+                                <p>Đơn hàng & Chuyển đổi</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'analytics' && $act == 'conversion_import') ? 'active' : '' ?>" href="index.php?com=analytics&act=conversion_import" title="Nhập dữ liệu CSV">
+                                <i class="nav-icon text-sm far fa-circle text-warning"></i>
+                                <p>Nhập CSV đối soát</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'analytics' && $act == 'winner_detection') ? 'active' : '' ?>" href="index.php?com=analytics&act=winner_detection" title="Phát hiện sản phẩm thắng">
+                                <i class="nav-icon text-sm far fa-circle text-warning"></i>
+                                <p class="font-weight-bold text-warning">Winner Detection</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'analytics' && $act == 'winner_rules') ? 'active' : '' ?>" href="index.php?com=analytics&act=winner_rules" title="Cấu hình ngưỡng & Quy tắc">
+                                <i class="nav-icon text-sm far fa-circle text-secondary"></i>
+                                <p>Cấu hình quy tắc</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
                 <!-- Affiliate Clicks -->
                 <li class="nav-item <?= ($com == 'affiliate') ? 'active' : '' ?>">
                     <a class="nav-link <?= ($com == 'affiliate') ? 'active' : '' ?>" href="index.php?com=affiliate&act=man" title="Thống kê Affiliate Clicks">

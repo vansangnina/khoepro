@@ -45,12 +45,16 @@ class AIVideoEngine {
         )
     );
 
-    // Danh sách giọng đọc TTS tiếng Việt hỗ trợ
+    // Danh sách giọng đọc TTS hỗ trợ (Đa Provider: Beeknoee HD Voice & Google Translate Baseline)
     const VOICES = array(
-        'vi-VN-Standard-A' => array('name' => 'Nữ miền Bắc (Tự nhiên / Năng động)', 'gender' => 'FEMALE', 'accent' => 'NORTH'),
-        'vi-VN-Standard-B' => array('name' => 'Nam miền Bắc (Trầm ấm / Thể thao)', 'gender' => 'MALE', 'accent' => 'NORTH'),
-        'vi-VN-Standard-C' => array('name' => 'Nữ miền Nam (Nhẹ nhàng / Cuốn hút)', 'gender' => 'FEMALE', 'accent' => 'SOUTH'),
-        'vi-VN-Standard-D' => array('name' => 'Nam miền Nam (Mạnh mẽ / Quyết đoán)', 'gender' => 'MALE', 'accent' => 'SOUTH')
+        'nova' => array('name' => 'Nữ Nova (Năng động / Reviewer TikTok / Tự nhiên)', 'gender' => 'FEMALE', 'provider' => 'beeknoee', 'model' => 'openai/tts-1-hd'),
+        'onyx' => array('name' => 'Nam Onyx (Trầm ấm / Uy lực Gym / Thể thao)', 'gender' => 'MALE', 'provider' => 'beeknoee', 'model' => 'openai/tts-1-hd'),
+        'shimmer' => array('name' => 'Nữ Shimmer (Ấm áp / Cuốn hút / Kể chuyện)', 'gender' => 'FEMALE', 'provider' => 'beeknoee', 'model' => 'openai/tts-1-hd'),
+        'coral' => array('name' => 'Nữ Coral (Trẻ trung / Tươi tắn / Gần gũi)', 'gender' => 'FEMALE', 'provider' => 'beeknoee', 'model' => 'openai/tts-1-hd'),
+        'echo' => array('name' => 'Nam Echo (Cân bằng / Tự nhiên / Truyền cảm)', 'gender' => 'MALE', 'provider' => 'beeknoee', 'model' => 'openai/tts-1-hd'),
+        'ash' => array('name' => 'Nam Ash (Đời thường / Thân thiện)', 'gender' => 'MALE', 'provider' => 'beeknoee', 'model' => 'openai/tts-1-hd'),
+        'alloy' => array('name' => 'Trung tính Alloy (Tiêu chuẩn / Thương mại)', 'gender' => 'NEUTRAL', 'provider' => 'beeknoee', 'model' => 'openai/tts-1-hd'),
+        'vi-VN-Standard' => array('name' => 'Google Tiếng Việt (Baseline Miễn phí)', 'gender' => 'FEMALE', 'provider' => 'google_translate', 'model' => 'tw-ob')
     );
 
     public function __construct($d, $func) {

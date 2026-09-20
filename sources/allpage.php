@@ -21,6 +21,39 @@ $newsListMenu = $d->rawQuery("select name$lang, slugvi, slugen, id from #_news_l
 $counter = $statistic->getCounter();
 $online = $statistic->getOnline();
 
+/* Analytics & Attribution Tracking */
+if (empty($_SESSION['fitnado_session_id'])) {
+    $_SESSION['fitnado_session_id'] = AnalyticsService::generateSessionId();
+}
+$fitnadoSessionId = $_SESSION['fitnado_session_id'];
+
+if (isset($analytics)) {
+    $existingAttr = !empty($_SESSION['fitnado_attribution']) ? $_SESSION['fitnado_attribution'] : null;
+    $attribution = $analytics->resolveLandingAttribution($_GET, $existingAttr);
+    $attribution['session_id'] = $fitnadoSessionId;
+    $_SESSION['fitnado_attribution'] = $attribution;
+
+    if (!empty($attribution['tracking_code']) && !empty($attribution['expires_at'])) {
+        @setcookie('fitnado_ref', $attribution['tracking_code'], (int)$attribution['expires_at'], '/');
+    }
+
+    if (empty($com) || ($com !== 'san-pham' && $com !== 'product')) {
+        $analytics->logEvent(AnalyticsService::EVENT_PAGE_VIEW, array(
+            'id_product' => null,
+            'id_post' => $attribution['id_post'],
+            'id_video' => $attribution['id_video'],
+            'id_content' => $attribution['id_content'],
+            'tracking_code' => $attribution['tracking_code'],
+            'session_id' => $fitnadoSessionId,
+            'source' => $attribution['source'],
+            'medium' => $attribution['medium'],
+            'campaign' => $attribution['campaign'],
+            'content_ref' => $attribution['content_ref'],
+            'referrer' => $attribution['referrer']
+        ));
+    }
+}
+
 /* Newsletter */
 if (!empty($_POST['submit-newsletter'])) {
     $responseCaptcha = $_POST['recaptcha_response_newsletter'];

@@ -18935,8 +18935,135 @@ ALTER TABLE `table_user_log`
 --
 ALTER TABLE `table_ward`
   MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11667;
+--
+-- Cấu trúc bảng cho bảng `table_analytics_event` (Phase 08)
+--
+CREATE TABLE IF NOT EXISTS `table_analytics_event` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `event_type` varchar(50) NOT NULL,
+  `id_product` int(11) UNSIGNED DEFAULT NULL,
+  `id_post` int(11) UNSIGNED DEFAULT NULL,
+  `id_video` int(11) UNSIGNED DEFAULT NULL,
+  `id_content` int(11) UNSIGNED DEFAULT NULL,
+  `id_affiliate_offer` int(11) UNSIGNED DEFAULT NULL,
+  `tracking_code` varchar(64) DEFAULT NULL,
+  `session_id` varchar(64) DEFAULT NULL,
+  `source` varchar(50) DEFAULT NULL,
+  `medium` varchar(50) DEFAULT NULL,
+  `campaign` varchar(100) DEFAULT NULL,
+  `content_ref` varchar(100) DEFAULT NULL,
+  `referrer` varchar(500) DEFAULT NULL,
+  `ip_hash` varchar(64) DEFAULT NULL,
+  `user_agent` varchar(255) DEFAULT NULL,
+  `device_type` varchar(20) DEFAULT 'desktop',
+  `is_internal` tinyint(1) DEFAULT 0,
+  `metadata` mediumtext DEFAULT NULL,
+  `event_time` int(11) NOT NULL,
+  `date_created` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_event_time` (`event_time`),
+  KEY `idx_event_type` (`event_type`),
+  KEY `idx_id_product` (`id_product`),
+  KEY `idx_id_post` (`id_post`),
+  KEY `idx_tracking_code` (`tracking_code`),
+  KEY `idx_id_affiliate_offer` (`id_affiliate_offer`),
+  KEY `idx_session_id` (`session_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Cấu trúc bảng cho bảng `table_affiliate_conversion` (Phase 08)
+--
+CREATE TABLE IF NOT EXISTS `table_affiliate_conversion` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `platform` varchar(50) NOT NULL,
+  `external_conversion_id` varchar(100) NOT NULL,
+  `id_product` int(11) UNSIGNED DEFAULT NULL,
+  `id_affiliate_offer` int(11) UNSIGNED DEFAULT NULL,
+  `id_post` int(11) UNSIGNED DEFAULT NULL,
+  `id_video` int(11) UNSIGNED DEFAULT NULL,
+  `id_content` int(11) UNSIGNED DEFAULT NULL,
+  `tracking_code` varchar(64) DEFAULT NULL,
+  `session_id` varchar(64) DEFAULT NULL,
+  `order_value` double DEFAULT 0,
+  `commission_value` double DEFAULT 0,
+  `currency` varchar(10) DEFAULT 'VND',
+  `status` varchar(30) DEFAULT 'PENDING',
+  `conversion_at` int(11) DEFAULT NULL,
+  `confirmed_at` int(11) DEFAULT NULL,
+  `raw_reference` mediumtext DEFAULT NULL,
+  `import_id` int(11) UNSIGNED DEFAULT NULL,
+  `is_manual_matched` tinyint(1) DEFAULT 0,
+  `matched_by` varchar(100) DEFAULT NULL,
+  `match_notes` text DEFAULT NULL,
+  `date_created` int(11) NOT NULL,
+  `date_updated` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_platform_ext_id` (`platform`,`external_conversion_id`),
+  KEY `idx_id_product` (`id_product`),
+  KEY `idx_id_post` (`id_post`),
+  KEY `idx_tracking_code` (`tracking_code`),
+  KEY `idx_status` (`status`),
+  KEY `idx_conversion_at` (`conversion_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Cấu trúc bảng cho bảng `table_conversion_import_log` (Phase 08)
+--
+CREATE TABLE IF NOT EXISTS `table_conversion_import_log` (
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `filename` varchar(255) NOT NULL,
+  `platform` varchar(50) NOT NULL,
+  `total_rows` int(11) DEFAULT 0,
+  `imported_count` int(11) DEFAULT 0,
+  `duplicate_count` int(11) DEFAULT 0,
+  `failed_count` int(11) DEFAULT 0,
+  `admin_user` varchar(100) NOT NULL,
+  `status` varchar(30) DEFAULT 'SUCCESS',
+  `summary_json` mediumtext DEFAULT NULL,
+  `date_created` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Cấu trúc bảng cho bảng `table_winner_evaluation` (Phase 08)
+--
+CREATE TABLE IF NOT EXISTS `table_winner_evaluation` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `id_product` int(11) UNSIGNED NOT NULL,
+  `id_post` int(11) UNSIGNED DEFAULT NULL,
+  `id_video` int(11) UNSIGNED DEFAULT NULL,
+  `id_content` int(11) UNSIGNED DEFAULT NULL,
+  `winner_status` varchar(30) NOT NULL,
+  `signal_level` varchar(30) NOT NULL,
+  `metrics_snapshot` mediumtext NOT NULL,
+  `rules_snapshot` mediumtext NOT NULL,
+  `recommendation` mediumtext NOT NULL,
+  `ai_analysis` text DEFAULT NULL,
+  `evaluated_at` int(11) NOT NULL,
+  `evaluated_by` varchar(100) NOT NULL,
+  `date_created` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_id_product` (`id_product`),
+  KEY `idx_winner_status` (`winner_status`),
+  KEY `idx_evaluated_at` (`evaluated_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Cấu trúc bảng cho bảng `table_analytics_setting` (Phase 08)
+--
+CREATE TABLE IF NOT EXISTS `table_analytics_setting` (
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `setting_key` varchar(100) NOT NULL UNIQUE,
+  `setting_value` text NOT NULL,
+  `setting_group` varchar(50) DEFAULT 'general',
+  `description` varchar(255) DEFAULT NULL,
+  `date_updated` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+

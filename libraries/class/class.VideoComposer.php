@@ -12,6 +12,7 @@ if (!defined('LIBRARIES')) {
 }
 
 require_once LIBRARIES . 'class/class.VideoProvider.php';
+require_once LIBRARIES . 'class/class.VoiceService.php';
 
 class VideoComposer {
     private $d;
@@ -20,6 +21,7 @@ class VideoComposer {
     private $resolvedFFmpeg;
     private $resolvedFFprobe;
     private $resolvedFont;
+    private $voiceService;
 
     // 3 Video Production Modes
     const MODE_ECONOMY = 'ECONOMY';
@@ -81,6 +83,7 @@ class VideoComposer {
         ), $composerConfig);
 
         $this->resolveBinaries();
+        $this->voiceService = new VoiceService($d, $func);
     }
 
     /**
@@ -376,12 +379,20 @@ class VideoComposer {
     }
 
     /**
-     * 5. Tổng hợp Voiceover Tiếng Việt (TTS Cache & Reusable)
+     * 5. Tổng hợp Voiceover Tiếng Việt (TTS Cache & Reusable qua VoiceService)
      * @param string $text
      * @param string $lang
-     * @return string Đường dẫn file audio MP3
+     * @param array $options
+     * @return string|array Đường dẫn file audio MP3 hoặc mảng kết quả
      */
-    public function synthesizeTTS($text, $lang = 'vi') {
+    public function synthesizeTTS($text, $lang = 'vi', $options = array()) {
+        if ($this->voiceService) {
+            $synthResult = $this->voiceService->synthesize($text, $options);
+            if (!empty($synthResult['success']) && !empty($synthResult['audio_path'])) {
+                return $synthResult['audio_path'];
+            }
+        }
+
         $text = trim($text);
         if (empty($text)) {
             $text = 'Fitnado sản phẩm chính hãng.';
@@ -538,16 +549,24 @@ class VideoComposer {
 
             $logs[] = "[" . date('Y-m-d H:i:s') . "] Scene #$sceneNum [$purpose] ($baseDuration s) - Motion: $motion";
 
-            // 4.1. Voiceover Synthesis (TTS)
-            $ttsAudioFile = $this->synthesizeTTS($voiceover, 'vi');
+            // 4.1. Voiceover Synthesis (TTS qua VoiceService với Voice Preparation & Duration Sync)
+            $voiceOptions = array(
+                'provider' => !empty($videoRecord['voice_provider']) ? $videoRecord['voice_provider'] : 'beeknoee',
+                'voice' => !empty($videoRecord['voice_id']) ? $videoRecord['voice_id'] : 'nova',
+                'speed' => !empty($videoRecord['voice_speed']) ? (float)$videoRecord['voice_speed'] : 1.0,
+                'model' => !empty($videoRecord['voice_model']) ? $videoRecord['voice_model'] : 'openai/tts-1-hd'
+            );
+            $ttsAudioFile = $this->synthesizeTTS($voiceover, 'vi', $voiceOptions);
             $voiceDuration = $this->getAudioDuration($ttsAudioFile);
             
             // Adjust scene duration if voice needs slightly more time to finish naturally
-            $actualSceneDuration = max((float)$baseDuration, round($voiceDuration + 0.5, 1));
+            $isLastScene = ($idx === count($scenes) - 1 || $purpose === 'CTA');
+            $outroPadding = $isLastScene ? 0.6 : 0.3; // 0.2-0.8s outro padding on CTA so voice is never cut
+            $actualSceneDuration = max((float)$baseDuration, round($voiceDuration + $outroPadding, 1));
             $totalDuration += $actualSceneDuration;
             $frameCount = (int)ceil($actualSceneDuration * 30);
 
-            $logs[] = "  -> Voiceover: \"" . mb_substr($voiceover, 0, 45, 'UTF-8') . "...\" ({$voiceDuration}s, clip: {$actualSceneDuration}s)";
+            $logs[] = "  -> Voiceover: \"" . mb_substr($voiceover, 0, 45, 'UTF-8') . "...\" ({$voiceDuration}s, clip: {$actualSceneDuration}s, padding: +{$outroPadding}s)";
 
             // 4.2. Image Asset Resolution
             $imageFile = $this->resolveImageAsset($sc, $videoRecord);
@@ -580,26 +599,30 @@ class VideoComposer {
             // 3. Zoompan motion effect
             // 4. Header Purpose Tag (y=160)
             // 5. Safe-area Captions box (y=1420)
+            // 6. Audio stream padded with silence to exact actualSceneDuration
             $safeTag = addslashes($purposeTag);
             $filterComplex = sprintf(
                 "[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=22:5[bg];" .
                 "[0:v]scale=1000:1000:force_original_aspect_ratio=decrease[fg];" .
                 "[bg][fg]overlay=(W-w)/2:(H-h)/2[comp];" .
-                "[comp]%s,drawtext=fontfile='%s':text='%s':fontsize=28:fontcolor=yellow:box=1:boxcolor=black@0.7:boxborderw=10:x=(w-text_w)/2:y=180,drawtext=fontfile='%s':textfile='%s':fontsize=34:fontcolor=white:box=1:boxcolor=black@0.7:boxborderw=16:line_spacing=12:x=(w-text_w)/2:y=h-th-360[v]",
+                "[comp]%s,drawtext=fontfile='%s':text='%s':fontsize=28:fontcolor=yellow:box=1:boxcolor=black@0.7:boxborderw=10:x=(w-text_w)/2:y=180,drawtext=fontfile='%s':textfile='%s':fontsize=34:fontcolor=white:box=1:boxcolor=black@0.7:boxborderw=16:line_spacing=12:x=(w-text_w)/2:y=h-th-360[v];" .
+                "[1:a]apad=whole_dur=%f[aout]",
                 $zoomExpr,
                 $fontPathEsc,
                 $safeTag,
                 $fontPathEsc,
-                $captionTxtEsc
+                $captionTxtEsc,
+                $actualSceneDuration
             );
 
             $sceneCmd = sprintf(
-                '"%s" -y -loop 1 -t %f -i "%s" -i "%s" -filter_complex "%s" -map "[v]" -map 1:a -c:v libx264 -preset ultrafast -pix_fmt yuv420p -c:a aac -b:a 128k -shortest "%s" 2>&1',
+                '"%s" -y -loop 1 -t %f -i "%s" -i "%s" -filter_complex "%s" -map "[v]" -map "[aout]" -c:v libx264 -preset ultrafast -pix_fmt yuv420p -c:a aac -b:a 128k -t %f "%s" 2>&1',
                 $this->resolvedFFmpeg,
                 $actualSceneDuration,
                 $imageEsc,
                 str_replace('\\', '/', $ttsAudioFile),
                 $filterComplex,
+                $actualSceneDuration,
                 $sceneClipPath
             );
 

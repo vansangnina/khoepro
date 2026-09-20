@@ -1,0 +1,136 @@
+<?php
+$linkPosts = "index.php?com=analytics&act=posts";
+?>
+
+<div class="content-header text-sm">
+    <div class="container-fluid">
+        <div class="row mb-2 align-items-center">
+            <div class="col-sm-6 mb-2 mb-sm-0">
+                <h1 class="m-0 text-dark font-weight-bold" style="font-size: 1.3rem;">
+                    <i class="fas fa-paper-plane mr-2 text-primary"></i>Hiệu Quả Bài Đăng (Post Performance Analytics)
+                </h1>
+                <small class="text-muted">Theo dõi lưu lượng và chuyển đổi phân bổ về từng gói bài đăng xuất bản TikTok / Mạng xã hội</small>
+            </div>
+            <div class="col-sm-6 text-sm-right">
+                <div class="btn-group shadow-sm mr-2" role="group">
+                    <a href="<?=$linkPosts?>&time_range=today" class="btn btn-sm <?=($timeRange === 'today') ? 'btn-primary' : 'btn-outline-secondary'?>">Hôm nay</a>
+                    <a href="<?=$linkPosts?>&time_range=7d" class="btn btn-sm <?=($timeRange === '7d') ? 'btn-primary' : 'btn-outline-secondary'?>">7 ngày</a>
+                    <a href="<?=$linkPosts?>&time_range=30d" class="btn btn-sm <?=($timeRange === '30d') ? 'btn-primary' : 'btn-outline-secondary'?>">30 ngày</a>
+                    <a href="<?=$linkPosts?>&time_range=all" class="btn btn-sm <?=($timeRange === 'all') ? 'btn-primary' : 'btn-outline-secondary'?>">Tất cả</a>
+                </div>
+                <a href="index.php?com=publishing&act=man" class="btn btn-sm btn-info shadow-sm">
+                    <i class="fas fa-external-link-alt mr-1"></i> Trung Tâm Xuất Bản
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content text-sm">
+    <div class="container-fluid">
+        <div class="card card-outline card-primary shadow-sm">
+            <div class="card-header bg-white py-2">
+                <h3 class="card-title font-weight-bold"><i class="fas fa-list mr-2 text-primary"></i>Danh Sách Bài Đăng & Hiệu Suất Phân Bổ</h3>
+                <div class="card-tools">
+                    <span class="badge badge-light border">Khoảng thời gian: <?=$timeRange?></span>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover table-striped align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="text-center" style="width: 50px;">STT</th>
+                            <th style="min-width: 260px;">Gói bài đăng / Tracking Code</th>
+                            <th class="text-center" style="width: 110px;">Nền tảng</th>
+                            <th style="min-width: 200px;">Sản phẩm</th>
+                            <th class="text-center" style="width: 140px;">Ngày đăng</th>
+                            <th class="text-center" style="width: 100px;">Sessions</th>
+                            <th class="text-center" style="width: 100px;">Clicks</th>
+                            <th class="text-center" style="width: 110px;">CTR (%)</th>
+                            <th class="text-center" style="width: 90px;">Đơn hàng</th>
+                            <th class="text-center" style="width: 90px;">CVR (%)</th>
+                            <th class="text-right" style="width: 140px;">Hoa hồng (VND)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (!empty($postMetrics)): ?>
+                            <?php foreach ($postMetrics as $k => $item): ?>
+                                <?php
+                                $statusBadge = 'badge-secondary';
+                                if ($item['status'] === 'PUBLISHED') $statusBadge = 'badge-success';
+                                elseif ($item['status'] === 'READY') $statusBadge = 'badge-info';
+                                elseif ($item['status'] === 'SCHEDULED') $statusBadge = 'badge-primary';
+                                ?>
+                                <tr>
+                                    <td class="text-center font-weight-bold text-muted"><?=($k + 1)?></td>
+                                    <td>
+                                        <a href="index.php?com=publishing&act=view&id=<?=$item['id_post']?>" class="font-weight-bold text-dark d-block">
+                                            <?=$item['title']?>
+                                        </a>
+                                        <div class="mt-1">
+                                            <span class="badge badge-light border text-monospace text-muted" title="Mã theo dõi duy nhất">
+                                                <i class="fas fa-tag text-secondary mr-1"></i><?=$item['tracking_code'] ?: 'N/A'?>
+                                            </span>
+                                            <span class="badge <?=$statusBadge?> ml-1"><?=$item['status']?></span>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge badge-dark text-uppercase px-2 py-1">
+                                            <i class="fab fa-tiktok mr-1"></i><?=$item['platform']?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="../<?=$item['product_slug'] ?? ''?>" target="_blank" class="text-dark font-weight-bold">
+                                            <?=$item['product_name'] ?: 'Sản phẩm #' . $item['id_product']?>
+                                        </a>
+                                    </td>
+                                    <td class="text-center">
+                                        <?php if (!empty($item['published_at'])): ?>
+                                            <div><?=date('d/m/Y H:i', $item['published_at'])?></div>
+                                            <?php if (!empty($item['external_post_url'])): ?>
+                                                <a href="<?=$item['external_post_url']?>" target="_blank" class="text-primary small">
+                                                    <i class="fas fa-external-link-alt"></i> Xem TikTok
+                                                </a>
+                                            <?php endif; ?>
+                                        <?php else: ?>
+                                            <span class="text-muted small">Chưa đăng</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="text-center font-weight-bold text-primary">
+                                        <?=number_format($item['sessions'])?>
+                                    </td>
+                                    <td class="text-center font-weight-bold text-info">
+                                        <?=number_format($item['clicks'])?>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge badge-light border font-weight-bold">
+                                            <?=$item['ctr_pct']?>%
+                                        </span>
+                                    </td>
+                                    <td class="text-center font-weight-bold text-success">
+                                        <?=number_format($item['conversions'])?>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge badge-light border font-weight-bold">
+                                            <?=$item['cvr_pct']?>%
+                                        </span>
+                                    </td>
+                                    <td class="text-right font-weight-bold text-warning">
+                                        <?=number_format($item['commission_vnd'])?> đ
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="11" class="text-center py-4 text-muted">
+                                    <i class="fas fa-inbox fa-3x mb-2 d-block text-secondary"></i>
+                                    <strong>Chưa có dữ liệu bài đăng</strong>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
