@@ -202,6 +202,9 @@
                                 <p>Cấu hình & TikTok API</p>
                             </a>
                         </li>
+                    </ul>
+                </li>
+
                 <!-- Analytics, Affiliate Attribution & Winner Detection (Phase 08) -->
                 <?php
                 $isAnalyticsActive = ($com == 'analytics');
@@ -265,6 +268,40 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link <?= ($com == 'analytics' && $act == 'winner_rules') ? 'active' : '' ?>" href="index.php?com=analytics&act=winner_rules" title="Cấu hình ngưỡng & Quy tắc">
+                                <i class="nav-icon text-sm far fa-circle text-secondary"></i>
+                                <p>Cấu hình quy tắc</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Optimization Loop (Phase 09) -->
+                <?php
+                $isOptimizationActive = ($com == 'optimization');
+                ?>
+                <li class="nav-item has-treeview <?= $isOptimizationActive ? 'menu-open' : '' ?>">
+                    <a class="nav-link <?= $isOptimizationActive ? 'active' : '' ?>" href="#" title="Tối ưu hóa (Optimization)">
+                        <i class="nav-icon text-sm fas fa-lightbulb text-warning"></i>
+                        <p>
+                            Tối ưu hóa (A/B)
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'optimization' && in_array($act, array('recommendations', 'recommendation_detail'))) ? 'active' : '' ?>" href="index.php?com=optimization&act=recommendations" title="Khuyến nghị tối ưu">
+                                <i class="nav-icon text-sm far fa-circle text-warning"></i>
+                                <p>Khuyến nghị tối ưu</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'optimization' && in_array($act, array('experiments', 'experiment_detail'))) ? 'active' : '' ?>" href="index.php?com=optimization&act=experiments" title="Thử nghiệm A/B">
+                                <i class="nav-icon text-sm far fa-circle text-info"></i>
+                                <p>Thử nghiệm A/B</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'optimization' && $act == 'rules') ? 'active' : '' ?>" href="index.php?com=optimization&act=rules" title="Cấu hình quy tắc">
                                 <i class="nav-icon text-sm far fa-circle text-secondary"></i>
                                 <p>Cấu hình quy tắc</p>
                             </a>

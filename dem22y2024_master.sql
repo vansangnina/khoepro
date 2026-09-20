@@ -19057,8 +19057,73 @@ CREATE TABLE IF NOT EXISTS `table_analytics_setting` (
   `setting_value` text NOT NULL,
   `setting_group` varchar(50) DEFAULT 'general',
   `description` varchar(255) DEFAULT NULL,
-  `date_updated` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
+--
+-- Cấu trúc bảng cho bảng `table_optimization_recommendation` (Phase 09)
+--
+CREATE TABLE IF NOT EXISTS `table_optimization_recommendation` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `id_product` int(10) unsigned NOT NULL,
+  `id_post` int(10) unsigned DEFAULT NULL,
+  `id_video` int(10) unsigned DEFAULT NULL,
+  `id_content` int(10) unsigned DEFAULT NULL,
+  `recommendation_type` varchar(50) NOT NULL,
+  `reason_code` varchar(50) NOT NULL,
+  `reason_summary` text NOT NULL,
+  `hypothesis` text NOT NULL,
+  `proposed_variable` varchar(50) NOT NULL DEFAULT 'HOOK',
+  `target_mode` varchar(20) NOT NULL DEFAULT 'ECONOMY',
+  `estimated_cost_vnd` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `metrics_snapshot` mediumtext NOT NULL,
+  `rules_snapshot` mediumtext NOT NULL,
+  `status` varchar(30) NOT NULL DEFAULT 'PENDING',
+  `review_notes` text DEFAULT NULL,
+  `approved_by` varchar(50) DEFAULT NULL,
+  `approved_at` int(11) DEFAULT NULL,
+  `id_experiment` bigint(20) unsigned DEFAULT NULL,
+  `date_created` int(11) NOT NULL,
+  `date_updated` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_rec_product` (`id_product`),
+  KEY `idx_rec_status` (`status`),
+  KEY `idx_rec_type` (`recommendation_type`),
+  KEY `idx_rec_date` (`date_created`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Cấu trúc bảng cho bảng `table_optimization_experiment` (Phase 09)
+--
+CREATE TABLE IF NOT EXISTS `table_optimization_experiment` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `experiment_code` varchar(64) NOT NULL,
+  `id_recommendation` bigint(20) unsigned DEFAULT NULL,
+  `id_product` int(10) unsigned NOT NULL,
+  `changed_variable` varchar(50) NOT NULL DEFAULT 'HOOK',
+  `hypothesis` text NOT NULL,
+  `baseline_type` varchar(30) NOT NULL DEFAULT 'POST',
+  `id_baseline_post` int(10) unsigned DEFAULT NULL,
+  `id_baseline_video` int(10) unsigned DEFAULT NULL,
+  `id_baseline_content` int(10) unsigned DEFAULT NULL,
+  `id_variation_content` int(10) unsigned DEFAULT NULL,
+  `id_variation_video` int(10) unsigned DEFAULT NULL,
+  `id_variation_post` int(10) unsigned DEFAULT NULL,
+  `target_mode` varchar(20) NOT NULL DEFAULT 'ECONOMY',
+  `status` varchar(30) NOT NULL DEFAULT 'APPROVED',
+  `baseline_metrics_snapshot` mediumtext NOT NULL,
+  `variation_metrics_snapshot` mediumtext DEFAULT NULL,
+  `result_conclusion` varchar(50) DEFAULT NULL,
+  `result_summary` text DEFAULT NULL,
+  `total_cost_vnd` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `started_at` int(11) DEFAULT NULL,
+  `completed_at` int(11) DEFAULT NULL,
+  `created_by` varchar(50) NOT NULL DEFAULT 'admin',
+  `date_created` int(11) NOT NULL,
+  `date_updated` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_exp_code` (`experiment_code`),
+  KEY `idx_exp_product` (`id_product`),
+  KEY `idx_exp_status` (`status`),
+  KEY `idx_exp_variable` (`changed_variable`),
+  KEY `idx_exp_recommendation` (`id_recommendation`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 COMMIT;

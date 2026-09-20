@@ -16,12 +16,16 @@ class WinnerDetectionEngine {
     private $d;
     private $analytics;
 
-    // Winner Statuses
-    const STATUS_INSUFFICIENT_DATA = 'INSUFFICIENT_DATA';
-    const STATUS_TESTING           = 'TESTING';
-    const STATUS_PROMISING         = 'PROMISING';
-    const STATUS_WINNER            = 'WINNER';
-    const STATUS_UNDERPERFORMING   = 'UNDERPERFORMING';
+    // Performance Maturity Statuses (Phase 09 Clean Separation)
+    const STATUS_INSUFFICIENT_DATA    = 'INSUFFICIENT_DATA';
+    const STATUS_TRAFFIC_PROMISING    = 'TRAFFIC_PROMISING';
+    const STATUS_CLICK_PROMISING      = 'CLICK_PROMISING';
+    const STATUS_CONVERSION_PROMISING = 'CONVERSION_PROMISING';
+    const STATUS_REVENUE_WINNER       = 'REVENUE_WINNER';
+    const STATUS_UNDERPERFORMING      = 'UNDERPERFORMING';
+    const STATUS_TESTING              = 'TESTING';
+    const STATUS_PROMISING            = 'CLICK_PROMISING'; // Alias for backward compatibility
+    const STATUS_WINNER               = 'REVENUE_WINNER';  // Alias for backward compatibility
 
     // Signal Levels
     const SIGNAL_NONE              = 'NONE';
@@ -31,11 +35,15 @@ class WinnerDetectionEngine {
     const SIGNAL_REVENUE           = 'REVENUE_SIGNAL';
 
     // Business Recommendations
-    const REC_KEEP_TESTING         = 'KEEP_TESTING';
-    const REC_CREATE_VARIATION     = 'CREATE_VARIATION';
-    const REC_CREATE_NEW_HOOK      = 'CREATE_NEW_HOOK';
-    const REC_UPGRADE_TO_HYBRID    = 'UPGRADE_TO_HYBRID';
-    const REC_STOP_TESTING         = 'STOP_TESTING';
+    const REC_KEEP_TESTING             = 'KEEP_TESTING';
+    const REC_REVIEW_PRODUCT_PAGE      = 'REVIEW_PRODUCT_PAGE';
+    const REC_CREATE_VARIATION         = 'CREATE_CONTENT_VARIATION';
+    const REC_CREATE_NEW_HOOK          = 'CREATE_NEW_HOOK';
+    const REC_CREATE_VIDEO_VARIATION   = 'CREATE_VIDEO_VARIATION';
+    const REC_UPGRADE_TO_HYBRID        = 'UPGRADE_TO_HYBRID';
+    const REC_RETEST_PRODUCT           = 'RETEST_PRODUCT';
+    const REC_STOP_TESTING             = 'PAUSE_TESTING';
+    const REC_WAIT_FOR_MORE_DATA       = 'WAIT_FOR_MORE_DATA';
 
     public function __construct($d = null, $analytics = null) {
         $this->d = $d;
@@ -48,7 +56,7 @@ class WinnerDetectionEngine {
      */
     public function getRulesConfig() {
         return array(
-            'rules_version' => 'v1.0',
+            'rules_version' => 'v2.0_maturity',
             'min_landing_sessions' => (int)$this->analytics->getSetting('min_landing_sessions', 30),
             'min_affiliate_clicks' => (int)$this->analytics->getSetting('min_affiliate_clicks', 10),
             'min_conversions' => (int)$this->analytics->getSetting('min_conversions', 2),
@@ -61,8 +69,23 @@ class WinnerDetectionEngine {
     }
 
     /**
+     * Check if conversion source data is connected in the system or for this product
+     * @param int|null $productId
+     * @return bool
+     */
+    public function isConversionSourceConnected($productId = null) {
+        if (!$this->d) return false;
+        if ($productId) {
+            $row = $this->d->rawQueryOne("SELECT id FROM table_affiliate_conversion WHERE id_product = ? LIMIT 1", array((int)$productId));
+            if (!empty($row)) return true;
+        }
+        $globalRow = $this->d->rawQueryOne("SELECT id FROM table_affiliate_conversion LIMIT 1");
+        return !empty($globalRow);
+    }
+
+    /**
      * Evaluate a Product's Performance against Rule-based Thresholds
-     * Strict Sample Size Gate: Checks sample before assigning status
+     * Strict Sample Size Gate & Data Source Gate
      * @param int $productId
      * @param string $evaluatedBy Admin username or 'cli_worker'
      * @param bool $saveSnapshot Whether to record into table_winner_evaluation
@@ -97,6 +120,9 @@ class WinnerDetectionEngine {
         $cvr = (float)($m['cvr_pct'] ?? 0.0);
         $roi = $commissionVND - $contentCostVND;
 
+        // Check if conversion data source is connected
+        $conversionSourceConnected = $this->isConversionSourceConnected($productId);
+
         // Calculate test age
         $dateCreated = (int)($product['date_created'] ?? time());
         $testAgeDays = max(1, (int)round((time() - $dateCreated) / 86400));
@@ -104,21 +130,32 @@ class WinnerDetectionEngine {
         // 1. SAMPLE SIZE GATE CHECK
         // If traffic and clicks are below minimum gates, NEVER declare WINNER or LOSER
         if ($sessions < $rules['min_landing_sessions'] || $clicks < $rules['min_affiliate_clicks']) {
-            $status = self::STATUS_INSUFFICIENT_DATA;
-            $signal = ($sessions > 0 || $clicks > 0) ? self::SIGNAL_TRAFFIC : self::SIGNAL_NONE;
-            $recommendations = array(
-                'action' => self::REC_KEEP_TESTING,
-                'title' => 'Cần thêm dữ liệu kiểm thử (Insufficient Data)',
-                'reason' => "Sản phẩm mới đạt {$sessions}/{$rules['min_landing_sessions']} sessions và {$clicks}/{$rules['min_affiliate_clicks']} clicks. Chưa đủ độ lớn mẫu để kết luận.",
-                'next_step' => 'Tiếp tục phân phối video hiện tại hoặc đăng thêm video để đạt mẫu kiểm thử tối thiểu.'
-            );
+            if ($sessions >= $rules['min_landing_sessions'] && $clicks < $rules['min_affiliate_clicks']) {
+                $status = self::STATUS_TRAFFIC_PROMISING;
+                $signal = self::SIGNAL_TRAFFIC;
+                $recommendations = array(
+                    'action' => self::REC_REVIEW_PRODUCT_PAGE,
+                    'title' => 'Lượng truy cập tốt nhưng ít click (Traffic Promising)',
+                    'reason' => "Sản phẩm đạt {$sessions} sessions nhưng chỉ có {$clicks} click affiliate (CTR {$ctr}%).",
+                    'next_step' => 'Đề xuất tối ưu hóa vị trí nút Affiliate CTA, nội dung trang sản phẩm hoặc cập nhật ưu đãi/mã giảm giá.'
+                );
+            } else {
+                $status = self::STATUS_INSUFFICIENT_DATA;
+                $signal = ($sessions > 0 || $clicks > 0) ? self::SIGNAL_TRAFFIC : self::SIGNAL_NONE;
+                $recommendations = array(
+                    'action' => self::REC_WAIT_FOR_MORE_DATA,
+                    'title' => 'Cần thêm dữ liệu kiểm thử (Insufficient Data)',
+                    'reason' => "Sản phẩm mới đạt {$sessions}/{$rules['min_landing_sessions']} sessions và {$clicks}/{$rules['min_affiliate_clicks']} clicks. Chưa đủ độ lớn mẫu để kết luận.",
+                    'next_step' => 'Tiếp tục phân phối video hiện tại để đạt mẫu kiểm thử tối thiểu.'
+                );
+            }
         } else {
-            // Sample size is adequate. Evaluate Performance Metrics.
+            // Sample size is adequate. Evaluate Performance Metrics & Maturity Level.
             
             // Determine Signal Level
-            if ($commissionVND > $contentCostVND && $conversions >= $rules['min_conversions']) {
+            if ($conversionSourceConnected && $commissionVND > $contentCostVND && $conversions >= $rules['min_conversions']) {
                 $signal = self::SIGNAL_REVENUE;
-            } elseif ($conversions >= $rules['min_conversions']) {
+            } elseif ($conversionSourceConnected && $conversions >= $rules['min_conversions']) {
                 $signal = self::SIGNAL_CONVERSION;
             } elseif ($ctr >= $rules['promising_ctr_pct']) {
                 $signal = self::SIGNAL_CLICK;
@@ -126,36 +163,45 @@ class WinnerDetectionEngine {
                 $signal = self::SIGNAL_TRAFFIC;
             }
 
-            // Determine Winner Status & Recommendations
-            if ($ctr >= $rules['winner_ctr_pct'] && ($conversions >= $rules['min_conversions'] || $signal === self::SIGNAL_REVENUE || $clicks >= ($rules['min_affiliate_clicks'] * 2))) {
-                // WINNER Status
-                $status = self::STATUS_WINNER;
+            // Determine Maturity Status & Recommendations
+            if ($conversionSourceConnected && $conversions >= $rules['min_conversions'] && $commissionVND > $contentCostVND) {
+                // 1. REVENUE_WINNER Status (Validated Revenue & Positive ROI)
+                $status = self::STATUS_REVENUE_WINNER;
                 $recommendations = array(
                     'action' => self::REC_UPGRADE_TO_HYBRID,
-                    'title' => 'Sản phẩm Thắng (Winner Detected)',
-                    'reason' => "Sản phẩm đạt CTR vượt trội ({$ctr}% >= {$rules['winner_ctr_pct']}%) với {$clicks} clicks" . ($conversions > 0 ? " và {$conversions} chuyển đổi." : "."),
-                    'next_step' => 'Đề xuất nâng cấp sản xuất video sang chế độ HYBRID, tạo thêm các biến thể Hook mới để tối đa hóa doanh thu.'
+                    'title' => 'Sản phẩm Thắng Doanh thu (Revenue Winner)',
+                    'reason' => "Sản phẩm tạo {$conversions} đơn hàng, hoa hồng đạt " . number_format($commissionVND, 0, ',', '.') . " đ vượt chi phí sản xuất (ROI " . number_format($roi, 0, ',', '.') . " đ).",
+                    'next_step' => 'Đề xuất nâng cấp sản xuất video sang chế độ HYBRID và tạo thêm biến thể kịch bản/Hook để mở rộng quy mô.'
                 );
-            } elseif ($ctr >= $rules['promising_ctr_pct']) {
-                // PROMISING Status
-                $status = self::STATUS_PROMISING;
+            } elseif ($conversionSourceConnected && $conversions >= $rules['min_conversions']) {
+                // 2. CONVERSION_PROMISING Status (Orders Confirmed)
+                $status = self::STATUS_CONVERSION_PROMISING;
                 $recommendations = array(
                     'action' => self::REC_CREATE_VARIATION,
-                    'title' => 'Sản phẩm Tiềm năng (Promising Product)',
-                    'reason' => "CTR đạt {$ctr}% (vượt ngưỡng tiềm năng {$rules['promising_ctr_pct']}%). Ý định mua hàng từ người xem cao.",
-                    'next_step' => 'Tạo thêm 2-3 kịch bản TikTok với góc tiếp cận khác (Cost-Comparison, Demo) để đẩy nhanh tỷ lệ chuyển đổi.'
+                    'title' => 'Sản phẩm Tiềm năng Chuyển đổi (Conversion Promising)',
+                    'reason' => "Sản phẩm đã tạo {$conversions} chuyển đổi trên sàn TMĐT với CVR đạt {$cvr}%.",
+                    'next_step' => 'Tạo thêm biến thể nội dung góc tiếp cận mới để tối ưu hóa tỷ lệ chuyển đổi.'
+                );
+            } elseif ($ctr >= $rules['promising_ctr_pct']) {
+                // 3. CLICK_PROMISING Status (Strong Click Signal, No/Pending Conversion Data)
+                $status = self::STATUS_CLICK_PROMISING;
+                $recommendations = array(
+                    'action' => self::REC_KEEP_TESTING,
+                    'title' => 'Sản phẩm Tiềm năng Lượt click (Click Promising)',
+                    'reason' => "CTR đạt {$ctr}% (vượt ngưỡng {$rules['promising_ctr_pct']}%) với {$clicks} clicks. Ý định mua hàng cao." . (!$conversionSourceConnected ? " (Chưa kết nối dữ liệu đơn hàng sàn TMĐT)." : ""),
+                    'next_step' => 'Tiếp tục theo dõi và nhập file CSV đối soát đơn hàng để kiểm tra doanh thu thực tế.'
                 );
             } elseif ($ctr < $rules['underperforming_ctr_pct'] && $testAgeDays >= $rules['min_test_age_days']) {
-                // UNDERPERFORMING Status
+                // 4. UNDERPERFORMING Status
                 $status = self::STATUS_UNDERPERFORMING;
                 $recommendations = array(
                     'action' => self::REC_CREATE_NEW_HOOK,
                     'title' => 'Hiệu suất thấp (Underperforming)',
                     'reason' => "Đã có {$sessions} sessions nhưng CTR chỉ đạt {$ctr}% (< {$rules['underperforming_ctr_pct']}%).",
-                    'next_step' => 'Thử nghiệm Hook mở đầu gây tò mò hơn hoặc cân nhắc tạm dừng chiến dịch nếu nội dung không thu hút.'
+                    'next_step' => 'Thử nghiệm Hook mở đầu gây tò mò hơn hoặc cân nhắc tạm dừng nếu nội dung không thu hút.'
                 );
             } else {
-                // TESTING Status
+                // 5. TESTING Status
                 $status = self::STATUS_TESTING;
                 $recommendations = array(
                     'action' => self::REC_KEEP_TESTING,
@@ -232,9 +278,11 @@ class WinnerDetectionEngine {
         $results = array();
         $counts = array(
             self::STATUS_INSUFFICIENT_DATA => 0,
+            self::STATUS_TRAFFIC_PROMISING => 0,
+            self::STATUS_CLICK_PROMISING => 0,
+            self::STATUS_CONVERSION_PROMISING => 0,
+            self::STATUS_REVENUE_WINNER => 0,
             self::STATUS_TESTING => 0,
-            self::STATUS_PROMISING => 0,
-            self::STATUS_WINNER => 0,
             self::STATUS_UNDERPERFORMING => 0
         );
 

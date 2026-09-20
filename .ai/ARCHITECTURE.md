@@ -591,3 +591,67 @@ APPROVED VIDEO (table_ai_video, status = 'APPROVED')
    * Hỗ trợ xử lý hoàn trả/hủy đơn và gán nguồn thủ công có vết kiểm toán (Audit Trail).
 4. **Bộ điều khiển & Giao diện Quản trị Analytics (`admin/sources/analytics.php` & `admin/templates/analytics/`)**:
    * Tổng quan hiệu suất (`overview_tpl.php`), Bảng chỉ số sản phẩm (`products_tpl.php`), Bài đăng (`posts_tpl.php`), Video (`videos_tpl.php`), Phân tích Hook & Content (`content_tpl.php`), Danh sách đối soát đơn hàng (`conversions_tpl.php`), Hộp công cụ nhập CSV (`conversion_import_tpl.php`), Bảng điều khiển Winner Detection (`winner_detection_tpl.php`), Cấu hình quy tắc & ngưỡng (`winner_rules_tpl.php`).
+
+---
+
+## 13. KIẾN TRÚC DATA-DRIVEN OPTIMIZATION LOOP & A/B EXPERIMENTATION (PHASE 09)
+
+### Sơ đồ Vòng Lặp Vận Hành Tối Ưu Hóa Khép Kín:
+
+```text
+       [PHASE 08 OBSERVED PERFORMANCE SIGNAL]
+(Traffic / Click / Conversion / Revenue / 6-Level Maturity)
+                         │
+                         ▼
+             [OPTIMIZATION ENGINE] (Rule-based Core)
+  ├── 1. Cooldown & Deduplication Gate (24h Window)
+  ├── 2. Machine Reason Code Generator (POSITIVE_ROI, HIGH_TRAFFIC_LOW_CTR...)
+  ├── 3. Falsifiable Hypothesis Builder
+  ├── 4. One-Variable Selector (HOOK / CTA / SCRIPT / VIDEO_STYLE / VOICE / OFFER)
+  └── 5. Cost Estimation & Hard Cost Gate Check
+                         │
+                         ▼
+      [OPTIMIZATION RECOMMENDATION] (table_optimization_recommendation, status = 'PENDING')
+                         │
+                         ▼
+        [STRICT HUMAN APPROVAL GATE] (Admin Decides)
+  ├── Phê duyệt thông thường (Chi phí <= 60.000 đ)
+  ├── Phê duyệt kèm Admin Override (Nếu vượt hạn mức ngân sách)
+  └── Từ chối kèm lý do phản hồi (REJECTED)
+                         │ (Approved)
+                         ▼
+     [A/B EXPERIMENT INITIALIZATION] (table_optimization_experiment, status = 'RUNNING')
+  ├── Đóng băng Baseline Snapshot (Sessions, Clicks, CTR, Revenue, Post ID)
+  ├── Sinh Biến thể Kịch bản (Phase 05 - nếu đổi HOOK/CTA/SCRIPT)
+  ├── Sinh Biến thể Video (Phase 06 - ECONOMY default / HYBRID if approved)
+  └── Khởi tạo Post Package Biến thể (Phase 07) kèm Unique Tracking Code
+                         │
+                         ▼
+    [PUBLISH & SEPARATE TRACKING ATTRIBUTION] (Phase 07 + Phase 08)
+  (Visitor tương tác qua mã tracking riêng biệt: fp_tikt_<exp_id>_<hash>)
+                         │
+                         ▼
+          [A/B EXPERIMENT EVALUATION ENGINE]
+  ├── Cổng kiểm tra kích thước mẫu (Sample Gate: sessions >= 30, clicks >= 10)
+  │     └── Nếu chưa đủ: Giữ trạng thái RUNNING, kết luận INSUFFICIENT_DATA
+  │
+  ├── Đối soát chỉ số Baseline vs Variation (CTR, CVR, Commission, Net ROI)
+  └── Đưa ra kết luận chính thức:
+        ├── VARIATION_BETTER: Biến thể mới vượt trội về doanh thu/CTR
+        ├── BASELINE_BETTER: Nội dung gốc hiệu quả hơn
+        └── NO_MEANINGFUL_DIFFERENCE: Không có sự khác biệt rõ rệt
+                         │
+                         ▼
+  [EXPERIMENT COMPLETED] (Status = 'COMPLETED', Ghi nhận kết luận & Snapshot)
+  └── Chống vòng lặp vô hạn: KHÔNG tự động kích hoạt thử nghiệm tiếp theo.
+```
+
+### Thành phần Lớp Dịch vụ Phase 09:
+1. **`OptimizationEngine`** (`libraries/class/class.OptimizationEngine.php`):
+   * Quản lý tạo khuyến nghị tối ưu hóa từ dữ liệu hiệu suất Phase 08.
+   * Rào chắn thời gian giãn cách `hasRecentRecommendation` chống spam khuyến nghị.
+   * Thực thi Hard Cost Gate và xử lý Admin Override.
+   * Khởi tạo và liên kết thử nghiệm A/B, tự động phối hợp sinh kịch bản Phase 05, video Phase 06, và post Phase 07.
+   * Đánh giá đối soát thử nghiệm theo cổng kích thước mẫu và đưa ra kết luận định lượng.
+2. **Bộ điều khiển & Giao diện Quản trị Optimization (`admin/sources/optimization.php` & `admin/templates/optimization/`)**:
+   * Danh sách khuyến nghị (`recommendations_tpl.php`), Chi tiết khuyến nghị & Cổng phê duyệt ngân sách (`recommendation_detail_tpl.php`), Danh sách thử nghiệm A/B (`experiments_tpl.php`), Màn hình đối soát trực quan Baseline vs Variation (`experiment_detail_tpl.php`), Cấu hình hạn mức ngân sách & kích thước mẫu (`rules_tpl.php`).

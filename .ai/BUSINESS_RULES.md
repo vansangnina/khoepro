@@ -440,22 +440,62 @@ Hệ thống phân định rõ ràng các cấp độ nội dung đánh giá:
   * `CLICK`: Chưa có đơn nhưng CTR affiliate cao ($\ge 5\%$), người xem có ý định mua hàng rõ rệt.
   * `TRAFFIC`: Có lượt truy cập landing page nhưng tỷ lệ click affiliate còn thấp.
   * `NONE`: Chưa có lượt truy cập nào.
-* **Quy chuẩn Trạng thái Đánh giá (Winner Status Standards)**:
-  * `WINNER`: Đủ mẫu + CTR $\ge 10\%$ + CVR $\ge 5\%$ (hoặc Doanh thu vượt chi phí).
-  * `PROMISING`: Đủ mẫu + CTR $\ge 5\%$.
-  * `TESTING`: Đủ mẫu + CTR từ $1\% - 4.9\%$, đang trong quá trình theo dõi chuyển đổi.
-  * `UNDERPERFORMING`: Đủ mẫu + CTR $< 1\%$ sau ít nhất 3 ngày kiểm thử (`min_test_age_days >= 3`).
-  * `INSUFFICIENT_DATA`: Chưa đạt đủ số sessions hoặc clicks tối thiểu.
+* **Quy chuẩn Trạng thái Đánh giá 6 Cấp độ (6-Level Performance Maturity Standards)**:
+  * `INSUFFICIENT_DATA`: Chưa đạt đủ số sessions (<30) hoặc clicks (<10) tối thiểu. Bắt buộc giữ trạng thái này, không kết luận sớm.
+  * `TRAFFIC_PROMISING`: Lưu lượng xem cao ($\ge 30$ sessions) nhưng ít click (<10 clicks). Đề xuất tối ưu trang sản phẩm và nút CTA (`REVIEW_PRODUCT_PAGE`).
+  * `CLICK_PROMISING`: Lượt click cao ($\ge 10$ clicks) và CTR $\ge 5\%$, nhưng chưa có dữ liệu đối soát đơn hàng (`conversion_source_connected = false`). TUYỆT ĐỐI CẤM gán nhãn `WINNER` hay `REVENUE_WINNER`.
+  * `CONVERSION_PROMISING`: Đã có đơn hàng đối soát từ sàn TMĐT nhưng Net ROI chưa vượt chi phí sản xuất (đang hoàn vốn).
+  * `REVENUE_WINNER`: Đã có đơn hàng đối soát và Net ROI dương (Hoa hồng thực nhận > Chi phí sản xuất). Đủ điều kiện đề xuất nâng cấp video (`UPGRADE_TO_HYBRID`).
+  * `UNDERPERFORMING`: Đủ mẫu ($\ge 30$ sessions), CTR $< 1\%$ và 0 đơn hàng sau ít nhất 3 ngày kiểm thử. Đề xuất tạm dừng hoặc đổi Hook mới (`CREATE_NEW_HOOK`).
 * **Tách biệt Tuyệt đối giữa Điểm Nghiên cứu & Chỉ số Hiệu suất (Research Score != Performance Score)**:
   * Điểm nghiên cứu thị trường ở Phase 03/04 (`research_score` / `total_score`) là giả thuyết tiềm năng ban đầu.
   * Chỉ số hiệu suất Phase 08 (`CTR`, `CVR`, `EPC`, `ROI`) là thực tế quan sát được trên thị trường.
   * Hai nhóm chỉ số này lưu ở hai bảng riêng biệt và không ghi đè lẫn nhau.
 * **Nguyên tắc Chỉ Đề xuất — Không Tự ý Hành động (No Auto-Spend / No Auto-Publish Actions)**:
-  * Khi phát hiện `WINNER` hoặc `PROMISING`, hệ thống sinh đề xuất hành động rõ ràng (`recommendation`: `UPGRADE_TO_HYBRID`, `CREATE_VARIATION`, `CREATE_NEW_HOOK`, `KEEP_TESTING`).
+  * Khi phát hiện tín hiệu hiệu suất, hệ thống sinh đề xuất hành động rõ ràng (`recommendation`: `UPGRADE_TO_HYBRID`, `CREATE_VARIATION`, `CREATE_NEW_HOOK`, `KEEP_TESTING`).
   * Hệ thống KHÔNG BAO GIỜ tự động chi tiền gọi API AI video, tự động tăng ngân sách, hay tự động xuất bản thêm bài đăng mà không có sự kiểm duyệt và bấm nút từ Admin con người.
 * **Toàn vẹn Đối soát & Chống Trùng Đơn (Conversion Idempotency & Duplicate Protection)**:
-  * Mỗi đơn hàng nhập từ CSV có mã định danh `conversion_id` duy nhất trên sàn.
+  * Mỗi đơn hàng nhập từ CSV có mã định danh duy nhất trên sàn.
   * Việc tải lại cùng một file CSV nhiều lần không làm nhân đôi số lượng đơn hay doanh thu hoa hồng.
   * Khi đơn hàng bị hoàn trả hoặc hủy, hệ thống cập nhật trạng thái sang `REVERSED` hoặc `CANCELLED` mà không làm mất lịch sử đối soát.
 * **Toán học An toàn & Bảo vệ Chia cho 0 (Safe Math & Zero Division Guard)**:
   * Toàn bộ hàm tính toán tỷ lệ (`CTR`, `CVR`, `EPC`, `ROI`) có cơ chế kiểm tra mẫu số. Nếu mẫu số $= 0$, hàm trả về `0.0` an toàn, không bao giờ gây lỗi PHP Fatal Error hoặc Warning.
+
+---
+
+## 13. QUY TẮC DATA-DRIVEN OPTIMIZATION LOOP & THỬ NGHIỆM A/B (PHASE 09)
+
+* **Nguyên tắc Tam giác Vận hành Khép kín (AI Recommends, Human Decides, System Executes)**:
+  * **AI Recommends**: Động cơ tối ưu hóa (`OptimizationEngine`) quét dữ liệu hiệu suất và đưa ra các đề xuất cải thiện kèm mã máy (`reason_code`), giải thích tiếng Việt (`reason_summary`), giả thuyết kiểm chứng (`hypothesis`), và chi phí ước tính (`estimated_cost_vnd`).
+  * **Human Decides**: Mọi khuyến nghị bắt buộc phải chờ phê duyệt của Admin (`status = 'PENDING'`). Admin có quyền phê duyệt thông thường, phê duyệt kèm Admin Override (vượt hạn mức), hoặc từ chối kèm lý do.
+  * **System Executes**: Sau khi Admin duyệt, hệ thống tự động sinh biến thể kịch bản (Phase 05), video project (Phase 06), và bài đăng phân phối có mã tracking cô lập (Phase 07).
+* **Nguyên tắc Đơn Biến Số (One-Variable Principle)**:
+  * Mỗi thử nghiệm A/B chỉ được phép thay đổi duy nhất 1 biến số trong danh mục:
+    * `HOOK`: Thay đổi 0–3s đầu tiên (câu giật tít mở màn).
+    * `CTA`: Thay đổi câu kêu gọi hành động cuối video/bài đăng.
+    * `SCRIPT`: Thay đổi góc tiếp cận nội dung (Content Angle).
+    * `VIDEO_STYLE`: Thay đổi phong cách sản xuất (Nâng cấp từ ECONOMY lên HYBRID).
+    * `VOICE`: Thay đổi giọng đọc thuyết minh TTS.
+    * `OFFER`: Thay đổi ưu đãi tiếp thị liên kết nổi bật.
+  * Thử nghiệm đa biến số bắt buộc phải được gắn nhãn minh bạch là `MULTIVARIATE`.
+* **Ưu tiên Tiết kiệm & Rào chắn Ngân sách Cứng (Economy First & Hard Cost Gate)**:
+  * Mặc định mọi biến thể thử nghiệm sử dụng chế độ ECONOMY (Chi phí API Video = 0 VND).
+  * Nâng cấp lên HYBRID chỉ được đề xuất khi sản phẩm có bằng chứng doanh thu thực tế (`REVENUE_WINNER`).
+  * Hạn mức chi phí tối đa cho một thử nghiệm được khống chế bởi `max_cost_per_experiment` (mặc định: 60.000 VND). Nếu chi phí ước tính vượt hạn mức, hệ thống tự động chặn phê duyệt thường và yêu cầu bật cờ `Admin Override`.
+* **Giãn cách Đề xuất & Chống Trùng lặp (Cooldown & Deduplication Gate)**:
+  * Sau khi sinh khuyến nghị cho một sản phẩm/bài đăng, hệ thống áp dụng thời gian giãn cách `recommendation_cooldown_hours` (mặc định: 24 giờ).
+  * Trong thời gian cooldown, hệ thống tuyệt đối không sinh thêm khuyến nghị trùng lặp cho cùng một sản phẩm/biến số.
+* **Cổng Kích thước Mẫu Đánh giá Thử nghiệm (Experiment Sample Size Gate)**:
+  * Tiến trình đánh giá đối soát (`evaluateExperiment`) chỉ đưa ra kết luận người chiến thắng khi bài đăng biến thể đạt đủ kích thước mẫu tối thiểu:
+    * `experiment_min_sessions >= 30`
+    * `experiment_min_clicks >= 10`
+  * Nếu chưa đủ mẫu, kết luận bắt buộc là `INSUFFICIENT_DATA` và thử nghiệm tiếp tục duy trì trạng thái `RUNNING`.
+* **Bộ Quy tắc Đánh giá Kết luận Thử nghiệm (Experiment Conclusion Rules)**:
+  * `VARIATION_BETTER`: Biến thể mới vượt trội về doanh thu hoa hồng (`varCommission > baseCommission` kèm `varConversions >= baseConversions`) hoặc CTR cao hơn rõ rệt ($\Delta \text{CTR} \ge 2.0\%$).
+  * `BASELINE_BETTER`: Bài đăng gốc tạo ra doanh thu tốt hơn hoặc CTR vượt trội so với biến thể mới ($\Delta \text{CTR} \le -2.0\%$).
+  * `NO_MEANINGFUL_DIFFERENCE`: Hai phiên bản có hiệu suất tương đương nhau trong phạm vi sai số $(-2.0\% < \Delta \text{CTR} < 2.0\%$).
+* **Chống Vòng lặp Vô hạn (No Infinite Loop Protection)**:
+  * Khi thử nghiệm A/B hoàn tất (`COMPLETED`), hệ thống ghi nhận kết luận và snapshot đối soát.
+  * Hệ thống KHÔNG tự động kích hoạt thử nghiệm tiếp theo.
+  * Mỗi sản phẩm bị giới hạn tối đa `max_active_experiments_per_product` (mặc định: 2) thử nghiệm đang chạy đồng thời.
+

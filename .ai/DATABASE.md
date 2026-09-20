@@ -600,22 +600,78 @@
   * `id_post`: Khóa ngoại liên kết `table_publish_post.id` NULL
   * `id_video`: Khóa ngoại liên kết `table_ai_video.id` NULL
   * `id_content`: Khóa ngoại liên kết `table_ai_content.id` NULL
-  * `winner_status`: Kết luận trạng thái (`WINNER`, `PROMISING`, `TESTING`, `UNDERPERFORMING`, `INSUFFICIENT_DATA`) NOT NULL
-  * `signal_level`: Mức độ tín hiệu (`REVENUE`, `CONVERSION`, `CLICK`, `TRAFFIC`, `NONE`) DEFAULT 'NONE'
+  * `winner_status`: Kết luận trạng thái 6 cấp độ (`INSUFFICIENT_DATA`, `TRAFFIC_PROMISING`, `CLICK_PROMISING`, `CONVERSION_PROMISING`, `REVENUE_WINNER`, `UNDERPERFORMING`) NOT NULL
+  * `signal_level`: Mức độ tín hiệu (`NONE`, `TRAFFIC_SIGNAL`, `CLICK_SIGNAL`, `CONVERSION_SIGNAL`, `REVENUE_SIGNAL`) DEFAULT 'NONE'
   * `metrics_snapshot`: Snapshot JSON đóng băng toàn bộ chỉ số tại thời điểm đánh giá (sessions, clicks, CTR, conversions, CVR, commission, cost, ROI) MEDIUMTEXT NOT NULL
   * `rules_snapshot`: Snapshot JSON đóng băng các quy tắc và ngưỡng tại thời điểm đánh giá MEDIUMTEXT NOT NULL
   * `recommendation`: Snapshot JSON đề xuất hành động tiếp theo MEDIUMTEXT NOT NULL
   * `ai_analysis`: Ghi chú phân tích chuyên sâu TEXT NULL
+  * `is_legacy`: Cờ đánh dấu bản ghi đánh giá theo quy tắc cũ TINYINT(1) DEFAULT 0
   * `evaluated_at`: Unix timestamp thời điểm đánh giá
   * `evaluated_by`: Username admin hoặc worker thực thi VARCHAR(50) DEFAULT 'admin'
   * `date_created`: Unix timestamp
 
-### `table_analytics_setting` (Cấu hình Tham số Analytics & Quy tắc Ngưỡng)
-* **Mục đích**: Lưu trữ tập trung các tham số ngưỡng kiểm thử, phân bổ attribution window và lọc traffic nội bộ.
+### `table_analytics_setting` (Cấu hình Tham số Analytics, Rules & Optimization)
+* **Mục đích**: Lưu trữ tập trung các tham số ngưỡng kiểm thử, phân bổ attribution window, lọc traffic nội bộ và ngân sách tối ưu hóa A/B.
 * **Cấu trúc**:
   * `id`: Khóa chính INT(11) UNSIGNED AUTO_INCREMENT
   * `setting_key`: Khóa cấu hình VARCHAR(100) NOT NULL UNIQUE
   * `setting_value`: Giá trị TEXT NOT NULL
-  * `setting_group`: Nhóm cấu hình (`attribution`, `winner_rules`, `traffic`, `general`) DEFAULT 'general'
+  * `setting_group`: Nhóm cấu hình (`attribution`, `winner_rules`, `traffic`, `optimization`, `general`) DEFAULT 'general'
   * `description`: Mô tả ý nghĩa tham số VARCHAR(255) NULL
   * `date_updated`: Unix timestamp
+
+---
+
+## 15. BẢNG DỮ LIỆU PHASE 09 (OPTIMIZATION ENGINE & A/B EXPERIMENTATION)
+
+### `table_optimization_recommendation` (Khuyến nghị Tối ưu hóa từ AI Engine)
+* **Mục đích**: Lưu trữ các khuyến nghị tối ưu hóa được động cơ phân tích sinh ra dựa trên tín hiệu hiệu suất thực tế từ Phase 08.
+* **Cấu trúc**:
+  * `id`: Khóa chính BIGINT(20) UNSIGNED AUTO_INCREMENT
+  * `id_product`: Khóa ngoại liên kết `table_product.id` NOT NULL
+  * `id_post`: Khóa ngoại liên kết `table_publish_post.id` NULL
+  * `id_video`: Khóa ngoại liên kết `table_ai_video.id` NULL
+  * `id_content`: Khóa ngoại liên kết `table_ai_content.id` NULL
+  * `recommendation_type`: Loại khuyến nghị (`CREATE_NEW_HOOK`, `CREATE_CONTENT_VARIATION`, `UPGRADE_TO_HYBRID`, `REVIEW_PRODUCT_PAGE`, `KEEP_TESTING`, `WAIT_FOR_MORE_DATA`, `PAUSE_TESTING`) NOT NULL
+  * `reason_code`: Mã máy giải thích lý do (`HIGH_TRAFFIC_LOW_CTR`, `HIGH_CTR_NO_CONVERSION`, `POSITIVE_ROI`, `UNDERPERFORMING_CTR`, `INSUFFICIENT_DATA`) NOT NULL
+  * `reason_summary`: Giải thích tóm tắt bằng tiếng Việt cho Admin TEXT NOT NULL
+  * `hypothesis`: Giả thuyết thử nghiệm có thể kiểm chứng TEXT NOT NULL
+  * `proposed_variable`: Biến số thử nghiệm đơn lẻ (`HOOK`, `CTA`, `SCRIPT`, `VIDEO_STYLE`, `VOICE`, `OFFER`, `MULTIVARIATE`) NOT NULL
+  * `target_mode`: Chế độ video dự kiến (`ECONOMY`, `HYBRID`, `PREMIUM`) DEFAULT 'ECONOMY'
+  * `estimated_cost_vnd`: Chi phí API ước tính phát sinh DECIMAL(15,2) DEFAULT 0.00
+  * `metrics_snapshot`: Snapshot JSON dữ liệu hiệu suất tại thời điểm sinh đề xuất MEDIUMTEXT NOT NULL
+  * `rules_snapshot`: Snapshot JSON ngưỡng quy tắc áp dụng MEDIUMTEXT NOT NULL
+  * `status`: Trạng thái khuyến nghị (`PENDING`, `APPROVED`, `REJECTED`, `EXECUTING`, `COMPLETED`, `STALE`) DEFAULT 'PENDING'
+  * `id_experiment`: Khóa ngoại liên kết `table_optimization_experiment.id` sau khi duyệt NULL
+  * `approved_by`: Username Admin thực hiện phê duyệt/từ chối VARCHAR(50) NULL
+  * `approved_at`: Unix timestamp thời điểm phê duyệt NULL
+  * `review_notes`: Ghi chú phản hồi hoặc lý do từ chối TEXT NULL
+  * `date_created`, `date_updated`: Unix timestamp
+
+### `table_optimization_experiment` (Hồ sơ Thử nghiệm Tối ưu hóa A/B)
+* **Mục đích**: Lưu trữ toàn bộ vòng đời thử nghiệm A/B đối soát giữa nội dung gốc (Baseline) và biến thể mới (Variation) theo nguyên tắc một biến số.
+* **Cấu trúc**:
+  * `id`: Khóa chính BIGINT(20) UNSIGNED AUTO_INCREMENT
+  * `experiment_code`: Mã định danh thử nghiệm duy nhất VARCHAR(64) NOT NULL UNIQUE
+  * `id_recommendation`: Khóa ngoại liên kết `table_optimization_recommendation.id` NULL
+  * `id_product`: Khóa ngoại liên kết `table_product.id` NOT NULL
+  * `changed_variable`: Biến số đơn lẻ thay đổi (`HOOK`, `CTA`, `SCRIPT`, `VIDEO_STYLE`, `VOICE`, `OFFER`, `MULTIVARIATE`) NOT NULL
+  * `hypothesis`: Giả thuyết thử nghiệm TEXT NOT NULL
+  * `baseline_type`: Loại Baseline (`POST`, `VIDEO`, `CONTENT`) DEFAULT 'POST'
+  * `id_baseline_post`: Khóa ngoại Post gốc `table_publish_post.id` NULL
+  * `id_baseline_video`: Khóa ngoại Video gốc `table_ai_video.id` NULL
+  * `id_baseline_content`: Khóa ngoại Content gốc `table_ai_content.id` NULL
+  * `id_variation_post`: Khóa ngoại Post biến thể mới `table_publish_post.id` NULL
+  * `id_variation_video`: Khóa ngoại Video biến thể mới `table_ai_video.id` NULL
+  * `id_variation_content`: Khóa ngoại Content biến thể mới `table_ai_content.id` NULL
+  * `target_mode`: Chế độ sản xuất video biến thể (`ECONOMY`, `HYBRID`, `PREMIUM`) DEFAULT 'ECONOMY'
+  * `status`: Trạng thái thử nghiệm (`APPROVED`, `RUNNING`, `COMPLETED`, `CANCELLED`) DEFAULT 'APPROVED'
+  * `baseline_metrics_snapshot`: Snapshot JSON đóng băng chỉ số gốc MEDIUMTEXT NULL
+  * `variation_metrics_snapshot`: Snapshot JSON chỉ số biến thể khi đánh giá MEDIUMTEXT NULL
+  * `result_conclusion`: Kết luận sau đánh giá (`INSUFFICIENT_DATA`, `VARIATION_BETTER`, `BASELINE_BETTER`, `NO_MEANINGFUL_DIFFERENCE`) NULL
+  * `result_summary`: Tóm tắt chi tiết kết quả đối soát TEXT NULL
+  * `total_cost_vnd`: Tổng chi phí thực tế phát sinh DECIMAL(15,2) DEFAULT 0.00
+  * `started_at`, `completed_at`: Unix timestamp thời gian bắt đầu và kết thúc
+  * `created_by`: Username Admin khởi tạo VARCHAR(50) DEFAULT 'admin'
+  * `date_created`, `date_updated`: Unix timestamp

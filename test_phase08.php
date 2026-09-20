@@ -233,8 +233,23 @@ assertTest($analytics->isInternalIp('113.160.20.10') === false, "Internal Traffi
 $realProd = $d->rawQueryOne("SELECT id, namevi, slugvi FROM table_product WHERE find_in_set('hienthi', status) LIMIT 1");
 $realProductId = !empty($realProd['id']) ? (int)$realProd['id'] : 66;
 
-$secondProd = $d->rawQueryOne("SELECT id, namevi FROM table_product WHERE id != ? LIMIT 1", array($realProductId));
-$secondProductId = !empty($secondProd['id']) ? (int)$secondProd['id'] : 68;
+$secondProd = $d->rawQueryOne(
+    "SELECT p.id, p.namevi FROM table_product p LEFT JOIN table_analytics_event e ON p.id = e.id_product WHERE e.id IS NULL LIMIT 1"
+);
+if (empty($secondProd)) {
+    $secondProductId = $d->insert('product', array(
+        'namevi' => 'Sản phẩm Test Low Sample ' . time(),
+        'slugvi' => 'san-pham-test-low-sample-' . time(),
+        'discount' => 0,
+        'review_score' => 4.5,
+        'review_count' => 5,
+        'status' => 'hienthi',
+        'type' => 'san-pham',
+        'date_created' => time()
+    ));
+} else {
+    $secondProductId = (int)$secondProd['id'];
+}
 
 // --- 14. External Content Cost & Content ROI ---
 echo "\n--- 14. Testing External Content Cost & ROI Aggregation ---\n";

@@ -4,6 +4,44 @@ Tài liệu ghi nhận toàn bộ các thay đổi được thực hiện bởi 
 
 ---
 
+## [2026-09-20] - PHASE 09: DATA-DRIVEN OPTIMIZATION LOOP & PHASE 08 WINNER HOTFIX (PERFORMANCE SIGNAL -> OPTIMIZATION ENGINE -> RECOMMENDATION -> HUMAN APPROVAL -> A/B EXPERIMENT -> VARIATION -> PUBLISH -> MEASURE AGAIN)
+
+### CREATED
+* `database/migrations/phase09_optimization_loop.sql`: Migration CSDL tạo 2 bảng nghiệp vụ mới và mở rộng CSDL:
+  - `table_optimization_recommendation`: Lưu trữ khuyến nghị tối ưu hóa từ AI Engine, mã máy lý do (`reason_code`), tóm tắt tiếng Việt (`reason_summary`), giả thuyết kiểm chứng (`hypothesis`), biến số thử nghiệm (`proposed_variable`), chi phí ước tính, snapshot dữ liệu và trạng thái phê duyệt (`PENDING`, `APPROVED`, `REJECTED`, `EXECUTING`, `COMPLETED`, `STALE`).
+  - `table_optimization_experiment`: Lưu trữ hồ sơ thử nghiệm A/B, mã thử nghiệm duy nhất (`experiment_code`), đối soát liên kết ID Baseline vs ID Variation (Post, Video, Content), chỉ số đo lường thực tế, chi phí thực tế và kết luận (`result_conclusion`: `INSUFFICIENT_DATA`, `VARIATION_BETTER`, `BASELINE_BETTER`, `NO_MEANINGFUL_DIFFERENCE`).
+  - Bổ sung cột `is_legacy` (TINYINT 1 DEFAULT 0) vào `table_winner_evaluation`.
+  - Cấu hình các tham số mới trong `table_analytics_setting`: `max_cost_per_experiment` (60.000 đ), `max_active_experiments_per_product` (2), `recommendation_cooldown_hours` (24h), `experiment_min_sessions` (30), `experiment_min_clicks` (10).
+* `libraries/class/class.OptimizationEngine.php`: Động cơ tối ưu hóa khép kín (Rule-based Core Engine):
+  - Sinh khuyến nghị `generateRecommendations()` theo các quy tắc nghiệp vụ rõ ràng dựa trên tín hiệu hiệu suất Phase 08.
+  - Rào chắn thời gian giãn cách `hasRecentRecommendation()` (24h Cooldown Window) chống spam đề xuất.
+  - Hàng rào ngân sách cứng `Hard Cost Gate` khống chế chi phí tối đa mỗi thử nghiệm, yêu cầu cờ `Admin Override` khi vượt hạn mức.
+  - Tự động sinh biến thể thử nghiệm `createExperimentFromRecommendation()`: phối hợp sinh kịch bản Phase 05, video project Phase 06, và bài đăng phân phối Phase 07 có mã tracking cô lập (`fp_tikt_<exp_id>_<hash>`).
+  - Đánh giá kết luận thử nghiệm `evaluateExperiment()` tuân thủ cổng kích thước mẫu (`experiment_min_sessions >= 30`, `experiment_min_clicks >= 10`) và so sánh định lượng CTR / Revenue.
+* `admin/sources/optimization.php`: Controller điều phối giao diện quản trị Optimization & A/B Experimentation:
+  - Khuyến nghị tối ưu hóa (`recommendations`, `recommendation_detail`, `generate_recommendations`, `approve_recommendation`, `reject_recommendation`).
+  - Thử nghiệm A/B (`experiments`, `experiment_detail`, `evaluate_experiment`).
+  - Cấu hình quy tắc & hạn mức (`rules`, `save_rules`).
+* `admin/templates/optimization/`: 5 giao diện quản trị AdminLTE hiện đại:
+  - `recommendations_tpl.php`: Danh sách khuyến nghị, bộ lọc trạng thái & loại đề xuất, nút quét sinh khuyến nghị.
+  - `recommendation_detail_tpl.php`: Màn hình phân tích chi tiết dữ liệu quan sát, giả thuyết kiểm chứng, bảng tính chi phí ước tính, form phê duyệt kèm Admin Override hoặc từ chối kèm lý do.
+  - `experiments_tpl.php`: Danh sách hồ sơ thử nghiệm A/B, biến số thay đổi, trạng thái thực thi và kết luận.
+  - `experiment_detail_tpl.php`: Màn hình đối soát trực quan cạnh nhau (Side-by-Side Comparison) giữa Nội dung Gốc (Baseline) và Biến thể mới (Variation) kèm nút kích hoạt đánh giá kết luận.
+  - `rules_tpl.php`: Giao diện cấu hình hạn mức ngân sách, số thử nghiệm đồng thời tối đa, thời gian cooldown và kích thước mẫu tối thiểu.
+* `.ai/skills/fitnado-optimization/SKILL.md`: Kỹ năng vận hành chuẩn hóa cho Phase 09.
+* `test_phase09.php`: Bộ kiểm thử tự động toàn diện cho Phase 09 với 29/29 assertions đạt chuẩn 100% PASS.
+* `test_http_optimization.php`: Bộ kiểm thử giao diện và endpoint HTTP cho Phase 09 với 13/13 test cases đạt chuẩn 100% PASS.
+* `.ai/reports/PHASE-09-OPTIMIZATION-TEST-REPORT.md`: Báo cáo kiểm định và kết quả thử nghiệm Phase 09.
+
+### MODIFIED & HOTFIXED
+* `libraries/class/class.WinnerDetectionEngine.php`:
+  - **Phase 08 Winner Semantics Hotfix**: Tách bạch rõ rệt 6 cấp độ hiệu suất (`INSUFFICIENT_DATA`, `TRAFFIC_PROMISING`, `CLICK_PROMISING`, `CONVERSION_PROMISING`, `REVENUE_WINNER`, `UNDERPERFORMING`).
+  - Bổ sung hàm `isConversionSourceConnected()`: Nghiêm cấm gán nhãn `WINNER` hoặc `REVENUE_WINNER` khi sản phẩm chưa có dữ liệu đối soát đơn hàng thật từ sàn TMĐT (chỉ được gán nhãn tối đa là `CLICK_PROMISING`).
+* `admin/templates/layout/menu.php`: Thêm mục menu "Tối ưu hóa (A/B)" dẫn đến Khuyến nghị, Thử nghiệm A/B và Cấu hình Quy tắc.
+* `dem22y2024_master.sql`: Cập nhật schema master với các bảng Phase 09.
+
+---
+
 ## [2026-09-20] - PHASE 08: ANALYTICS, AFFILIATE ATTRIBUTION & WINNER DETECTION (PRODUCT -> HOOK/SCRIPT -> VIDEO -> POST -> FITNADO VISIT -> PRODUCT PAGE -> AFFILIATE CLICK -> CONVERSION -> ATTRIBUTION -> PERFORMANCE -> WINNER DETECTION)
 
 ### CREATED
