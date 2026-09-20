@@ -495,7 +495,37 @@ Hệ thống phân định rõ ràng các cấp độ nội dung đánh giá:
   * `BASELINE_BETTER`: Bài đăng gốc tạo ra doanh thu tốt hơn hoặc CTR vượt trội so với biến thể mới ($\Delta \text{CTR} \le -2.0\%$).
   * `NO_MEANINGFUL_DIFFERENCE`: Hai phiên bản có hiệu suất tương đương nhau trong phạm vi sai số $(-2.0\% < \Delta \text{CTR} < 2.0\%$).
 * **Chống Vòng lặp Vô hạn (No Infinite Loop Protection)**:
-  * Khi thử nghiệm A/B hoàn tất (`COMPLETED`), hệ thống ghi nhận kết luận và snapshot đối soát.
-  * Hệ thống KHÔNG tự động kích hoạt thử nghiệm tiếp theo.
   * Mỗi sản phẩm bị giới hạn tối đa `max_active_experiments_per_product` (mặc định: 2) thử nghiệm đang chạy đồng thời.
+
+---
+
+## 14. QUY TẮC OPERATIONS, AUTOMATION & BUDGET GUARDS (PHASE 10)
+
+* **Mặt Phẳng Kiểm Soát Duy Nhất (Control Plane Only)**:
+  * Operations Center là trung tâm giám sát, điều phối và xử lý sự cố cho toàn bộ pipeline Phase 01–09 (`Research → Product → Content → Video → Publishing → Tracking → Analytics → Optimization → Experiment`).
+  * Operations Center không can thiệp chỉnh sửa dữ liệu thực thể nghiệp vụ (không sửa giá sản phẩm, không sửa text kịch bản); thao tác nghiệp vụ thuộc về module chuyên trách.
+* **Không Trạng Thái Sức Khỏe Giả Lập (No Fake Health)**:
+  * Trạng thái sức khỏe worker, queue, provider được tính toán trực tiếp từ cơ sở dữ liệu thật và TTL heartbeat.
+  * Tuyệt đối không hardcode nhãn `HEALTHY` hoặc giả lập trạng thái.
+* **Không Tự Động Gọi API Tính Phí Khi Kiểm Tra Sức Khỏe (No Paid Health Checks)**:
+  * Quá trình render trang sức khỏe nhà cung cấp (`providers_tpl.php`) và chẩn đoán KHÔNG bao giờ gọi HTTP/cURL ra các API bên ngoài tính phí (Runway, Luma, Gemini, TTS).
+  * Sức khỏe API dựa trên cấu hình sẵn có và lịch sử thực thi gần nhất trong cơ sở dữ liệu.
+* **Bảo Vệ Tuyệt Đối Thông Tin Bí Mật & API Keys (Secrets Never Exposed)**:
+  * Hàm `OperationsService::sanitizeSecrets()` đệ quy quét sạch và che dấu các chuỗi token Bearer, API key, mật khẩu, authorization headers trước khi lưu vào log hoặc hiển thị lên giao diện Admin.
+* **Thao Tác Retry & Hủy An Toàn, Bất Biến (Idempotent Safe Retry & Safe Cancel)**:
+  * Chỉ cho phép Retry các tác vụ ở trạng thái `FAILED`.
+  * Tuyệt đối nghiêm cấm Retry bài đăng đã `PUBLISHED` hoặc tác vụ tính phí đã thành công.
+  * Cho phép Cancel an toàn các tác vụ đang `PENDING` hoặc `RUNNING`.
+* **Cơ Chế Dừng Khẩn Cấp & Hạn Mức Ngân Sách (Emergency Stop & Budget Guards)**:
+  * Nút Dừng Khẩn Cấp (`pause_paid_automation = 1`) lập tức đóng băng toàn bộ tác vụ gọi API bên ngoài tính phí, trong khi các tác vụ nội bộ (render FFmpeg ECONOMY, crawler local) vẫn hoạt động bình thường.
+  * Hạn mức ngân sách ngày (`200.000 VND`) và tháng (`3.000.000 VND`) tự động khóa tác vụ tính phí khi vượt ngưỡng, trừ khi Admin bật quyền `Admin Override` (kèm ghi log kiểm toán bắt buộc vào `table_operations_override_log`).
+* **Phân Biệt Chưa Cấu Hình và Bị Lỗi (NOT_CONFIGURED != FAILED)**:
+  * Các cổng tích hợp bên thứ ba (như TikTok Content Posting API, Shopee Affiliate Open API) khi chưa nạp API key được định danh chính xác là `NOT_CONFIGURED`, không được đánh dấu là `FAILED` của toàn hệ thống.
+* **Hàng Đợi Hành Động Con Người Phân Cấp Rõ Ràng (Human Action Queue Prioritization)**:
+  * Tổng hợp 8 chiều tác vụ cần Admin xử lý theo 4 mức ưu tiên:
+    1. `CRITICAL`: Tác vụ thất bại (`FAILED`), Worker quá hạn heartbeat, sự kiện tracking bị ngắt quãng.
+    2. `COST_BLOCKED / WARNING`: Thử nghiệm A/B vượt ngân sách, đơn hàng chuyển đổi chưa rõ nguồn.
+    3. `APPROVAL`: Video chờ QC duyệt, Post Package chờ duyệt, Khuyến nghị A/B chờ duyệt.
+    4. `NORMAL`: Ứng viên nghiên cứu mới, Thử nghiệm A/B đang chạy cần theo dõi.
+
 

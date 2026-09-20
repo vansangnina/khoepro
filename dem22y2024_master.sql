@@ -19057,6 +19057,11 @@ CREATE TABLE IF NOT EXISTS `table_analytics_setting` (
   `setting_value` text NOT NULL,
   `setting_group` varchar(50) DEFAULT 'general',
   `description` varchar(255) DEFAULT NULL,
+  `date_updated` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_setting_key` (`setting_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 --
 -- Cấu trúc bảng cho bảng `table_optimization_recommendation` (Phase 09)
 --
@@ -19126,9 +19131,82 @@ CREATE TABLE IF NOT EXISTS `table_optimization_experiment` (
   KEY `idx_exp_recommendation` (`id_recommendation`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Cấu trúc bảng cho bảng `table_system_worker_status` (Phase 10)
+--
+CREATE TABLE IF NOT EXISTS `table_system_worker_status` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `worker_key` varchar(64) NOT NULL,
+  `worker_name` varchar(255) NOT NULL,
+  `worker_type` varchar(30) NOT NULL DEFAULT 'worker' COMMENT 'worker, cron, service',
+  `last_started_at` int(11) DEFAULT NULL,
+  `last_heartbeat_at` int(11) DEFAULT NULL,
+  `last_completed_at` int(11) DEFAULT NULL,
+  `last_success_at` int(11) DEFAULT NULL,
+  `last_error_at` int(11) DEFAULT NULL,
+  `last_error` text DEFAULT NULL,
+  `hostname` varchar(100) DEFAULT NULL,
+  `pid` int(11) DEFAULT NULL,
+  `metadata` mediumtext DEFAULT NULL,
+  `date_created` int(11) NOT NULL,
+  `date_updated` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_worker_key` (`worker_key`),
+  KEY `idx_worker_type` (`worker_type`),
+  KEY `idx_last_heartbeat` (`last_heartbeat_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Cấu trúc bảng cho bảng `table_system_alert` (Phase 10)
+--
+CREATE TABLE IF NOT EXISTS `table_system_alert` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `alert_key` varchar(128) NOT NULL COMMENT 'Unique fingerprint hash for deduplication',
+  `severity` varchar(20) NOT NULL DEFAULT 'WARNING' COMMENT 'INFO, WARNING, ERROR, CRITICAL',
+  `module` varchar(50) NOT NULL COMMENT 'research, content, video, publishing, analytics, optimization, system, budget, provider',
+  `title` varchar(255) NOT NULL,
+  `message` text NOT NULL,
+  `reference` varchar(255) DEFAULT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'ACTIVE' COMMENT 'ACTIVE, ACKNOWLEDGED, RESOLVED',
+  `first_seen_at` int(11) NOT NULL,
+  `last_seen_at` int(11) NOT NULL,
+  `occurrences` int(11) NOT NULL DEFAULT 1,
+  `acknowledged_by` varchar(50) DEFAULT NULL,
+  `acknowledged_at` int(11) DEFAULT NULL,
+  `resolved_at` int(11) DEFAULT NULL,
+  `metadata` mediumtext DEFAULT NULL,
+  `date_created` int(11) NOT NULL,
+  `date_updated` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_alert_key` (`alert_key`),
+  KEY `idx_severity` (`severity`),
+  KEY `idx_module` (`module`),
+  KEY `idx_status` (`status`),
+  KEY `idx_last_seen` (`last_seen_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Cấu trúc bảng cho bảng `table_operations_override_log` (Phase 10)
+--
+CREATE TABLE IF NOT EXISTS `table_operations_override_log` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `admin_user` varchar(50) NOT NULL DEFAULT 'admin',
+  `action_type` varchar(50) NOT NULL COMMENT 'BUDGET_OVERRIDE, EMERGENCY_PAUSE, EMERGENCY_RESUME, SETTINGS_CHANGE, JOB_RETRY, JOB_CANCEL',
+  `reason` text NOT NULL,
+  `amount_context` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `ip_address` varchar(64) DEFAULT NULL,
+  `metadata` mediumtext DEFAULT NULL,
+  `date_created` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_action_type` (`action_type`),
+  KEY `idx_admin_user` (`admin_user`),
+  KEY `idx_date_created` (`date_created`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
 

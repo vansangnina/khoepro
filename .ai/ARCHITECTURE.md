@@ -187,7 +187,7 @@ Hệ thống cấu hình chia làm 2 lớp:
                                                                 [Scoring Engine (Ph 03)]
                                                                            │
                                                                            ▼
-                                                             [Evidence Provenance Logger]
+                                                              [Evidence Provenance Logger]
                                                                            │
                                                                            ▼
                                                                  [table_product_research]
@@ -495,9 +495,10 @@ APPROVED VIDEO (table_ai_video, status = 'APPROVED')
 4. **`publish_worker.php`** (`cron/publish_worker.php`):
    * Background CLI / Token-protected HTTP worker xử lý quét bài đăng đến hạn theo lô.
 5. **Giao diện Quản trị Publishing Center (`admin/sources/publishing.php`)**:
+
 ---
 
-## 11. KIẾN TRÚC ANALYTICS, AFFILIATE ATTRIBUTION & WINNER DETECTION (PHASE 08)
+## 13. KIẾN TRÚC ANALYTICS, AFFILIATE ATTRIBUTION & WINNER DETECTION (PHASE 08)
 
 ### Sơ đồ Vòng đời Đo lường & Phát hiện Winner (Closed Loop Measurement):
 
@@ -594,7 +595,7 @@ APPROVED VIDEO (table_ai_video, status = 'APPROVED')
 
 ---
 
-## 13. KIẾN TRÚC DATA-DRIVEN OPTIMIZATION LOOP & A/B EXPERIMENTATION (PHASE 09)
+## 14. KIẾN TRÚC DATA-DRIVEN OPTIMIZATION LOOP & A/B EXPERIMENTATION (PHASE 09)
 
 ### Sơ đồ Vòng Lặp Vận Hành Tối Ưu Hóa Khép Kín:
 
@@ -655,3 +656,48 @@ APPROVED VIDEO (table_ai_video, status = 'APPROVED')
    * Đánh giá đối soát thử nghiệm theo cổng kích thước mẫu và đưa ra kết luận định lượng.
 2. **Bộ điều khiển & Giao diện Quản trị Optimization (`admin/sources/optimization.php` & `admin/templates/optimization/`)**:
    * Danh sách khuyến nghị (`recommendations_tpl.php`), Chi tiết khuyến nghị & Cổng phê duyệt ngân sách (`recommendation_detail_tpl.php`), Danh sách thử nghiệm A/B (`experiments_tpl.php`), Màn hình đối soát trực quan Baseline vs Variation (`experiment_detail_tpl.php`), Cấu hình hạn mức ngân sách & kích thước mẫu (`rules_tpl.php`).
+
+---
+
+## 15. KIẾN TRÚC OPERATIONS & AUTOMATION CONTROL CENTER (PHASE 10)
+
+### Sơ đồ Mặt Phẳng Điều Hành & Giám Sát Trung Tâm:
+
+```text
++---------------------------------------------------------------------------------------------------+
+|                           FITNADO OPERATIONS & AUTOMATION CONTROL CENTER                         |
++---------------------------------------------------------------------------------------------------+
+|                                                                                                   |
+|  [HEALTH MONITORING]          [QUEUE CONTROL]           [COST & BUDGET]          [ALERT CENTER]   |
+|  ├── Worker Heartbeat TTL     ├── Research Queue        ├── Actual vs Estimated  ├── Fingerprint  |
+|  ├── Real DB Ping & Stats     ├── Content Queue         ├── Daily & Monthly Cap  ├── Deduplication|
+|  ├── FFmpeg/FFprobe Detect    ├── Video Render Queue    ├── Admin Override Log   ├── Acknowledge  |
+|  └── Zero-Cost Provider Scan  ├── Publishing Queue      └── Emergency Pause Paid └── Resolve Flow |
+|                               └── Stuck Job Detection                                             |
+|                                                                                                   |
+|                                [HUMAN ACTION QUEUE]                                               |
+|                    ("CẦN BẠN XỬ LÝ" - Multi-Dimension Aggregation)                                |
+|  ├── 1. CRITICAL: Failed Jobs, Degraded Workers, Stale Trackers                                   |
+|  ├── 2. COST_BLOCKED / WARNING: Budget Exceeded, Over-budget Experiments                          |
+|  ├── 3. APPROVAL: Video QC, Post Packages, Optimization Recommendations                           |
+|  └── 4. NORMAL: Researched Candidates, Running Experiments, Unattributed Conversions              |
+|                                                                                                   |
+|                                [GLOBAL CONTROL PLANE]                                             |
+|  ├── Master Automation Switch & Per-Module Toggles (Research / Content / Video / Publish / Opt)  |
+|  ├── Safe Retry (FAILED only) & Safe Cancel (PENDING/RUNNING only)                                |
+|  ├── Recursive Secret Sanitizer (Bearer tokens, API keys, Passwords masked everywhere)            |
+|  └── Data Freshness Trackers (Distinguishes STALE from NOT_CONFIGURED)                            |
++---------------------------------------------------------------------------------------------------+
+```
+
+### Thành phần Lớp Dịch vụ Phase 10:
+1. **`OperationsService`** (`libraries/class/class.OperationsService.php`):
+   * **Process Registry & Worker Heartbeat**: Theo dõi 6 tiến trình nền qua TTL, xác định trạng thái thực tế (`HEALTHY`, `WARNING`, `DEGRADED`, `FAILED`, `DISABLED`, `UNKNOWN`).
+   * **Queue Metrics & Stuck Job Detection**: Tổng hợp thời gian thực của 4 hàng đợi tác vụ, cảnh báo các job bị treo vượt ngưỡng.
+   * **Zero-Cost Provider Diagnostics**: Chẩn đoán tính sẵn sàng của API bên thứ ba dựa trên DB mà không kích hoạt gọi cURL tính phí.
+   * **Cost Center & Budget Guards**: Phân tách chi phí thực tế vs ước tính, giám sát hạn mức ngân sách ngày/tháng, cơ chế Dừng Khẩn Cấp (`pause_paid_automation`).
+   * **Human Action Queue**: Tập trung toàn bộ 8 chiều tác vụ cần Admin xử lý, phân hạng ưu tiên rõ ràng.
+   * **Secret Sanitizer**: Loại bỏ bí mật nhạy cảm (API key, token Bearer) trước khi xuất ra view/log.
+   * **Idempotent Safe Retry & Safe Cancel**: Bảo vệ an toàn chống lặp lại tác vụ đã xuất bản hoặc đã tính phí.
+2. **Bộ điều khiển & Giao diện Quản trị Operations (`admin/sources/operations.php` & `admin/templates/operations/`)**:
+   * Quản lý 9 màn hình chuyên trách: `overview_tpl.php`, `pipeline_tpl.php`, `jobs_tpl.php`, `job_detail_tpl.php`, `providers_tpl.php`, `costs_tpl.php`, `alerts_tpl.php`, `logs_tpl.php`, `settings_tpl.php`.

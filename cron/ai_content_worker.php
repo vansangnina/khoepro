@@ -1,6 +1,6 @@
 <?php
 /**
- * FITNADO - Background AI Content Worker (Phase 05)
+ * FITNADO - Background AI Content Worker (Phase 05 & Phase 10 Operations)
  * Can be executed via CLI: php cron/ai_content_worker.php
  * Or via secure HTTP token: /cron/ai_content_worker.php?token=SECRET_TOKEN
  * PHP 7.4 Compatible
@@ -37,6 +37,22 @@ $d = new PDODb($dbConfig);
 $cache = new Cache($d);
 $func = new Functions($d, $cache);
 
+require_once LIBRARIES . 'class/class.OperationsService.php';
+$ops = new OperationsService($d, $func);
+
+// Automation switch check
+if (!$ops->isAutomationEnabled('content')) {
+    $msg = "AI Content Automation is disabled by Operations Center. Exiting.";
+    echo "[" . date('Y-m-d H:i:s') . "] {$msg}\n";
+    if (php_sapi_name() !== 'cli') {
+        header('Content-Type: application/json');
+        echo json_encode(array('status' => false, 'message' => $msg));
+    }
+    exit(0);
+}
+
+$ops->recordWorkerStart('ai_content_worker', 'worker');
+
 require_once LIBRARIES . 'class/class.AIContentJobQueue.php';
 $queue = new AIContentJobQueue($d, $func);
 
@@ -49,27 +65,34 @@ $log = array();
 
 echo "[" . date('Y-m-d H:i:s') . "] Starting FITNADO AI Content Worker...\n";
 
-while ($processed < $maxJobsPerRun) {
-    $job = $queue->getNextPendingJob();
-    if (!$job) {
-        break;
+try {
+    while ($processed < $maxJobsPerRun) {
+        $job = $queue->getNextPendingJob();
+        if (!$job) {
+            break;
+        }
+
+        $ops->recordHeartbeat('ai_content_worker', array('current_job_id' => $job['id']));
+        echo "Processing Content Job #{$job['id']} (Product #{$job['id_product']}, Types: {$job['content_types']})...\n";
+
+        $execRes = $queue->executeJob($job['id']);
+        $processed++;
+
+        if ($execRes['status']) {
+            echo "Job #{$job['id']} SUCCESS: Generated: {$execRes['generated_count']} items (Time: {$execRes['duration']}s)\n";
+        } else {
+            echo "Job #{$job['id']} FAILED: " . ($execRes['error'] ?? 'Unknown error') . "\n";
+        }
+
+        $log[] = array('job_id' => $job['id'], 'result' => $execRes);
     }
 
-    echo "Processing Content Job #{$job['id']} (Product #{$job['id_product']}, Types: {$job['content_types']})...\n";
-
-    $execRes = $queue->executeJob($job['id']);
-    $processed++;
-
-    if ($execRes['status']) {
-        echo "Job #{$job['id']} SUCCESS: Generated: {$execRes['generated_count']} items (Time: {$execRes['duration']}s)\n";
-    } else {
-        echo "Job #{$job['id']} FAILED: " . ($execRes['error'] ?? 'Unknown error') . "\n";
-    }
-
-    $log[] = array('job_id' => $job['id'], 'result' => $execRes);
+    $ops->recordWorkerSuccess('ai_content_worker', array('processed_count' => $processed));
+    echo "[" . date('Y-m-d H:i:s') . "] AI Content Worker finished. Total jobs processed: {$processed}.\n";
+} catch (Exception $e) {
+    $ops->recordWorkerError('ai_content_worker', $e->getMessage());
+    echo "[" . date('Y-m-d H:i:s') . "] Fatal error in AI Content worker: " . $e->getMessage() . "\n";
 }
-
-echo "[" . date('Y-m-d H:i:s') . "] AI Content Worker finished. Total jobs processed: {$processed}.\n";
 
 if (php_sapi_name() !== 'cli') {
     header('Content-Type: application/json');

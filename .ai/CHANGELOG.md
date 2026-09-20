@@ -4,6 +4,50 @@ Tài liệu ghi nhận toàn bộ các thay đổi được thực hiện bởi 
 
 ---
 
+## [2026-09-20] - PHASE 10: OPERATIONS & AUTOMATION CONTROL CENTER (MONITOR, CONTROL, RECOVER, AUDIT, COST CONTROL)
+
+### CREATED
+* `database/migrations/phase10_operations_control_center.sql`: Migration CSDL tạo 3 bảng vận hành mới và nạp cấu hình hệ thống:
+  - `table_system_worker_status`: Theo dõi trạng thái nhịp tim (heartbeats), PID, hostname, lỗi gần nhất của 6 tiến trình nền (`product_research_worker`, `ai_content_worker`, `video_render_worker`, `publish_worker`, `analytics_aggregator`, `optimization_worker`).
+  - `table_system_alert`: Quản lý sự cố với cơ chế fingerprint deduplication, bộ đếm `occurrences_count`, và vòng đời `ACTIVE → ACKNOWLEDGED → RESOLVED`.
+  - `table_operations_override_log`: Lưu vết kiểm toán toàn bộ hành động ghi đè ngân sách (Admin Override), dừng khẩn cấp, retry/cancel tác vụ, và thay đổi công tắc tự động hóa.
+  - Nạp các thiết lập nhóm `operations` trong `table_analytics_setting` (`automation_enabled`, `pause_paid_automation`, per-module automation toggles, ngân sách ngày/tháng, ngưỡng timeout heartbeat & stuck jobs).
+* `libraries/class/class.OperationsService.php`: Dịch vụ điều phối và giám sát trung tâm cho toàn bộ pipeline Phase 01–09:
+  - Theo dõi nhịp tim worker và tính toán trạng thái sức khỏe trung thực dựa trên TTL thật (`HEALTHY`, `WARNING`, `DEGRADED`, `FAILED`, `DISABLED`, `UNKNOWN`).
+  - Tổng hợp chỉ số thời gian thực của 4 hàng đợi tác vụ (`table_product_research_job`, `table_ai_content_job`, `table_ai_video_job`, `table_publish_post`) và phát hiện job kẹt (`detectAndFlagStuckJobs`).
+  - Chẩn đoán tính sẵn sàng của nhà cung cấp API không tốn phí (`getProvidersStatus`).
+  - Phân tách chi phí thực tế vs ước tính, phân rã theo loại (TTS, AI Video, Local Render), kiểm soát hạn mức ngân sách ngày/tháng, và cơ chế Dừng Khẩn Cấp (`pause_paid_automation`).
+  - Hàng đợi Hành động Con người ("CẦN BẠN XỬ LÝ") tổng hợp 8 chiều nghiệp vụ cần Admin can thiệp với phân cấp ưu tiên rõ ràng (`CRITICAL` > `COST_BLOCKED/WARNING` > `APPROVAL` > `NORMAL`).
+  - Hàm làm sạch dữ liệu bí mật đệ quy `sanitizeSecrets()` che dấu toàn bộ token Bearer, API key, mật khẩu trong logs và views.
+  - Thao tác Retry an toàn (chỉ tác vụ `FAILED`) và Cancel an toàn (tác vụ `PENDING`/`RUNNING`), bảo vệ bất biến chống lặp lại tác vụ đã xuất bản hoặc đã tính phí.
+* `admin/sources/operations.php`: Controller điều phối trung tâm quản trị Operations:
+  - Quản lý 9 màn hình: `overview`, `pipeline`, `jobs`, `job_detail`, `providers`, `costs`, `alerts`, `logs`, `settings`.
+  - Xử lý các POST mutating actions bảo vệ CSRF: `retry_job`, `cancel_job`, `acknowledge_alert`, `resolve_alert`, `toggle_automation`, `emergency_pause_paid`, `override_budget`, `save_settings`.
+* `admin/templates/operations/`: 9 giao diện quản trị AdminLTE trực quan:
+  - `overview_tpl.php`: Bảng điều khiển tổng quan sức khỏe, chỉ số tức thời, ngân sách & cảnh báo.
+  - `pipeline_tpl.php`: Dòng chảy 9 giai đoạn & Hàng đợi Hành động Con người ("Cần Bạn Xử Lý").
+  - `jobs_tpl.php`: Quản lý toàn diện 4 hàng đợi tác vụ, lọc theo phân hệ/trạng thái, phát hiện job kẹt & thao tác Retry/Cancel.
+  - `job_detail_tpl.php`: Chi tiết tác vụ, thông số payload/kết quả đã lọc bí mật an toàn.
+  - `providers_tpl.php`: Chẩn đoán trạng thái nhà cung cấp không tốn phí API.
+  - `costs_tpl.php`: Trung tâm phân tích chi phí thực tế vs ước tính & cơ chế Admin Override.
+  - `alerts_tpl.php`: Trung tâm cảnh báo, gộp trùng sự cố & xác nhận/giải quyết.
+  - `logs_tpl.php`: Nhật ký kiểm toán thao tác vận hành (`table_operations_override_log`).
+  - `settings_tpl.php`: Bảng điều khiển công tắc tự động hóa và ngưỡng giám sát.
+* `.ai/skills/fitnado-operations/SKILL.md`: Kỹ năng vận hành chuẩn hóa cho Phase 10.
+* `test_phase10.php`: Bộ kiểm thử tự động toàn diện cho Phase 10 với 48/48 assertions đạt chuẩn 100% PASS.
+* `test_http_operations.php`: Bộ kiểm thử giao diện và endpoint HTTP cho Phase 10 với 16/16 test cases đạt chuẩn 100% PASS.
+* `.ai/reports/PHASE-10-OPERATIONS-TEST-REPORT.md`: Báo cáo kiểm định và kết quả thử nghiệm Phase 10.
+
+### MODIFIED & INTEGRATED
+* `cron/product_research_worker.php`: Tích hợp ghi nhận nhịp tim worker start/heartbeat/complete/error và kiểm tra công tắc tự động hóa phân hệ Research.
+* `cron/ai_content_worker.php`: Tích hợp ghi nhận nhịp tim worker start/heartbeat/complete/error và kiểm tra công tắc tự động hóa phân hệ Content.
+* `cron/video_render_worker.php`: Tích hợp ghi nhận nhịp tim worker start/heartbeat/complete/error, kiểm tra công tắc tự động hóa Video và rào chắn dừng khẩn cấp API tính phí.
+* `cron/publish_worker.php`: Tích hợp ghi nhận nhịp tim worker start/heartbeat/complete/error và kiểm tra công tắc tự động hóa phân hệ Publishing.
+* `admin/templates/layout/menu.php`: Thêm mục menu treeview "Trung tâm Vận hành" với đầy đủ 8 liên kết chuyên trách.
+* `dem22y2024_master.sql`: Cập nhật schema master với các bảng và cài đặt Phase 10.
+
+---
+
 ## [2026-09-20] - PHASE 09: DATA-DRIVEN OPTIMIZATION LOOP & PHASE 08 WINNER HOTFIX (PERFORMANCE SIGNAL -> OPTIMIZATION ENGINE -> RECOMMENDATION -> HUMAN APPROVAL -> A/B EXPERIMENT -> VARIATION -> PUBLISH -> MEASURE AGAIN)
 
 ### CREATED

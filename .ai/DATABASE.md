@@ -675,3 +675,79 @@
   * `started_at`, `completed_at`: Unix timestamp thời gian bắt đầu và kết thúc
   * `created_by`: Username Admin khởi tạo VARCHAR(50) DEFAULT 'admin'
   * `date_created`, `date_updated`: Unix timestamp
+
+---
+
+## 16. BẢNG DỮ LIỆU PHASE 10 (OPERATIONS & AUTOMATION CONTROL CENTER)
+
+### `table_system_worker_status` (Nhịp tim & Trạng thái Tiến trình Nền)
+* **Mục đích**: Lưu trữ thông tin định danh, nhịp tim (heartbeat) thời gian thực, hostname, PID, và lỗi gần nhất của 6 background workers / cron jobs.
+* **Cấu trúc**:
+  * `id`: Khóa chính INT(11) UNSIGNED AUTO_INCREMENT
+  * `worker_key`: Mã định danh tiến trình duy nhất VARCHAR(50) NOT NULL UNIQUE (Ví dụ: `product_research_worker`, `ai_content_worker`, `video_render_worker`, `publish_worker`, `analytics_aggregator`, `optimization_worker`)
+  * `worker_name`: Tên hiển thị thân thiện VARCHAR(100) NOT NULL
+  * `module`: Phân hệ nghiệp vụ (`research`, `content`, `video`, `publishing`, `analytics`, `optimization`) NOT NULL
+  * `last_started_at`: Unix timestamp thời điểm tiến trình khởi chạy lần gần nhất NULL
+  * `last_heartbeat_at`: Unix timestamp nhịp tim cập nhật gần nhất NULL
+  * `last_completed_at`: Unix timestamp chu kỳ hoàn thành gần nhất NULL
+  * `last_success_at`: Unix timestamp lần chạy thành công gần nhất NULL
+  * `last_error_at`: Unix timestamp lần gặp lỗi gần nhất NULL
+  * `last_error`: Nội dung thông điệp lỗi gần nhất TEXT NULL (Đã qua bộ lọc xóa API key/secret)
+  * `hostname`: Tên máy chủ / môi trường chạy tiến trình VARCHAR(100) NULL
+  * `pid`: Process ID hệ điều hành INT(11) NULL
+  * `metadata`: Thông tin cấu hình mở rộng MEDIUMTEXT NULL (JSON)
+  * `date_created`, `date_updated`: Unix timestamp
+
+### `table_system_alert` (Trung tâm Sự cố & Cảnh báo Vận hành)
+* **Mục đích**: Ghi nhận và quản lý sự cố vận hành có cơ chế gộp trùng (fingerprint deduplication), đếm số lần tái diễn (`occurrences_count`) và quy trình xử lý `ACTIVE → ACKNOWLEDGED → RESOLVED`.
+* **Cấu trúc**:
+  * `id`: Khóa chính BIGINT(20) UNSIGNED AUTO_INCREMENT
+  * `fingerprint`: Mã băm SHA-256 duy nhất đại diện cho loại sự cố + mục tiêu VARCHAR(64) NOT NULL UNIQUE
+  * `module`: Phân hệ nghiệp vụ (`research`, `content`, `video`, `publishing`, `analytics`, `optimization`, `operations`, `system`) NOT NULL
+  * `severity`: Mức độ nghiêm trọng (`CRITICAL`, `WARNING`, `INFO`) NOT NULL
+  * `title`: Tiêu đề tóm tắt sự cố VARCHAR(255) NOT NULL
+  * `message`: Nội dung mô tả chi tiết sự cố TEXT NOT NULL (Đã xóa bí mật/token)
+  * `reference_id`: Mã thực thể liên quan VARCHAR(100) NULL (Ví dụ: Job ID, Post ID)
+  * `status`: Trạng thái xử lý sự cố (`ACTIVE`, `ACKNOWLEDGED`, `RESOLVED`) DEFAULT 'ACTIVE'
+  * `occurrences_count`: Số lần sự cố trùng lặp phát sinh liên tiếp INT(11) DEFAULT 1
+  * `first_seen_at`: Unix timestamp thời điểm sự cố xuất hiện lần đầu
+  * `last_seen_at`: Unix timestamp thời điểm sự cố xuất hiện gần nhất
+  * `acknowledged_at`: Unix timestamp khi Admin xác nhận đã tiếp nhận NULL
+  * `acknowledged_by`: Username Admin xác nhận VARCHAR(50) NULL
+  * `resolved_at`: Unix timestamp khi sự cố được giải quyết NULL
+  * `resolved_by`: Username Admin giải quyết VARCHAR(50) NULL
+  * `resolution_notes`: Ghi chú phương án khắc phục TEXT NULL
+  * `date_created`, `date_updated`: Unix timestamp
+
+### `table_operations_override_log` (Nhật ký Kiểm toán Quyền Vận hành & Ghi đè)
+* **Mục đích**: Ghi lại lịch sử chi tiết mọi hành động mang tính rủi ro hoặc can thiệp bảo mật: Dừng khẩn cấp, Ghi đè ngân sách (Admin Override), Retry thủ công, Cancel tác vụ, Thay đổi công tắc tự động hóa.
+* **Cấu trúc**:
+  * `id`: Khóa chính BIGINT(20) UNSIGNED AUTO_INCREMENT
+  * `action_type`: Loại hành động (`BUDGET_OVERRIDE`, `EMERGENCY_STOP_ENABLE`, `EMERGENCY_STOP_DISABLE`, `MANUAL_RETRY`, `MANUAL_CANCEL`, `AUTOMATION_TOGGLE`, `SETTINGS_CHANGE`) NOT NULL
+  * `module`: Phân hệ chịu tác động (`research`, `content`, `video`, `publishing`, `analytics`, `optimization`, `operations`, `all`) NOT NULL
+  * `target_entity`: Tên bảng hoặc thực thể tác động VARCHAR(100) NULL
+  * `target_id`: ID của bản ghi/tác vụ chịu tác động BIGINT(20) NULL
+  * `reason`: Lý do bắt buộc khi Admin thực hiện ghi đè/can thiệp TEXT NOT NULL
+  * `old_value`: Trạng thái/giá trị trước khi đổi MEDIUMTEXT NULL
+  * `new_value`: Trạng thái/giá trị mới sau khi đổi MEDIUMTEXT NULL
+  * `performed_by`: Username Admin thực hiện thao tác VARCHAR(50) NOT NULL
+  * `ip_address`: Địa chỉ IP nguồn VARCHAR(45) NULL
+  * `user_agent`: Thông tin User Agent VARCHAR(255) NULL
+  * `date_created`: Unix timestamp
+
+### Bổ sung Cấu hình Nhóm `operations` trong `table_analytics_setting`
+* `automation_enabled` (1/0, default: 1): Công tắc tổng toàn hệ thống.
+* `pause_paid_automation` (1/0, default: 0): Công tắc Dừng Khẩn Cấp các tác vụ gọi API bên ngoài tốn phí.
+* `research_automation_enabled` (1/0, default: 1): Công tắc tự động hóa thu thập sản phẩm.
+* `content_automation_enabled` (1/0, default: 1): Công tắc tự động hóa sinh kịch bản AI.
+* `video_automation_enabled` (1/0, default: 1): Công tắc tự động hóa render video.
+* `publishing_automation_enabled` (1/0, default: 1): Công tắc tự động hóa xuất bản đa kênh.
+* `optimization_automation_enabled` (1/0, default: 1): Công tắc sinh khuyến nghị tối ưu hóa.
+* `daily_external_api_budget` (200000 VND): Hạn mức ngân sách API bên ngoài mỗi ngày.
+* `monthly_external_api_budget` (3000000 VND): Hạn mức ngân sách API bên ngoài mỗi tháng.
+* `worker_heartbeat_threshold_seconds` (300s): Ngưỡng cảnh báo worker mất nhịp tim (5 phút).
+* `stuck_job_threshold_seconds` (1800s): Ngưỡng cảnh báo job bị treo trong RUNNING (30 phút).
+* `tracking_stale_threshold_hours` (24h): Ngưỡng cảnh báo sự kiện click/pageview không phát sinh.
+* `affiliate_click_stale_threshold_hours` (48h): Ngưỡng cảnh báo không có click affiliate.
+* `conversion_stale_threshold_days` (7 days): Ngưỡng cảnh báo chưa có dữ liệu đối soát đơn hàng.
+

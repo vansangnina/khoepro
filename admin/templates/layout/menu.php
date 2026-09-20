@@ -309,6 +309,70 @@
                     </ul>
                 </li>
 
+                <!-- Operations & Automation Control Center (Phase 10) -->
+                <?php
+                $isOperationsActive = ($com == 'operations');
+                ?>
+                <li class="nav-item has-treeview <?= $isOperationsActive ? 'menu-open' : '' ?>">
+                    <a class="nav-link <?= $isOperationsActive ? 'active' : '' ?>" href="#" title="Operations Control Center">
+                        <i class="nav-icon text-sm fas fa-tachometer-alt text-primary"></i>
+                        <p>
+                            Trung tâm Vận hành
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'operations' && $act == 'overview') ? 'active' : '' ?>" href="index.php?com=operations&act=overview" title="Tổng quan hệ thống">
+                                <i class="nav-icon text-sm far fa-circle text-primary"></i>
+                                <p>Tổng quan hệ thống</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'operations' && $act == 'pipeline') ? 'active' : '' ?>" href="index.php?com=operations&act=pipeline" title="Pipeline & Hàng đợi">
+                                <i class="nav-icon text-sm far fa-circle text-info"></i>
+                                <p>Pipeline & Hàng đợi</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'operations' && in_array($act, array('jobs', 'job_detail'))) ? 'active' : '' ?>" href="index.php?com=operations&act=jobs" title="Quản lý Tác vụ">
+                                <i class="nav-icon text-sm far fa-circle text-warning"></i>
+                                <p>Quản lý Tác vụ & Queues</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'operations' && $act == 'providers') ? 'active' : '' ?>" href="index.php?com=operations&act=providers" title="Nhà cung cấp & API">
+                                <i class="nav-icon text-sm far fa-circle text-success"></i>
+                                <p>Nhà cung cấp & API</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'operations' && $act == 'costs') ? 'active' : '' ?>" href="index.php?com=operations&act=costs" title="Chi phí API & Ngân sách">
+                                <i class="nav-icon text-sm far fa-circle text-success"></i>
+                                <p>Chi phí API & Ngân sách</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'operations' && $act == 'alerts') ? 'active' : '' ?>" href="index.php?com=operations&act=alerts" title="Cảnh báo & Sự cố">
+                                <i class="nav-icon text-sm far fa-circle text-danger"></i>
+                                <p>Cảnh báo & Sự cố</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'operations' && $act == 'logs') ? 'active' : '' ?>" href="index.php?com=operations&act=logs" title="Nhật ký hệ thống">
+                                <i class="nav-icon text-sm far fa-circle text-dark"></i>
+                                <p>Nhật ký hệ thống</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= ($com == 'operations' && $act == 'settings') ? 'active' : '' ?>" href="index.php?com=operations&act=settings" title="Cấu hình vận hành">
+                                <i class="nav-icon text-sm far fa-circle text-secondary"></i>
+                                <p>Cấu hình Vận hành</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
                 <!-- Affiliate Clicks -->
                 <li class="nav-item <?= ($com == 'affiliate') ? 'active' : '' ?>">
                     <a class="nav-link <?= ($com == 'affiliate') ? 'active' : '' ?>" href="index.php?com=affiliate&act=man" title="Thống kê Affiliate Clicks">
