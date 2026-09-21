@@ -11,9 +11,9 @@ if (empty($productHot)) {
     $productHot = $d->rawQuery("select id, name$lang, slugvi, slugen, photo, regular_price, sale_price, discount, code, desc$lang from #_product where type = ? and find_in_set('hienthi',status) order by numb,id desc limit 0,10", array('san-pham'));
 }
 $proListHot = $d->rawQuery("select name$lang, slugvi, slugen, id, photo from #_product_list where type = ? and find_in_set('hienthi',status) order by numb,id desc", array('san-pham'));
-$newsHot = $d->rawQuery("select name$lang, slugvi, slugen, desc$lang, date_created, id, photo from #_news where type = ? and find_in_set('noibat',status) and find_in_set('hienthi',status) order by numb,id desc", array('tin-tuc'));
+$newsHot = $d->rawQuery("select name$lang, slugvi, slugen, desc$lang, date_created, id, photo from #_news where type = ? and find_in_set('noibat',status) and find_in_set('hienthi',status) order by numb,id desc limit 0,16", array('tin-tuc'));
 if (empty($newsHot)) {
-    $newsHot = $d->rawQuery("select name$lang, slugvi, slugen, desc$lang, date_created, id, photo from #_news where type = ? and find_in_set('hienthi',status) order by numb,id desc limit 0,10", array('tin-tuc'));
+    $newsHot = $d->rawQuery("select name$lang, slugvi, slugen, desc$lang, date_created, id, photo from #_news where type = ? and find_in_set('hienthi',status) order by numb,id desc limit 0,16", array('tin-tuc'));
 }
 $videoHot = $d->rawQuery("select id, name$lang, link_video, photo from #_photo where type = ? and find_in_set('hienthi',status) order by numb,id desc", array('video'));
 $partner = $d->rawQuery("select name$lang, link, photo from #_photo where type = ? and find_in_set('hienthi',status) order by numb, id desc", array('doitac'));

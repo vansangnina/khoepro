@@ -229,41 +229,91 @@
         </section>
     <?php } ?>
 
-    <!-- Knowledge & Guide (News) -->
-    <?php if (!empty($newsHot)) {
-        $articleIcons = array('🏋️', '🥤', '〰️', '🎒', '💪', '🏃');
-    ?>
-        <section class="fitnado-section">
+    <!-- Knowledge & Guide (News) - Pro Slider -->
+    <?php if (!empty($newsHot)) { ?>
+        <section class="fitnado-section fitnado-knowledge-section">
             <div class="fitnado-sectionHead">
                 <div>
-                    <h2>▣ KIẾN THỨC & HƯỚNG DẪN</h2>
-                    <p>Giúp bạn hiểu rõ hơn, tập luyện hiệu quả hơn.</p>
+                    <h2><i class="fa-solid fa-book-open-reader me-2 text-primary"></i> KIẾN THỨC & HƯỚNG DẪN</h2>
+                    <p>Giúp bạn hiểu rõ kỹ thuật, chọn đúng thiết bị và tập luyện an toàn, hiệu quả hơn mỗi ngày.</p>
                 </div>
-                <a href="tin-tuc" class="fitnado-more">Xem tất cả bài viết →</a>
+                <a href="kien-thuc-tap-luyen" class="fitnado-more">Xem tất cả bài viết →</a>
             </div>
 
-            <div class="fitnado-articles">
-                <?php foreach ($newsHot as $k => $v) {
-                    if ($k >= 5) break;
-                    $aIcon = $articleIcons[$k % count($articleIcons)];
-                ?>
-                    <a href="<?= $v[$sluglang] ?>" class="fitnado-article" title="<?= $v['name' . $lang] ?>">
-                        <div class="pic">
-                            <?php if (!empty($v['photo'])) { ?>
-                                <img class="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';" data-src="<?= THUMBS ?>/280x180x1/<?= UPLOAD_NEWS_L . $v['photo'] ?>" alt="<?= $v['name' . $lang] ?>" />
-                                <span style="display:none;"><?= $aIcon ?></span>
-                            <?php } else { ?>
-                                <span><?= $aIcon ?></span>
-                            <?php } ?>
+            <div class="fitnado-articles-slider-wrap position-relative">
+                <div class="owl-page owl-carousel owl-theme owl-articles-slider" 
+                     data-items="screen:0|items:1|margin:16,screen:480|items:2|margin:16,screen:768|items:3|margin:20,screen:1024|items:4|margin:20,screen:1280|items:4|margin:20" 
+                     data-rewind="1" 
+                     data-autoplay="1" 
+                     data-loop="0" 
+                     data-lazyload="0" 
+                     data-mousedrag="1" 
+                     data-touchdrag="1" 
+                     data-smartspeed="400" 
+                     data-autoplayspeed="4000" 
+                     data-dots="1" 
+                     data-nav="1">
+                    <?php foreach ($newsHot as $k => $v) { 
+                        // Determine category tag label
+                        $tagLabel = 'Kiến thức';
+                        $tagIcon = 'fa-solid fa-book-open';
+                        $tagClass = 'badge-knowledge';
+                        $lowerName = mb_strtolower($v['name' . $lang], 'UTF-8');
+                        if (strpos($lowerName, 'so sánh') !== false || strpos($lowerName, 'vs') !== false) {
+                            $tagLabel = 'So sánh';
+                            $tagIcon = 'fa-solid fa-code-compare';
+                            $tagClass = 'badge-compare';
+                        } elseif (strpos($lowerName, 'đánh giá') !== false || strpos($lowerName, 'review') !== false) {
+                            $tagLabel = 'Đánh giá';
+                            $tagIcon = 'fa-solid fa-star';
+                            $tagClass = 'badge-review';
+                        } elseif (strpos($lowerName, 'hướng dẫn') !== false || strpos($lowerName, 'cách chọn') !== false || strpos($lowerName, 'cẩm nang') !== false) {
+                            $tagLabel = 'Hướng dẫn';
+                            $tagIcon = 'fa-solid fa-compass';
+                            $tagClass = 'badge-guide';
+                        }
+                    ?>
+                        <div class="fitnado-article-card">
+                            <a href="<?= $v[$sluglang] ?>" class="article-thumb" title="<?= $v['name' . $lang] ?>">
+                                <?php if (!empty($v['photo'])) { ?>
+                                    <img class="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" data-src="<?= THUMBS ?>/400x250x1/<?= UPLOAD_NEWS_L . $v['photo'] ?>" alt="<?= $v['name' . $lang] ?>" />
+                                    <span class="fallback-thumb" style="display:none;"><i class="fa-solid fa-dumbbell"></i></span>
+                                <?php } else { ?>
+                                    <span class="fallback-thumb"><i class="fa-solid fa-dumbbell"></i></span>
+                                <?php } ?>
+                                <span class="article-category-badge <?= $tagClass ?>">
+                                    <i class="<?= $tagIcon ?>"></i> <?= $tagLabel ?>
+                                </span>
+                            </a>
+                            <div class="article-content-body">
+                                <div class="article-meta-row">
+                                    <span class="article-meta-date">
+                                        <i class="fa-regular fa-calendar"></i> <?= date("d/m/Y", !empty($v['date_created']) ? $v['date_created'] : time()) ?>
+                                    </span>
+                                    <span class="article-meta-time">
+                                        <i class="fa-regular fa-clock"></i> 4 phút đọc
+                                    </span>
+                                </div>
+                                <h3 class="article-card-title">
+                                    <a href="<?= $v[$sluglang] ?>" title="<?= $v['name' . $lang] ?>">
+                                        <?= $v['name' . $lang] ?>
+                                    </a>
+                                </h3>
+                                <?php if (!empty($v['desc' . $lang])) { ?>
+                                    <p class="article-card-desc">
+                                        <?= strip_tags($v['desc' . $lang]) ?>
+                                    </p>
+                                <?php } ?>
+                                <div class="article-card-footer">
+                                    <a href="<?= $v[$sluglang] ?>" class="article-readmore-btn">
+                                        <span>Khám phá chi tiết</span>
+                                        <i class="fa-solid fa-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
-                        <div class="fitnado-article-info">
-                            <b><?= $v['name' . $lang] ?></b>
-                            <?php if (!empty($v['desc' . $lang])) { ?>
-                                <p><?= strip_tags($v['desc' . $lang]) ?></p>
-                            <?php } ?>
-                        </div>
-                    </a>
-                <?php } ?>
+                    <?php } ?>
+                </div>
             </div>
         </section>
     <?php } ?>
