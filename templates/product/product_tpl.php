@@ -39,7 +39,7 @@
         </div>
 
         <?php if (!empty($product)) { ?>
-            <div class="fitnado-products">
+            <div class="fitnado-products fitnado-products-grid">
                 <?php foreach ($product as $k => $v) {
                     $emojiIcons = array('➰', '🥊', '〰️', '🥤', '🎒', '💪', '⚡', '🏋️');
                     $cardEmoji = $emojiIcons[$k % count($emojiIcons)];

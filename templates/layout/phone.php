@@ -1,4 +1,4 @@
-<nav class="fitnado-bottom-bar">
+<nav class="fitnado-bottom-bar" id="fitnado-bottom-bar" aria-label="Điều hướng nhanh di động">
     <a href="" class="<?= ($com == '' || $com == 'index') ? 'active' : '' ?>">
         <i class="fa-solid fa-house"></i>
         <span>Trang chủ</span>
@@ -15,15 +15,8 @@
         <i class="fa-solid fa-scale-balanced"></i>
         <span>So sánh</span>
     </a>
-    <?php if (array_key_exists($loginMember, $_SESSION) && !empty($_SESSION[$loginMember]['active'])) { ?>
-        <a href="account/thong-tin" class="<?= ($com == 'account') ? 'active' : '' ?>">
-            <i class="fa-solid fa-user-check"></i>
-            <span>Tài khoản</span>
-        </a>
-    <?php } else { ?>
-        <a href="account/dang-nhap" class="<?= ($com == 'account') ? 'active' : '' ?>">
-            <i class="fa-regular fa-user"></i>
-            <span>Tài khoản</span>
-        </a>
-    <?php } ?>
+    <a href="javascript:void(0)" class="btn-bottom-drawer-trigger" id="btn-bottom-drawer" title="Danh mục & Menu">
+        <i class="fa-solid fa-bars-staggered"></i>
+        <span>Danh mục</span>
+    </a>
 </nav>

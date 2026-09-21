@@ -109,7 +109,7 @@ $config = array(
     ),
     'accesstrade' => array(
         'active' => true,
-        'access_key' => '',
+        'access_key' => 'AEsZZsLDUSPjBRBd7noBUClS5wDtnaKV',
         'base_url' => 'https://api.accesstrade.vn',
         'timeout' => 30,
         'sync_enabled' => true,

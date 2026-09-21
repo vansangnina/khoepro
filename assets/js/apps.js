@@ -75,12 +75,43 @@ NN_FRAMEWORK.Menu = function () {
             $(".w-menu").removeClass("fix_head animate__animated animate__fadeIn");
         }
     });
-	/* Mmenu */
-	if (isExist($('nav#menu'))) {
-		$('nav#menu').mmenu({
-			extensions: ['border-full', 'position-left', 'position-front']
-		});
+	/* Fitnado Pro Mobile Drawer & Search */
+	function openFitnadoDrawer() {
+		$('#fitnado-mobile-drawer').addClass('active');
+		$('#fitnado-drawer-overlay').addClass('active');
+		$('body').addClass('drawer-opened');
 	}
+	function closeFitnadoDrawer() {
+		$('#fitnado-mobile-drawer').removeClass('active');
+		$('#fitnado-drawer-overlay').removeClass('active');
+		$('body').removeClass('drawer-opened');
+	}
+
+	$(document).on('click', '#btn-toggle-drawer, #btn-bottom-drawer', function(e) {
+		e.preventDefault();
+		openFitnadoDrawer();
+	});
+
+	$(document).on('click', '#btn-close-drawer, #fitnado-drawer-overlay', function(e) {
+		e.preventDefault();
+		closeFitnadoDrawer();
+	});
+
+	$(document).on('click', '.drawer-toggle-sub', function(e) {
+		e.preventDefault();
+		var parent = $(this).closest('.drawer-has-child');
+		parent.toggleClass('open');
+		parent.find('> .drawer-sub-menu').slideToggle(250);
+	});
+
+	$(document).on('click', '#btn-toggle-mobile-search', function(e) {
+		e.preventDefault();
+		$('#fitnado-mobile-search-box').slideToggle(200, function() {
+			if ($(this).is(':visible')) {
+				$('#keyword-mobile').focus();
+			}
+		});
+	});
 };
 
 /* Tools */
