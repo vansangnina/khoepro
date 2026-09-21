@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS `table_operations_override_log` (
 -- 4. Seed operational settings into table_analytics_setting
 INSERT INTO `table_analytics_setting` (`setting_key`, `setting_value`, `setting_group`, `description`, `date_updated`) VALUES
 ('automation_enabled', '1', 'operations', 'Master global automation switch (1=ON, 0=OFF)', UNIX_TIMESTAMP()),
-('pause_paid_automation', '0', 'operations', 'Emergency stop switch for paid external API calls (1=PAUSED, 0=NORMAL)', UNIX_TIMESTAMP()),
+('pause_paid_automation', '1', 'operations', 'Emergency stop switch for paid external API calls (1=PAUSED, 0=NORMAL, default PAUSED on deploy)', UNIX_TIMESTAMP()),
 ('research_automation_enabled', '1', 'operations', 'Research background automation switch (1=ON, 0=OFF)', UNIX_TIMESTAMP()),
 ('content_automation_enabled', '1', 'operations', 'AI Content background automation switch (1=ON, 0=OFF)', UNIX_TIMESTAMP()),
 ('video_automation_enabled', '1', 'operations', 'AI Video render background automation switch (1=ON, 0=OFF)', UNIX_TIMESTAMP()),

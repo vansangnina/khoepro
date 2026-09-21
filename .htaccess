@@ -2,6 +2,24 @@ RewriteEngine on
 Options -Indexes
 DirectoryIndex index.php
 
+# ==============================================================================
+# FITNADO PRODUCTION SECURITY GUARDS
+# ==============================================================================
+# Block access to hidden files and directories (.git, .ai, .env, etc.)
+RewriteRule (^\.|/\.) - [F,L]
+
+# Block direct web access to sensitive directories
+RewriteRule ^(database|database_migration|\.ai|upload/logs)/ - [F,L]
+
+# Block direct web access to test runner scripts
+RewriteRule ^test_.*\.php$ - [F,L]
+
+# Block direct web access to sensitive file extensions
+<FilesMatch "\.(sql|log|md|sh|bak|env|ini|lock)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
 <IfModule mod_rewrite.c>
 	RewriteEngine On
 	RewriteRule ^index\.php$ - [L]
