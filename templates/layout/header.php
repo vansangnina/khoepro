@@ -1,15 +1,15 @@
 <header class="fitnado-header">
     <div class="fitnado-wrap fitnado-top">
-        <a class="fitnado-logo" href="" title="<?= (!empty($setting['name' . $lang])) ? $setting['name' . $lang] : 'FITNADO' ?>">
+        <a class="fitnado-logo" href="" title="<?= (!empty($setting['name' . $lang])) ? $setting['name' . $lang] : 'Khỏe Pro' ?>">
             <?php if (!empty($logo['photo'])) { ?>
-                <img onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" src="<?= THUMBS ?>/150x60x2/<?= UPLOAD_PHOTO_L . $logo['photo'] ?>" alt="<?= (!empty($setting['name' . $lang])) ? $setting['name' . $lang] : 'FITNADO' ?>" />
+                <img onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" src="<?= THUMBS ?>/150x60x2/<?= UPLOAD_PHOTO_L . $logo['photo'] ?>" alt="<?= (!empty($setting['name' . $lang])) ? $setting['name' . $lang] : 'Khỏe Pro' ?>" />
                 <div class="logo-fallback" style="display:none;">
-                    <span class="logo-text">FITNADO</span>
-                    <small><?= (!empty($slogan['name' . $lang])) ? $slogan['name' . $lang] : 'FIND BETTER GEAR. TRAIN BETTER.' ?></small>
+                    <span class="logo-text">Khỏe Pro</span>
+                    <small><?= (!empty($slogan['name' . $lang])) ? $slogan['name' . $lang] : 'Lựa chọn thông minh hơn. Tập luyện khỏe hơn.' ?></small>
                 </div>
             <?php } else { ?>
-                <span class="logo-text">FITNADO</span>
-                <small><?= (!empty($slogan['name' . $lang])) ? $slogan['name' . $lang] : 'FIND BETTER GEAR. TRAIN BETTER.' ?></small>
+                <span class="logo-text">Khỏe Pro</span>
+                <small><?= (!empty($slogan['name' . $lang])) ? $slogan['name' . $lang] : 'Lựa chọn thông minh hơn. Tập luyện khỏe hơn.' ?></small>
             <?php } ?>
         </a>
 

@@ -49,17 +49,21 @@ $bestForText = !empty($rowDetail['best_for']) ? $rowDetail['best_for'] : (!empty
                                 </span>
                             <?php } ?>
                             
-                            <span class="badge-tested">
-                                <i class="fas fa-dumbbell"></i>ĐÃ TEST THỰC TẾ
-                            </span>
+                            <?php if (!empty($rowDetail['is_real_test'])) { ?>
+                                <span class="badge-tested">
+                                    <i class="fas fa-dumbbell"></i>ĐÃ TEST THỰC TẾ
+                                </span>
+                            <?php } ?>
                         </div>
 
-                        <!-- Fitnado Score Pill -->
-                        <div class="pro-score-pill">
-                            <span>FITNADO SCORE:</span>
-                            <span class="score-num"><?= $displayScore ?></span>
-                            <span class="text-xs text-white-50">/10</span>
-                        </div>
+                        <!-- KhoePro Score Pill -->
+                        <?php if (!empty($rowDetail['review_score']) && $rowDetail['review_score'] > 0) { ?>
+                            <div class="pro-score-pill">
+                                <span>KHỎE PRO SCORE:</span>
+                                <span class="score-num"><?= $displayScore ?></span>
+                                <span class="text-xs text-white-50">/10</span>
+                            </div>
+                        <?php } ?>
 
                         <!-- Main Image -->
                         <a id="main-pro-zoom" class="d-flex align-items-center justify-content-center w-100 h-100" href="<?= UPLOAD_PRODUCT_L . $rowDetail['photo'] ?>" data-fancybox="pro-gallery">
@@ -250,7 +254,7 @@ $bestForText = !empty($rowDetail['best_for']) ? $rowDetail['best_for'] : (!empty
     <div class="fitnado-verdict-card">
         <h3 class="verdict-heading">
             <i class="fas fa-clipboard-check text-primary"></i>
-            <span>ĐÁNH GIÁ CHUYÊN MÔN TỪ FITNADO</span>
+            <span>ĐÁNH GIÁ CHUYÊN MÔN TỪ KHỎE PRO</span>
         </h3>
 
         <?php if (!empty($verdictText)) { ?>

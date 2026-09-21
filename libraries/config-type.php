@@ -33,17 +33,20 @@ require_once LIBRARIES . 'type/config-type-photo.php';
 
 /* Seo page */
 $config['seopage']['page'] = array(
-    "trang-chu" => trangchu,
-    "san-pham" => sanpham,
-    "tin-tuc" => tintuc,
-    "tuyen-dung" => tuyendung,
-    "thu-vien-anh" => thuvienanh,
-    "video" => video,
-    "lien-he" => lienhe
+    "trang-chu" => "Trang chủ",
+    "san-pham" => "Sản phẩm",
+    "tin-tuc" => "Tin tức & Review",
+    "danh-gia-review" => "Đánh giá & Review",
+    "huong-dan-chon-mua" => "Hướng dẫn chọn mua",
+    "so-sanh-san-pham" => "So sánh sản phẩm",
+    "kien-thuc-tap-luyen" => "Kiến thức tập luyện",
+    "video" => "Video 30s Review",
+    "gioi-thieu" => "Giới thiệu",
+    "lien-he" => "Liên hệ"
 );
-$config['seopage']['width'] = 300;
-$config['seopage']['height'] = 200;
-$config['seopage']['thumb'] = '300x200x1';
+$config['seopage']['width'] = 1200;
+$config['seopage']['height'] = 630;
+$config['seopage']['thumb'] = '1200x630x1';
 $config['seopage']['img_type'] = '.jpg|.gif|.png|.jpeg|.gif|.webp|.WEBP';
 
 /* Setting */

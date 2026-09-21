@@ -49,7 +49,9 @@
                             <?php } ?>
                         </a>
                         <div class="fitnado-cardBody">
-                            <span class="fitnado-rating">★ 4.8</span>
+                            <?php if (!empty($v['review_score']) && $v['review_score'] > 0) { ?>
+                                <span class="fitnado-rating">★ <?= number_format($v['review_score'], 1) ?></span>
+                            <?php } ?>
                             <h3>
                                 <a href="<?= $v[$sluglang] ?>" title="<?= $v['name' . $lang] ?>"><?= $v['name' . $lang] ?></a>
                             </h3>
@@ -183,34 +185,29 @@
 
                 <div class="fitnado-compare-mid">
                     <div class="fitnado-compare-row">
-                        <b><?= (!empty($p1['code'])) ? $p1['code'] : 'Bản Tiêu Chuẩn' ?></b>
+                        <b><?= (!empty($p1['code'])) ? $p1['code'] : 'Sản phẩm 1' ?></b>
                         <b>Tiêu chí</b>
-                        <b><?= (!empty($p2['code'])) ? $p2['code'] : 'Bản Nâng Cao' ?></b>
+                        <b><?= (!empty($p2['code'])) ? $p2['code'] : 'Sản phẩm 2' ?></b>
                     </div>
                     <div class="fitnado-compare-row">
-                        <span><?= (!empty($p1['regular_price'])) ? $func->formatMoney($p1['regular_price']) : 'Liên hệ' ?></span>
-                        <b>Giá</b>
-                        <span><?= (!empty($p2['regular_price'])) ? $func->formatMoney($p2['regular_price']) : 'Liên hệ' ?></span>
+                        <span><?= (!empty($p1['sale_price'])) ? $func->formatMoney($p1['sale_price']) : ((!empty($p1['regular_price'])) ? $func->formatMoney($p1['regular_price']) : 'Liên hệ') ?></span>
+                        <b>Giá bán</b>
+                        <span><?= (!empty($p2['sale_price'])) ? $func->formatMoney($p2['sale_price']) : ((!empty($p2['regular_price'])) ? $func->formatMoney($p2['regular_price']) : 'Liên hệ') ?></span>
                     </div>
                     <div class="fitnado-compare-row">
-                        <span>Chính hãng</span>
-                        <b>Chất liệu</b>
-                        <span>Cao cấp</span>
+                        <span><?= (!empty($p1['review_type'])) ? $p1['review_type'] : 'Chính hãng' ?></span>
+                        <b>Kiểm định</b>
+                        <span><?= (!empty($p2['review_type'])) ? $p2['review_type'] : 'Chính hãng' ?></span>
                     </div>
                     <div class="fitnado-compare-row">
-                        <span>★★★★☆</span>
-                        <b>Độ bền / Grip</b>
-                        <span>★★★★★</span>
+                        <span><?= (!empty($p1['review_score']) && $p1['review_score'] > 0) ? $p1['review_score'] . '/10' : 'Đang cập nhật' ?></span>
+                        <b>Điểm đánh giá</b>
+                        <span><?= (!empty($p2['review_score']) && $p2['review_score'] > 0) ? $p2['review_score'] . '/10' : 'Đang cập nhật' ?></span>
                     </div>
                     <div class="fitnado-compare-row">
-                        <span>Phù hợp</span>
-                        <b>Người mới</b>
-                        <span>Tất cả</span>
-                    </div>
-                    <div class="fitnado-compare-row">
-                        <span>★★★★☆</span>
-                        <b>Hiệu năng</b>
-                        <span>★★★★★</span>
+                        <span><a href="<?= $p1[$sluglang] ?>" style="color:var(--primary); font-weight:600;">Xem chi tiết →</a></span>
+                        <b>Chi tiết</b>
+                        <span><a href="<?= $p2[$sluglang] ?>" style="color:var(--primary); font-weight:600;">Xem chi tiết →</a></span>
                     </div>
                 </div>
 

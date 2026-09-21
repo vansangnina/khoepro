@@ -13,7 +13,7 @@
 <?php /* <meta name="robots" content="<?=(in_array($source,$config['website']['noseo']))?'noindex,nofollow':'index,follow,noodp'?>" /> */?>
 <meta name="robots" content="<?php if($source=='search' or $source=='user' or $source=='order') { echo 'nofollow, noindex'; } elseif($metaseo!='') { echo $metaseo; } else { echo 'index,follow'; } ?>" />
 <!-- Favicon -->
-<link href="<?= ASSET . UPLOAD_PHOTO_L . $favicon['photo'] ?>" rel="shortcut icon" type="image/x-icon" />
+<link href="favicon.ico" rel="shortcut icon" type="image/x-icon" />
 
 <!-- Webmaster Tool -->
 <?= $func->decodeHtmlChars($setting['mastertool']) ?>
@@ -45,10 +45,10 @@
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:site" content="<?= $optsetting['email'] ?>" />
 <meta name="twitter:creator" content="<?= $setting['name' . $lang] ?>" />
-<meta property="og:url" content="<?= $seo->get('url') ?>" />
-<meta property="og:title" content="<?= $seo->get('title') ?>" />
-<meta property="og:description" content="<?= $seo->get('description') ?>" />
-<meta property="og:image" content="<?= $seo->get('photo') ?>" />
+<meta name="twitter:url" content="<?= $seo->get('url') ?>" />
+<meta name="twitter:title" content="<?= $seo->get('title') ?>" />
+<meta name="twitter:description" content="<?= $seo->get('description') ?>" />
+<meta name="twitter:image" content="<?= $seo->get('photo') ?>" />
 
 <!-- Canonical -->
 <link rel="canonical" href="<?= $func->getCurrentPageURL() ?>" />
