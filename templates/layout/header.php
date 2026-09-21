@@ -67,16 +67,13 @@
                 </div>
             </a>
 
-            <a href="gio-hang" class="fitnado-action-item" title="Sản phẩm quan tâm">
+            <a href="danh-gia-review" class="fitnado-action-item" title="Đánh giá & Review đồ tập">
                 <div class="action-icon-wrap position-relative">
-                    <i class="fa-regular fa-heart"></i>
-                    <?php if (!empty($_SESSION['cart'])) { ?>
-                        <span class="action-badge"><?= count($_SESSION['cart']) ?></span>
-                    <?php } ?>
+                    <i class="fa-solid fa-star-half-stroke"></i>
                 </div>
                 <div class="action-text-wrap">
-                    <span class="action-label">Quan tâm</span>
-                    <strong class="action-title"><?= (!empty($_SESSION['cart'])) ? 'Giỏ (' . count($_SESSION['cart']) . ')' : 'Yêu thích' ?></strong>
+                    <span class="action-label">Chuyên sâu</span>
+                    <strong class="action-title">Review</strong>
                 </div>
             </a>
 
