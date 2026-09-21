@@ -2,7 +2,7 @@
 if (!defined('SOURCES')) die("Error");
 
 /* Lấy bài viết tĩnh */
-$static = $d->rawQueryOne("select id, type, name$lang, content$lang, photo, date_created, date_updated, options from #_static where type = ? limit 0,1", array($type));
+$static = $d->rawQueryOne("select id, type, name$lang, desc$lang, content$lang, photo, date_created, date_updated, options from #_static where type = ? limit 0,1", array($type));
 
 /* SEO */
 if (!empty($static)) {
