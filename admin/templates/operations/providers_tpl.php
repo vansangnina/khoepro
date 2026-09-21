@@ -44,28 +44,48 @@ $linkProviders = "index.php?com=operations&act=providers";
                             <span class="text-dark"><i class="fas fa-server mr-2 text-primary"></i><?=$p['name']?></span>
                             <span class="badge badge-<?=$badge?> px-2 py-1"><?=$p['status']?></span>
                         </div>
-                        <div class="card-body p-3">
-                            <div class="text-muted small mb-2"><?=$p['purpose']?></div>
-                            <table class="table table-sm table-borderless mb-0">
-                                <tr>
-                                    <td class="text-muted" style="width: 130px;">Phân loại:</td>
-                                    <td><code><?=$p['type']?></code></td>
-                                </tr>
-                                <tr>
-                                    <td class="text-muted">Trạng thái:</td>
-                                    <td class="font-weight-bold text-dark"><?=$p['status_label']?></td>
-                                </tr>
-                                <tr>
-                                    <td class="text-muted">Thành công gần nhất:</td>
-                                    <td>
-                                        <?php if (!empty($p['last_success_at'])): ?>
-                                            <?=date('H:i:s d/m/Y', $p['last_success_at'])?>
-                                        <?php else: ?>
-                                            <span class="text-muted font-italic">Chưa ghi nhận</span>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                            </table>
+                        <div class="card-body p-3 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="text-muted small mb-2"><?=$p['purpose']?></div>
+                                <table class="table table-sm table-borderless mb-0">
+                                    <tr>
+                                        <td class="text-muted" style="width: 130px;">Phân loại:</td>
+                                        <td><code><?=$p['type']?></code></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted">Trạng thái:</td>
+                                        <td class="font-weight-bold text-dark"><?=$p['status_label']?></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted">Thành công gần nhất:</td>
+                                        <td>
+                                            <?php if (!empty($p['last_success_at'])): ?>
+                                                <?=date('H:i:s d/m/Y', $p['last_success_at'])?>
+                                            <?php else: ?>
+                                                <span class="text-muted font-italic">Chưa ghi nhận</span>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <?php if ($p['key'] === 'accesstrade'): ?>
+                                <div class="mt-3 pt-3 border-top">
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <form method="post" action="index.php?com=operations&act=test_accesstrade" class="mr-2 mb-1">
+                                            <button type="submit" class="btn btn-xs btn-outline-primary" title="Gửi request kiểm tra xác thực không tốn phí">
+                                                <i class="fas fa-vial mr-1"></i> Test Kết Nối
+                                            </button>
+                                        </form>
+                                        <form method="post" action="index.php?com=operations&act=sync_accesstrade" class="mb-1">
+                                            <input type="hidden" name="days" value="30" />
+                                            <button type="submit" class="btn btn-xs btn-outline-success" title="Đồng bộ đơn hàng 30 ngày gần nhất">
+                                                <i class="fas fa-sync-alt mr-1"></i> Đồng bộ ngay
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>

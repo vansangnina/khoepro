@@ -29,6 +29,21 @@ $voiceService = new VoiceService($d, $func);
 $publishingCenter = new PublishingCenter($d, $func);
 $publishQueue = new PublishJobQueue($d, $func);
 
+// Ensure test product fixture exists
+$prod80 = $d->rawQueryOne("SELECT id FROM table_product WHERE id = 80 LIMIT 1");
+if (empty($prod80)) {
+    $d->insert('product', array(
+        'id' => 80,
+        'namevi' => 'Đai Cứng FITNADO Pro Lever da bò dày 10mm khóa đòn bẩy',
+        'descvi' => 'Đai Cứng FITNADO Pro Lever da bò dày 10mm khóa đòn bẩy chất lượng cao',
+        'contentvi' => 'Chất liệu da bò thật nguyên tấm 10mm với khóa đòn bẩy trợ lực',
+        'slugvi' => 'dai-cung-fitnado-pro-lever-80',
+        'status' => 'hienthi',
+        'type' => 'san-pham',
+        'date_created' => time()
+    ));
+}
+
 echo "=======================================================\n";
 echo "FITNADO PHASE 07 - AUTOMATED TEST SUITE (PHP 7.4)\n";
 echo "=======================================================\n\n";
@@ -107,7 +122,7 @@ $approvedVideoId = $d->insert('ai_video', array(
     'id_product' => 80,
     'title' => 'Test Approved Video 30s',
     'status' => 'APPROVED',
-    'video_file' => 'creator_economy_video.mp4',
+    'video_file' => 'upload/video/fitnado_vid_17_real.mp4',
     'thumbnail' => 'upload/product/fitnado_roller_main.jpg',
     'duration_actual' => 30.6,
     'file_size' => 5000000,

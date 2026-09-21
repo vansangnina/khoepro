@@ -6,7 +6,7 @@ define('NN_AUTHOR', 'xxxx.nina@gmail.com');
 $config = array(
     'arrayDomainSSL' => array(),
     'database' => array(
-        'server-name' => $_SERVER["SERVER_NAME"],
+        'server-name' => !empty($_SERVER["SERVER_NAME"]) ? $_SERVER["SERVER_NAME"] : 'fitnado.local',
         'url' => '/',
         'type' => 'mysql',
         'host' => 'localhost',
@@ -15,7 +15,8 @@ $config = array(
         'dbname' => 'masterpdo',
         'port' => 3306,
         'prefix' => 'table_',
-        'charset' => 'utf8mb4'
+        'charset' => 'utf8mb4',
+        'unix_socket' => (file_exists('/Applications/MAMP/tmp/mysql/mysql.sock')) ? '/Applications/MAMP/tmp/mysql/mysql.sock' : ''
     ),
     'website' => array(
         'error-reporting' => false,
@@ -106,14 +107,25 @@ $config = array(
         'poll_interval' => 5,
         'max_poll_attempts' => 60
     ),
+    'accesstrade' => array(
+        'active' => true,
+        'access_key' => getenv('ACCESSTRADE_ACCESS_KEY') ?: '',
+        'secret_key' => getenv('ACCESSTRADE_SECRET_KEY') ?: '',
+        'base_url' => 'https://api.accesstrade.vn',
+        'timeout' => 30,
+        'sync_enabled' => true,
+        'sync_interval_minutes' => 30,
+        'rate_limit_per_minute' => 30,
+        'sandbox' => false
+    ),
     'video_composer' => array(
         'default_mode' => 'ECONOMY', // ECONOMY (0 VND default), HYBRID (max 1-2 AI scenes), PREMIUM
         'max_ai_video_cost_per_video' => 60000, // VND limit per video
         'hybrid_max_ai_scenes' => 2,
         'hybrid_max_ai_seconds' => 8,
         'ai_scene_cost_estimate' => 50000, // Estimated VND per 8s AI clip
-        'ffmpeg_path' => 'C:/Users/VanSang/AppData/Local/Microsoft/WinGet/Packages/Gyan.FFmpeg.Essentials_Microsoft.Winget.Source_8wekyb3d8bbwe/ffmpeg-9.0.1-essentials_build/bin/ffmpeg.exe',
-        'ffprobe_path' => 'C:/Users/VanSang/AppData/Local/Microsoft/WinGet/Packages/Gyan.FFmpeg.Essentials_Microsoft.Winget.Source_8wekyb3d8bbwe/ffmpeg-9.0.1-essentials_build/bin/ffprobe.exe',
+        'ffmpeg_path' => (file_exists('C:/Users/VanSang/AppData/Local/Microsoft/WinGet/Packages/Gyan.FFmpeg.Essentials_Microsoft.Winget.Source_8wekyb3d8bbwe/ffmpeg-9.0.1-essentials_build/bin/ffmpeg.exe')) ? 'C:/Users/VanSang/AppData/Local/Microsoft/WinGet/Packages/Gyan.FFmpeg.Essentials_Microsoft.Winget.Source_8wekyb3d8bbwe/ffmpeg-9.0.1-essentials_build/bin/ffmpeg.exe' : (getenv('FFMPEG_PATH') ?: 'ffmpeg'),
+        'ffprobe_path' => (file_exists('C:/Users/VanSang/AppData/Local/Microsoft/WinGet/Packages/Gyan.FFmpeg.Essentials_Microsoft.Winget.Source_8wekyb3d8bbwe/ffmpeg-9.0.1-essentials_build/bin/ffprobe.exe')) ? 'C:/Users/VanSang/AppData/Local/Microsoft/WinGet/Packages/Gyan.FFmpeg.Essentials_Microsoft.Winget.Source_8wekyb3d8bbwe/ffmpeg-9.0.1-essentials_build/bin/ffprobe.exe' : (getenv('FFPROBE_PATH') ?: 'ffprobe'),
         'ffmpeg_binary' => 'ffmpeg',
         'ffprobe_binary' => 'ffprobe',
         'caption_font_size' => 36,

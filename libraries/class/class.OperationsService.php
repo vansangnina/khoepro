@@ -168,6 +168,15 @@ class OperationsService {
                 'queue_table' => 'table_optimization_recommendation',
                 'expected_interval_sec' => 86400, // Daily
                 'type' => 'service'
+            ),
+            'accesstrade_sync' => array(
+                'key' => 'accesstrade_sync',
+                'name' => 'ACCESSTRADE Sync Worker',
+                'module' => 'affiliate',
+                'file' => 'cron/accesstrade_sync_worker.php',
+                'queue_table' => 'table_affiliate_conversion',
+                'expected_interval_sec' => 900, // 15 mins
+                'type' => 'worker'
             )
         );
     }
@@ -841,6 +850,16 @@ class OperationsService {
                 'status_label' => 'Available (Manual CSV Import)',
                 'last_success_at' => null,
                 'last_error' => null
+            ),
+            'accesstrade' => array(
+                'key' => 'accesstrade',
+                'name' => 'ACCESSTRADE Publisher API',
+                'purpose' => 'Campaign Discovery, Tracking Links & Real-time Conversions',
+                'type' => 'affiliate_api',
+                'status' => (!empty($config['accesstrade']['access_key'])) ? self::PROV_CONFIGURED : self::PROV_NOT_CONFIGURED,
+                'status_label' => (!empty($config['accesstrade']['access_key'])) ? 'Configured (API Active)' : 'Not Configured',
+                'last_success_at' => null,
+                'last_error' => null
             )
         );
 
@@ -864,6 +883,12 @@ class OperationsService {
             // Affiliate last import
             $lastImp = $this->d->rawQueryOne("SELECT date_created FROM table_conversion_import_log ORDER BY id DESC LIMIT 1");
             if (!empty($lastImp['date_created'])) $providers['affiliate_source']['last_success_at'] = (int)$lastImp['date_created'];
+
+            // ACCESSTRADE last conversion sync
+            $lastAt = $this->d->rawQueryOne("SELECT at_conversion_time, date_created FROM table_affiliate_conversion WHERE platform = 'accesstrade' ORDER BY id DESC LIMIT 1");
+            if (!empty($lastAt)) {
+                $providers['accesstrade']['last_success_at'] = !empty($lastAt['at_conversion_time']) ? (int)$lastAt['at_conversion_time'] : (int)$lastAt['date_created'];
+            }
         }
 
         return $providers;
@@ -1017,8 +1042,10 @@ class OperationsService {
         }
 
         $costSummary = $this->getCostSummary('today');
-        if ($costSummary['budget']['is_exceeded'] && !$isAdminOverride) {
-            return array('allowed' => false, 'reason' => 'Budget Limit Reached (' . number_format($costSummary['budget']['spent_today']) . ' / ' . number_format($costSummary['budget']['daily_limit']) . ' VND)');
+        $spentToday = (float)($costSummary['budget']['spent_today'] ?? 0);
+        $dailyLimit = (float)($costSummary['budget']['daily_limit'] ?? 0);
+        if (($costSummary['budget']['is_exceeded'] || ($dailyLimit > 0 && $spentToday + $costVnd > $dailyLimit)) && !$isAdminOverride) {
+            return array('allowed' => false, 'reason' => 'Budget Limit Reached (' . number_format($spentToday + $costVnd) . ' / ' . number_format($dailyLimit) . ' VND)');
         }
 
         return array('allowed' => true, 'reason' => 'Budget within threshold');
@@ -1459,10 +1486,10 @@ class OperationsService {
         }
 
         if (is_string($data)) {
-            // Mask Bearer tokens
-            $data = preg_replace('/Bearer\s+([A-Za-z0-9_\-\.]{8,})/i', 'Bearer [MASKED_TOKEN_***]', $data);
-            // Mask api_key=..., secret=...
-            $data = preg_replace('/(api_key|apikey|secret|secretkey|access_token|refresh_token|password)=([^&\s]+)/i', '$1=[MASKED_SECRET_***]', $data);
+            // Mask Bearer & Token headers
+            $data = preg_replace('/(Bearer|Token)\s+([A-Za-z0-9_\-\.]{8,})/i', '$1 [MASKED_TOKEN_***]', $data);
+            // Mask api_key=..., secret=..., password=...
+            $data = preg_replace('/(api_key|apikey|secret|secretkey|access_key|secret_key|access_token|refresh_token|password)=([^&\s]+)/i', '$1=[MASKED_SECRET_***]', $data);
             // Mask sk-bee-... or sk-...
             $data = preg_replace('/sk-[A-Za-z0-9_\-]{16,}/i', 'sk-[MASKED_KEY_***]', $data);
             return $data;
@@ -1470,7 +1497,7 @@ class OperationsService {
 
         if (is_array($data)) {
             $sanitized = array();
-            $sensitiveKeys = array('password', 'secret', 'api_key', 'apikey', 'secretkey', 'access_token', 'refresh_token', 'token', 'auth_data', 'auth_status_token');
+            $sensitiveKeys = array('password', 'secret', 'api_key', 'apikey', 'secretkey', 'access_key', 'secret_key', 'access_token', 'refresh_token', 'token', 'auth_data', 'auth_status_token');
             foreach ($data as $k => $v) {
                 if (in_array(strtolower($k), $sensitiveKeys)) {
                     $sanitized[$k] = '[MASKED_SECRET_***]';

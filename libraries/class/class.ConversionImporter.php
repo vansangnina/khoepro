@@ -366,7 +366,11 @@ class ConversionImporter {
             'imported_count' => 0,
             'duplicate_count' => $preview['duplicate_count'],
             'failed_count' => $preview['invalid_count'],
+            'total_order_value' => (float)($preview['total_order_value_vnd'] ?? 0),
+            'total_commission' => (float)($preview['total_commission_vnd'] ?? 0),
+            'currency' => 'VND',
             'admin_user' => $adminUser,
+            'imported_by' => $adminUser,
             'status' => 'PROCESSING',
             'summary_json' => json_encode(array(
                 'valid_count' => $preview['valid_count'],
@@ -384,6 +388,7 @@ class ConversionImporter {
             $ctx = $row['matched_context'];
 
             $conversionData = array(
+                'conversion_id' => $row['external_conversion_id'],
                 'platform' => $row['platform'],
                 'external_conversion_id' => $row['external_conversion_id'],
                 'id_product' => $ctx['id_product'],

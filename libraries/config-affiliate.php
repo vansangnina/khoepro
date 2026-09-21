@@ -28,6 +28,14 @@ $configAffiliate = array(
             'icon' => 'fas fa-store',
             'btn_label' => 'Xem trên Lazada'
         ),
+        'accesstrade' => array(
+            'name' => 'ACCESSTRADE',
+            'color' => '#E83E8C',
+            'bg' => '#E83E8C',
+            'text_color' => '#ffffff',
+            'icon' => 'fas fa-link',
+            'btn_label' => 'Xem ưu đãi ACCESSTRADE'
+        ),
         'brand' => array(
             'name' => 'Website chính hãng',
             'color' => '#0256aa',

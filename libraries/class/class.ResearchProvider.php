@@ -409,6 +409,92 @@ class CsvProvider extends BaseResearchProvider
     }
 }
 
+class AccessTradeResearchProvider extends BaseResearchProvider
+{
+    private $atProvider;
+
+    public function __construct($d = null, $func = null)
+    {
+        parent::__construct($d, $func);
+        require_once __DIR__ . '/class.AccessTradeProvider.php';
+        $this->atProvider = new AccessTradeProvider($d, $func);
+    }
+
+    public function getName()
+    {
+        return 'accesstrade';
+    }
+
+    public function getPlatformKey()
+    {
+        return 'accesstrade';
+    }
+
+    public function discover($seed, array $options = array())
+    {
+        $options['keyword'] = $seed;
+        return $this->discoverCandidates($options);
+    }
+
+    public function searchProducts(array $params = array())
+    {
+        return $this->atProvider->getDatafeedProducts($params);
+    }
+
+    public function discoverCandidates(array $params = array())
+    {
+        $keyword = $params['keyword'] ?? ($params['query'] ?? 'gym fitness');
+        $searchRes = $this->atProvider->getDatafeedProducts(array(
+            'keyword' => $keyword,
+            'campaign_id' => $params['campaign_id'] ?? '',
+            'limit' => $params['limit'] ?? 20
+        ));
+
+        $results = array();
+        if ($searchRes['success'] && !empty($searchRes['products'])) {
+            foreach ($searchRes['products'] as $p) {
+                $dto = new ResearchCandidateDTO(array(
+                    'name' => $p['name'],
+                    'platform' => 'accesstrade',
+                    'source_url' => $p['url'],
+                    'external_product_id' => $p['product_id'],
+                    'image_url' => $p['image'],
+                    'price' => $p['price'],
+                    'original_price' => $p['original_price'],
+                    'currency' => 'VND',
+                    'sales_count' => $p['sales_count'],
+                    'rating' => $p['rating'],
+                    'commission_rate' => $p['commission_rate'],
+                    'commission_value' => $p['commission_value'],
+                    'category_hint' => $p['category'] ?: 'Gym & Fitness',
+                    'brand_hint' => $p['brand'],
+                    'problem_solved' => 'Hỗ trợ tập luyện thể hình, thể thao tối ưu hiệu năng',
+                    'target_audience' => 'Người tập Gym, Fitness, Vận động viên',
+                    'discovery_source' => 'ACCESSTRADE_API',
+                    'raw_data' => $p['raw'],
+                    'evidence' => array(
+                        array(
+                            'field_name' => 'accesstrade_commission_rate',
+                            'field_value' => (string)$p['commission_rate'],
+                            'evidence_type' => 'FACT',
+                            'source_url' => $p['url']
+                        ),
+                        array(
+                            'field_name' => 'accesstrade_sales_signal',
+                            'field_value' => (string)$p['sales_count'],
+                            'evidence_type' => 'BENCHMARK',
+                            'source_url' => $p['url']
+                        )
+                    )
+                ));
+                $results[] = $dto;
+            }
+        }
+
+        return $results;
+    }
+}
+
 class ResearchProviderFactory
 {
     public static function create($providerName, $d = null, $func = null)
@@ -419,6 +505,10 @@ class ResearchProviderFactory
             case 'ai_agent':
             case 'gemini':
                 return new AiResearchProvider($d, $func);
+            case 'accesstrade':
+            case 'accesstrade_api':
+            case 'at':
+                return new AccessTradeResearchProvider($d, $func);
             case 'tiktok':
                 return new MockPlatformProvider('tiktok', $d, $func);
             case 'shopee':

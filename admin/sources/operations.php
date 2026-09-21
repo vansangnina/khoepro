@@ -102,6 +102,14 @@ switch ($act) {
         saveSettingsAction();
         break;
 
+    case "test_accesstrade":
+        testAccessTradeAction();
+        break;
+
+    case "sync_accesstrade":
+        syncAccessTradeAction();
+        break;
+
     default:
         viewOverview();
         $template = "operations/overview";
@@ -398,3 +406,43 @@ function saveSettingsAction() {
 
     $func->transfer("Dữ liệu không hợp lệ", "index.php?com=operations&act=settings", false);
 }
+
+/**
+ * Action: Test ACCESSTRADE API Connection
+ */
+function testAccessTradeAction() {
+    global $d, $func;
+
+    require_once LIBRARIES . 'class/class.AccessTradeProvider.php';
+    $provider = new AccessTradeProvider($d, $func);
+    $res = $provider->testConnection();
+
+    if ($res['success']) {
+        $msg = "Kết nối ACCESSTRADE Publisher API thành công! (HTTP " . ($res['http_code'] ?? 200) . ")";
+        $func->transfer($msg, "index.php?com=operations&act=providers");
+    } else {
+        $msg = "Lỗi kết nối ACCESSTRADE API: " . ($res['error'] ?? 'Không rõ lỗi');
+        $func->transfer($msg, "index.php?com=operations&act=providers", false);
+    }
+}
+
+/**
+ * Action: On-demand Sync ACCESSTRADE Transactions
+ */
+function syncAccessTradeAction() {
+    global $d, $func;
+
+    require_once LIBRARIES . 'class/class.AccessTradeProvider.php';
+    $provider = new AccessTradeProvider($d, $func);
+    $days = !empty($_POST['days']) ? (int)$_POST['days'] : 30;
+    $res = $provider->syncTransactions(array('since_days' => $days));
+
+    if ($res['success']) {
+        $msg = "Đồng bộ ACCESSTRADE thành công: Nhập mới {$res['imported']}, Cập nhật {$res['updated']}, Bỏ qua {$res['skipped']} (Tổng {$res['total']})";
+        $func->transfer($msg, "index.php?com=operations&act=providers");
+    } else {
+        $msg = "Đồng bộ ACCESSTRADE thất bại: " . ($res['error'] ?? 'Không rõ lỗi');
+        $func->transfer($msg, "index.php?com=operations&act=providers", false);
+    }
+}
+

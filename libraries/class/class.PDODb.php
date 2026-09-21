@@ -495,6 +495,7 @@ class PDODb
      */
     private function buildQuery($numRows, $tableData = null)
     {
+        $this->params = [];
         $this->buildJoin();
         $this->buildInsertQuery($tableData);
         $this->buildCondition('WHERE', $this->where);
@@ -1464,9 +1465,9 @@ class PDODb
                 }
                 if ($v['COLUMN_KEY'] != 'PRI' && isset($data[$k])) {
                     $value = $data[$k];
-                    if (!$value) {
-                        $_type = $v['DATA_TYPE'];
-                        if (strpos($_type, 'int') !== false | strpos($_type, 'float') !== false | strpos($_type, 'double') !== false) {
+                    if ($value === '' || $value === null || $value === false) {
+                        $_type = strtolower($v['DATA_TYPE']);
+                        if (strpos($_type, 'int') !== false || strpos($_type, 'float') !== false || strpos($_type, 'double') !== false || strpos($_type, 'decimal') !== false || strpos($_type, 'numeric') !== false) {
                             $value = 0;
                         }
                         if ($_type == 'date') {
@@ -1481,9 +1482,9 @@ class PDODb
                     }
                     $data[$k] = $value;
                 } else {
-                    $_type = $v['DATA_TYPE'];
+                    $_type = strtolower($v['DATA_TYPE']);
                     $value = "";
-                    if (strpos($_type, 'int') !== false | strpos($_type, 'float') !== false | strpos($_type, 'double') !== false) {
+                    if (strpos($_type, 'int') !== false || strpos($_type, 'float') !== false || strpos($_type, 'double') !== false || strpos($_type, 'decimal') !== false || strpos($_type, 'numeric') !== false) {
                         $value = 0;
                     }
                     if ($_type == 'date') {
@@ -1519,10 +1520,8 @@ class PDODb
         if ($this->isSubQuery) {
             return;
         }
-        $where = $this->where;
 
-        $this->fillTable($this->getTableName($tableName), $tableData, $this->getOne($tableName), $where, true);
-
+        $wherelogs = json_encode($this->where);
         $this->query = 'UPDATE ' . $this->getTableName($tableName);
         $this->queryType = 'UPDATE';
         $stmt = $this->buildQuery($numRows, $tableData);
@@ -1534,8 +1533,8 @@ class PDODb
             die($this->sendException('SQL Prepare Error', $this->lastError[0], $this->lastError[2], $this->query));
         }
 
-        $wherelogs = json_encode($this->where);
-        $this->createLogs(@$_SESSION[$loginAdmin]['username'], 'update', $tableName, $wherelogs);
+        $userAdmin = !empty($_SESSION[$loginAdmin]['username']) ? $_SESSION[$loginAdmin]['username'] : 'admin';
+        $this->createLogs($userAdmin, 'update', $tableName, $wherelogs);
         $this->reset();
         $this->rowCount = $stmt->rowCount();
         return $status;
@@ -1615,24 +1614,27 @@ class PDODb
     }
     public function createLogs($user = 'Unnamed', $act = '', $com = '', $id = 0)
     {
-        $logsfile = $_SERVER['DOCUMENT_ROOT'] . $this->connectionParams['url'] . "logs";
+        $docRoot = !empty($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT'] : (defined('ROOT') ? ROOT : dirname(__DIR__, 2));
+        $logsfile = rtrim($docRoot, '/') . '/logs';
 
         if (!is_dir($logsfile)) {
-            mkdir($logsfile, 0777, true);
-            chmod($logsfile, 0777);
+            @mkdir($logsfile, 0777, true);
+            @chmod($logsfile, 0777);
         }
 
         $ip_user = $this->getClientIP();
         $name_file = date('d-m-Y', time());
 
-        $file = fopen($logsfile . "/" . $name_file . ".txt", "a");
-        $data_old = file_get_contents($logsfile . "/" . $name_file . ".txt");
-        $time_act = date('H:i:s d/m/Y', time());
-        fwrite($file, $ip_user . "(" . $user . ")" . "--" . $act . "--" . $com . "(" . $id . ") (" . $time_act . ")\n");
-        fclose($file);
+        $logPath = $logsfile . "/" . $name_file . ".txt";
+        $file = @fopen($logPath, "a");
+        if ($file) {
+            $time_act = date('H:i:s d/m/Y', time());
+            fwrite($file, $ip_user . "(" . $user . ")" . "--" . $act . "--" . $com . "(" . $id . ") (" . $time_act . ")\n");
+            fclose($file);
+        }
 
         $name_file_old = date('d-m-Y', time() - 7776000);
-        if (file_exists($logsfile . "/" . $name_file_old . ".txt")) unlink($logsfile . "/" . $name_file_old . ".txt");
+        if (file_exists($logsfile . "/" . $name_file_old . ".txt")) @unlink($logsfile . "/" . $name_file_old . ".txt");
     }
     public function getClientIP()
     {
