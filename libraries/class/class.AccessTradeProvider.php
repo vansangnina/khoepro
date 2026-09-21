@@ -15,7 +15,6 @@ class AccessTradeProvider
     private $d;
     private $func;
     private $accessKey;
-    private $secretKey;
     private $baseUrl;
     private $timeout;
     private $rateLimitPerMinute;
@@ -39,8 +38,7 @@ class AccessTradeProvider
         $this->func = $func;
 
         $atConfig = !empty($config['accesstrade']) ? $config['accesstrade'] : array();
-        $this->accessKey = $customConfig['access_key'] ?? ($atConfig['access_key'] ?? (getenv('ACCESSTRADE_ACCESS_KEY') ?: ''));
-        $this->secretKey = $customConfig['secret_key'] ?? ($atConfig['secret_key'] ?? (getenv('ACCESSTRADE_SECRET_KEY') ?: ''));
+        $this->accessKey = $customConfig['access_key'] ?? ($atConfig['access_key'] ?? '');
         $this->baseUrl = rtrim($customConfig['base_url'] ?? ($atConfig['base_url'] ?? self::DEFAULT_BASE_URL), '/');
         $this->timeout = (int)($customConfig['timeout'] ?? ($atConfig['timeout'] ?? self::DEFAULT_TIMEOUT));
         $this->rateLimitPerMinute = (int)($customConfig['rate_limit_per_minute'] ?? ($atConfig['rate_limit_per_minute'] ?? self::DEFAULT_RATE_LIMIT));
