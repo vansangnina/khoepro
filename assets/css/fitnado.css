@@ -599,14 +599,15 @@ i[class*="fa"]::after,
 
 .fitnado-heroGrid {
     display: grid;
-    grid-template-columns: 1.05fr 1fr;
+    grid-template-columns: 0.9fr 1.1fr;
     min-height: 440px;
     align-items: center;
-    gap: 30px;
+    gap: 36px;
+    padding: 20px 0;
 }
 
 .fitnado-hero-left {
-    padding: 40px 0;
+    padding: 20px 0;
 }
 
 .fitnado-hero-left small {
@@ -618,9 +619,9 @@ i[class*="fa"]::after,
 }
 
 .fitnado-hero h1 {
-    font-size: 52px;
-    line-height: 1.05;
-    margin: 15px 0;
+    font-size: 48px;
+    line-height: 1.08;
+    margin: 14px 0;
     font-weight: 600;
     color: var(--t);
 }
@@ -630,7 +631,7 @@ i[class*="fa"]::after,
 }
 
 .fitnado-hero p {
-    font-size: 16px;
+    font-size: 15.5px;
     line-height: 1.6;
     color: #344054;
     max-width: 580px;
@@ -667,9 +668,10 @@ i[class*="fa"]::after,
 }
 
 .fitnado-visual {
-    height: 440px;
+    width: 100%;
+    aspect-ratio: 16 / 9;
     background: #0f172a;
-    border-radius: 0 0 0 55px;
+    border-radius: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -678,7 +680,8 @@ i[class*="fa"]::after,
     padding: 0;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2);
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .fitnado-visual a {
@@ -693,7 +696,8 @@ i[class*="fa"]::after,
     max-width: 100%;
     max-height: 100%;
     object-fit: cover;
-    border-radius: 0 0 0 55px;
+    object-position: center center;
+    border-radius: 24px;
     transition: transform 0.5s ease;
 }
 
@@ -1649,8 +1653,9 @@ i[class*="fa"]::after,
     }
 
     .fitnado-visual {
-        height: 240px;
-        border-radius: 20px;
+        height: auto;
+        aspect-ratio: 16 / 9;
+        border-radius: 18px;
         margin-bottom: 20px;
     }
 
@@ -3779,7 +3784,7 @@ i[class*="fa"]::after,
     font-size: 13px;
 }
 
-.widget-principles-list li > i {
+.widget-principles-list li>i {
     margin-top: 3px;
     font-size: 13px;
     flex-shrink: 0;
@@ -3959,6 +3964,7 @@ i[class*="fa"]::after,
 .btn-sidebar-call:hover {
     background: rgba(255, 255, 255, 0.2);
 }
+
 /* ========================================================
    PRO ABOUT US PAGE (FITNADO / KHỎE PRO)
    ======================================================== */
@@ -4009,7 +4015,7 @@ i[class*="fa"]::after,
 
 .about-hero-title {
     font-size: 38px;
-    font-weight: 900;
+    font-weight: 600;
     color: #ffffff;
     margin-bottom: 16px;
     letter-spacing: -0.5px;
@@ -4444,6 +4450,7 @@ i[class*="fa"]::after,
     .about-hero-stats {
         grid-template-columns: repeat(2, 1fr);
     }
+
     .about-hero-title {
         font-size: 30px;
     }
@@ -4453,15 +4460,19 @@ i[class*="fa"]::after,
     .about-hero-section {
         padding: 36px 18px 30px;
     }
+
     .about-hero-title {
         font-size: 24px;
     }
+
     .about-hero-stats {
         grid-template-columns: 1fr;
     }
+
     .about-process-section {
         padding: 32px 18px;
     }
+
     .content-box {
         padding: 24px 18px;
     }
