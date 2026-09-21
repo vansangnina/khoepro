@@ -3,58 +3,62 @@
         <?= htmlspecialchars_decode($seoDB['schema' . $seolang]) ?>
     </script>
 <?php } ?>
-<?php if ($template == 'static/static') { ?>
-    <!-- Static -->
+<?php if ($template == 'static/static' && !empty($static)) { ?>
+    <!-- Static Article Schema -->
     <script type="application/ld+json">
         {
             "@context": "https://schema.org",
-            "@type": "NewsArticle",
+            "@type": "Article",
             "mainEntityOfPage": {
                 "@type": "WebPage",
-                "@id": "https://google.com/article"
+                "@id": "<?= $seo->get('url') ?>"
             },
-            "headline": "<?= @$static['name' . $lang] ?>",
+            "headline": "<?= addslashes(@$static['name' . $lang]) ?>",
             "image": [
                 "<?= $configBase . UPLOAD_NEWS_L . @$static['photo'] ?>"
             ],
-            "datePublished": "<?= date('Y-m-d', @$static['date_created']) ?>",
-            "dateModified": "<?= date('Y-m-d', @$static['date_updated']) ?>",
+            "datePublished": "<?= !empty($static['date_created']) ? date('c', $static['date_created']) : date('c') ?>",
+            "dateModified": "<?= !empty($static['date_updated']) ? date('c', $static['date_updated']) : (!empty($static['date_created']) ? date('c', $static['date_created']) : date('c')) ?>",
             "author": {
-                "@type": "Person",
-                "name": "<?= @$setting['name' . $lang] ?>"
+                "@type": "Organization",
+                "name": "Khỏe Pro",
+                "url": "<?= $configBase ?>"
             },
             "publisher": {
                 "@type": "Organization",
-                "name": "Google",
+                "name": "Khỏe Pro",
                 "logo": {
                     "@type": "ImageObject",
                     "url": "<?= $configBase . UPLOAD_PHOTO_L . @$logo['photo'] ?>"
                 }
             },
-            "description": "<?= $seo->get('description') ?>"
+            "description": "<?= addslashes($seo->get('description')) ?>"
         }
     </script>
 <?php } ?>
+<!-- Organization Schema -->
 <script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "Organization",
-        "name": "<?= @$setting['name' . $lang] ?>",
+        "name": "<?= !empty($setting['name' . $lang]) ? addslashes($setting['name' . $lang]) : 'Khỏe Pro' ?>",
         "url": "<?= $configBase ?>",
+        "logo": "<?= $configBase . UPLOAD_PHOTO_L . @$logo['photo'] ?>",
         "sameAs": [
             <?php if (isset($social) && count($social) > 0) {
-                $sum_social = count($social);
-                foreach ($social as $key => $value) { ?> "<?= @$value['link'] ?>"
-                    <?= (($key + 1) < $sum_social) ? ',' : '' ?>
-            <?php }
+                $socArr = [];
+                foreach ($social as $val) {
+                    if (!empty($val['link'])) $socArr[] = '"' . $val['link'] . '"';
+                }
+                echo implode(',', $socArr);
             } ?>
         ],
         "address": {
             "@type": "PostalAddress",
-            "streetAddress": "<?= $setting['address' . $lang] ?>",
-            "addressRegion": "Ho Chi Minh",
+            "streetAddress": "<?= !empty($setting['address' . $lang]) ? addslashes($setting['address' . $lang]) : 'Hồ Chí Minh' ?>",
+            "addressRegion": "Hồ Chí Minh",
             "postalCode": "70000",
-            "addressCountry": "vi"
+            "addressCountry": "VN"
         }
     }
 </script>

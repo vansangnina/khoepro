@@ -4,6 +4,12 @@ if (!defined('SOURCES')) die("Error");
 /* Lấy bài viết tĩnh */
 $static = $d->rawQueryOne("select id, type, name$lang, desc$lang, content$lang, photo, date_created, date_updated, options from #_static where type = ? limit 0,1", array($type));
 
+if (empty($static)) {
+    header('HTTP/1.0 404 Not Found', true, 404);
+    include("404.php");
+    exit;
+}
+
 /* SEO */
 if (!empty($static)) {
     $seoDB = $seo->getOnDB(0, 'static', 'update', $static['type']);

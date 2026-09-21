@@ -618,7 +618,8 @@ i[class*="fa"]::after,
     display: block;
 }
 
-.fitnado-hero h1 {
+.fitnado-hero h1,
+.fitnado-hero .fitnado-hero-title {
     font-size: 48px;
     line-height: 1.08;
     margin: 14px 0;
@@ -626,7 +627,8 @@ i[class*="fa"]::after,
     color: var(--t);
 }
 
-.fitnado-hero h1 span {
+.fitnado-hero h1 span,
+.fitnado-hero .fitnado-hero-title span {
     color: var(--b);
 }
 

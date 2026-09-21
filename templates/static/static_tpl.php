@@ -1,184 +1,212 @@
-<?php
-/* Template: Bài viết tĩnh / Giới thiệu - Khỏe Pro Pro Standard */
-?>
-
-<div class="fitnado-static-page">
-    <!-- Breadcrumb -->
-    <div class="fitnado-breadcrumb-bar">
-        <div class="fitnado-wrap">
-            <nav aria-label="breadcrumb">
-                <ol class="fitnado-breadcrumb">
-                    <li class="breadcrumb-item"><a href=""><i class="fa-solid fa-house"></i> Trang chủ</a></li>
-                    <li class="breadcrumb-item active" aria-current="page"><?= $static['name' . $lang] ?? ($titleMain ?? 'Giới thiệu') ?></li>
-                </ol>
-            </nav>
-        </div>
-    </div>
-
-    <!-- Static Hero Header -->
-    <div class="static-hero-section">
-        <div class="fitnado-wrap">
-            <div class="static-hero-content">
-                <div class="static-badge-pill">
-                    <i class="fa-solid fa-shield-halved"></i> Tôn Chỉ Khỏe Pro • Minh Bạch • Chuyên Sâu
+<?php if (!empty($static)) { ?>
+    <?php if ($type == 'gioi-thieu') { ?>
+        <!-- PRO ABOUT US PAGE (FITNADO / KHỎE PRO) -->
+        <div class="fitnado-about-page">
+            <!-- Hero Banner -->
+            <div class="about-hero-section">
+                <div class="about-hero-badge">
+                    <i class="fa-solid fa-shield-halved"></i> Độc Lập · Khách Quan · Minh Bạch
                 </div>
-                <h1 class="static-hero-title"><?= $static['name' . $lang] ?? 'Giới Thiệu Về Khỏe Pro' ?></h1>
-                <?php if (!empty($static['desc' . $lang])) { ?>
-                    <p class="static-hero-desc"><?= nl2br($static['desc' . $lang]) ?></p>
-                <?php } else { ?>
-                    <p class="static-hero-desc">Khỏe Pro (khoepro.com) là nền tảng nội dung chuyên sâu, đánh giá độc lập và so sánh khách quan các dụng cụ tập gym, thiết bị thể thao và giải pháp phục hồi cơ bắp.</p>
-                <?php } ?>
-                
-                <div class="static-hero-meta">
-                    <div class="meta-item">
-                        <i class="fa-regular fa-calendar-check text-primary"></i>
-                        <span>Cập nhật: <strong><?= date("d/m/Y", !empty($static['date_updated']) ? $static['date_updated'] : ($static['date_created'] ?? time())) ?></strong></span>
+                <h1 class="about-hero-title"><?= !empty($static['name' . $lang]) ? $static['name' . $lang] : 'Về Chúng Tôi – Khỏe Pro' ?></h1>
+                <p class="about-hero-subtitle">
+                    Nền tảng nghiên cứu, đánh giá độc lập và so sánh chuyên sâu các thiết bị tập gym, dụng cụ thể thao và giải pháp phục hồi cơ bắp hàng đầu tại Việt Nam.
+                </p>
+                <div class="about-hero-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-award"></i></div>
+                        <div class="stat-meta">
+                            <strong>100%</strong>
+                            <span>Độc lập & Khách quan</span>
+                        </div>
                     </div>
-                    <div class="meta-item">
-                        <i class="fa-solid fa-user-check text-success"></i>
-                        <span>Biên tập: <strong>Ban Biên Tập Khỏe Pro</strong></span>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-dumbbell"></i></div>
+                        <div class="stat-meta">
+                            <strong>500+</strong>
+                            <span>Sản phẩm đánh giá</span>
+                        </div>
                     </div>
-                    <div class="meta-item">
-                        <i class="fa-solid fa-circle-check text-warning"></i>
-                        <span>Tiêu chuẩn: <strong>Kiểm duyệt độc lập</strong></span>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+                        <div class="stat-meta">
+                            <strong>Khoa Học</strong>
+                            <span>Chuẩn an toàn chuyển động</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-handshake-angle"></i></div>
+                        <div class="stat-meta">
+                            <strong>Minh Bạch</strong>
+                            <span>Đối tác & Khuyến nghị</span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Main Content Section -->
-    <div class="static-main-section">
-        <div class="fitnado-wrap">
-            <div class="static-grid-layout">
-                <!-- Left Column: Rich Editorial HTML Content from Admin -->
-                <div class="static-content-column">
-                    <div class="static-article-card">
-                        <?php if (!empty($static['content' . $lang])) { ?>
-                            <article class="static-html-body fitnado-typography">
-                                <?= $func->decodeHtmlChars($static['content' . $lang]) ?>
-                            </article>
-
-                            <!-- Article Footer / Share -->
-                            <div class="static-article-footer">
-                                <div class="article-share-box">
-                                    <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Chia sẻ thông tin:</span>
-                                    <div class="share-buttons">
-                                        <a href="https://www.facebook.com/sharer/sharer.php?u=<?= urlencode($func->getCurrentPageURL()) ?>" target="_blank" rel="nofollow" class="btn-share-item btn-share-fb" title="Chia sẻ qua Facebook">
-                                            <i class="fa-brands fa-facebook-f"></i> Facebook
-                                        </a>
-                                        <a href="https://zalo.me/share?url=<?= urlencode($func->getCurrentPageURL()) ?>" target="_blank" rel="nofollow" class="btn-share-item btn-share-zalo" title="Chia sẻ qua Zalo">
-                                            <i class="fa-solid fa-comment"></i> Zalo
-                                        </a>
-                                        <button type="button" class="btn-share-item btn-share-copy" onclick="navigator.clipboard.writeText(window.location.href); alert('Đã sao chép liên kết vào bộ nhớ tạm!');" title="Sao chép liên kết">
-                                            <i class="fa-solid fa-link"></i> Sao chép link
-                                        </button>
-                                    </div>
-                                </div>
+            <!-- Mission & Vision Cards -->
+            <div class="about-mission-section">
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="about-feature-box">
+                            <div class="box-icon icon-blue">
+                                <i class="fa-solid fa-bullseye"></i>
                             </div>
-                        <?php } else { ?>
-                            <div class="alert alert-warning static-empty-alert" role="alert">
-                                <i class="fa-solid fa-triangle-exclamation"></i>
-                                <div>
-                                    <strong>Nội dung đang được cập nhật.</strong>
-                                    <p class="mb-0 text-sm">Vui lòng quay lại sau hoặc liên hệ ban biên tập để biết thêm chi tiết.</p>
-                                </div>
+                            <h3>Sứ mệnh của Khỏe Pro</h3>
+                            <p>
+                                Giúp bạn đọc thoát khỏi <strong>"ma trận"</strong> hàng ngàn sản phẩm dụng cụ tập luyện được quảng cáo thổi phồng trên thị trường. Chúng tôi cung cấp những bài phân tích chi tiết, chỉ rõ ưu điểm và nhược điểm thực tế để bạn chọn đúng sản phẩm phù hợp với thể trạng và mục tiêu tập luyện.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="about-feature-box">
+                            <div class="box-icon icon-green">
+                                <i class="fa-solid fa-eye"></i>
                             </div>
-                        <?php } ?>
+                            <h3>Tầm nhìn phát triển</h3>
+                            <p>
+                                Trở thành <strong>điểm tựa tri thức và thư viện đánh giá thiết bị thể thao uy tín số 1 tại Việt Nam</strong>. Mọi người tập từ người mới bắt đầu (Beginner) đến vận động viên thể hình chuyên nghiệp đều có thể tìm thấy lời khuyên giá trị trước khi ra quyết định đầu tư đồ tập.
+                            </p>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Right Column: Sidebar Widgets -->
-                <aside class="static-sidebar-column">
-                    <!-- Widget 1: Editorial Standards -->
-                    <div class="sidebar-card-widget">
-                        <div class="widget-header">
-                            <i class="fa-solid fa-certificate text-primary"></i>
-                            <h3 class="widget-title">Tôn Chỉ Khỏe Pro</h3>
-                        </div>
-                        <ul class="widget-principles-list">
-                            <li>
-                                <i class="fa-solid fa-check text-success"></i>
-                                <div>
-                                    <strong>Đánh giá độc lập 100%</strong>
-                                    <p>Không nhận tiền nâng khống điểm số sản phẩm.</p>
-                                </div>
-                            </li>
-                            <li>
-                                <i class="fa-solid fa-check text-success"></i>
-                                <div>
-                                    <strong>Thông số kỹ thuật thực tế</strong>
-                                    <p>Đo lường độ chịu tải, độ bền, chất liệu thực tế.</p>
-                                </div>
-                            </li>
-                            <li>
-                                <i class="fa-solid fa-check text-success"></i>
-                                <div>
-                                    <strong>An toàn chuyển động</strong>
-                                    <p>Ưu tiên bảo vệ xương khớp và kỹ thuật người tập.</p>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <!-- Widget 2: Fast Navigation Hub -->
-                    <div class="sidebar-card-widget">
-                        <div class="widget-header">
-                            <i class="fa-solid fa-compass text-warning"></i>
-                            <h3 class="widget-title">Khám Phá Khỏe Pro</h3>
-                        </div>
-                        <div class="widget-quick-links">
-                            <a href="san-pham" class="quick-link-item">
-                                <span class="quick-link-icon icon-prod"><i class="fa-solid fa-dumbbell"></i></span>
-                                <div class="quick-link-text">
-                                    <strong>Danh Mục Đồ Tập</strong>
-                                    <span>Đai lưng, dây kháng lực, súng massage</span>
-                                </div>
-                                <i class="fa-solid fa-chevron-right quick-link-arrow"></i>
-                            </a>
-                            <a href="danh-gia" class="quick-link-item">
-                                <span class="quick-link-icon icon-rev"><i class="fa-solid fa-star"></i></span>
-                                <div class="quick-link-text">
-                                    <strong>Bài Viết Đánh Giá</strong>
-                                    <span>Review chuyên sâu ưu nhược điểm</span>
-                                </div>
-                                <i class="fa-solid fa-chevron-right quick-link-arrow"></i>
-                            </a>
-                            <a href="so-sanh" class="quick-link-item">
-                                <span class="quick-link-icon icon-comp"><i class="fa-solid fa-code-compare"></i></span>
-                                <div class="quick-link-text">
-                                    <strong>So Sánh Đối Đầu</strong>
-                                    <span>Đặt lên bàn cân các loại thiết bị gym</span>
-                                </div>
-                                <i class="fa-solid fa-chevron-right quick-link-arrow"></i>
-                            </a>
-                            <a href="huong-dan" class="quick-link-item">
-                                <span class="quick-link-icon icon-guide"><i class="fa-solid fa-book-open"></i></span>
-                                <div class="quick-link-text">
-                                    <strong>Hướng Dẫn Mua Hàng</strong>
-                                    <span>Bộ tiêu chí chọn đúng món đồ tập</span>
-                                </div>
-                                <i class="fa-solid fa-chevron-right quick-link-arrow"></i>
-                            </a>
+            <!-- 4 Core Pillars -->
+            <div class="about-pillars-section">
+                <div class="text-center mb-4">
+                    <span class="section-tag"><i class="fa-solid fa-layer-group"></i> 4 TRỤ CỘT NỘI DUNG</span>
+                    <h2 class="section-heading">Chúng tôi mang lại giá trị gì cho bạn?</h2>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-6 col-lg-3">
+                        <div class="pillar-card">
+                            <div class="pillar-num">01</div>
+                            <div class="pillar-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
+                            <h4>Đánh giá Chuyên sâu</h4>
+                            <p>Phân tích chất liệu (da bò, nylon, mút EVA, bọt TPE), độ dày, đường may chịu lực và độ hoàn thiện cơ khí.</p>
                         </div>
                     </div>
-
-                    <!-- Widget 3: Contact & Partnership CTA -->
-                    <div class="sidebar-card-widget widget-cta-box">
-                        <div class="widget-cta-badge"><i class="fa-solid fa-headset"></i> Hỗ Trợ Bạn Đọc</div>
-                        <h4 class="widget-cta-title">Cần Tư Vấn Thiết Bị Tập Gym?</h4>
-                        <p class="widget-cta-desc">Đội ngũ chuyên viên Khỏe Pro luôn sẵn sàng giải đáp thắc mắc và hỗ trợ bạn chọn đúng dụng cụ tập luyện.</p>
-                        <div class="widget-cta-actions">
-                            <a href="lien-he" class="btn-sidebar-cta">
-                                <i class="fa-solid fa-envelope"></i> Liên Hệ Ban Biên Tập
-                            </a>
-                            <a href="tel:<?= preg_replace('/[^0-9]/', '', $optsetting['hotline'] ?? '0867508149') ?>" class="btn-sidebar-call">
-                                <i class="fa-solid fa-phone"></i> <?= $optsetting['hotline'] ?? '086 750 8149' ?>
-                            </a>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="pillar-card">
+                            <div class="pillar-num">02</div>
+                            <div class="pillar-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+                            <h4>So sánh Đối đầu</h4>
+                            <p>Đặt các dòng sản phẩm cùng phân khúc lên bàn cân so sánh trực quan về hiệu năng, độ bền và chi phí đầu tư.</p>
                         </div>
                     </div>
-                </aside>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="pillar-card">
+                            <div class="pillar-num">03</div>
+                            <div class="pillar-icon"><i class="fa-solid fa-ruler-combined"></i></div>
+                            <h4>Hướng dẫn Chọn Size</h4>
+                            <p>Bộ tiêu chí chọn size đai lưng, kích thước dây kháng lực, độ êm của thảm tập chuẩn theo công thái học y sinh.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="pillar-card">
+                            <div class="pillar-num">04</div>
+                            <div class="pillar-icon"><i class="fa-solid fa-tag"></i></div>
+                            <h4>Săn Giá Tốt Chính Hãng</h4>
+                            <p>Cập nhật giá ưu đãi thực tế từ các gian hàng chính hãng Shopee Mall, LazMall, TikTok Shop và NPP ủy quyền.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Editorial Workflow / Methodology -->
+            <div class="about-process-section">
+                <div class="process-inner">
+                    <div class="text-center mb-5">
+                        <span class="section-tag text-white"><i class="fa-solid fa-flask-vial"></i> QUY TRÌNH BIÊN TẬP</span>
+                        <h2 class="section-heading text-white">Tiêu Chuẩn Đánh Giá Nghiêm Ngặt</h2>
+                        <p class="text-light opacity-75">Quy trình 4 bước thẩm định trước khi xuất bản bất kỳ bài viết review nào</p>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-md-6 col-lg-3">
+                            <div class="process-step">
+                                <div class="step-badge">Bước 1</div>
+                                <h5>Nghiên cứu & Mẫu thử</h5>
+                                <p>Thu thập thông số kỹ thuật từ nhà sản xuất, mua mẫu thực tế và kiểm tra chất liệu bao bì.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="process-step">
+                                <div class="step-badge">Bước 2</div>
+                                <h5>Thử nghiệm Cơ học</h5>
+                                <p>Đo lường độ chịu lực, độ co giãn của sợi thun, độ bám sàn của thảm và biên độ dao động của súng massage.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="process-step">
+                                <div class="step-badge">Bước 3</div>
+                                <h5>Chấm điểm 5 Tiêu chí</h5>
+                                <p>Đánh giá theo thang điểm 10 dựa trên: Chất liệu, Hiệu năng, Độ bền, Công thái học và Giá trị mang lại.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="process-step">
+                                <div class="step-badge">Bước 4</div>
+                                <h5>Phản biện & Tái kiểm tra</h5>
+                                <p>Tiếp nhận phản hồi từ cộng đồng tập luyện thực tế và cập nhật lại bài viết sau 3 - 6 tháng sử dụng.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Dynamic Content from Database if present -->
+            <?php if (!empty($static['content' . $lang])) { ?>
+                <div class="about-body-content">
+                    <div class="content-box">
+                        <?= $func->decodeHtmlChars($static['content' . $lang]) ?>
+                    </div>
+                </div>
+            <?php } ?>
+
+            <!-- Contact & CTA Banner -->
+            <div class="about-cta-section">
+                <div class="cta-card">
+                    <div class="cta-content">
+                        <h3>Bạn có thắc mắc hoặc cần tư vấn chọn thiết bị?</h3>
+                        <p>Đội ngũ chuyên viên Khỏe Pro luôn sẵn sàng giải đáp và hỗ trợ bạn tìm được món đồ tập ưng ý nhất.</p>
+                        <div class="cta-actions">
+                            <a href="san-pham" class="btn-cta-primary"><i class="fa-solid fa-compass"></i> Khám phá sản phẩm</a>
+                            <a href="lien-he" class="btn-cta-secondary"><i class="fa-solid fa-envelope"></i> Liên hệ ban biên tập</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Share block -->
+            <div class="about-share-block">
+                <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Chia sẻ trang này:</span>
+                <div class="share-social-links">
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=<?= urlencode($func->getCurrentPageURL()) ?>" target="_blank" class="share-btn fb" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="https://twitter.com/intent/tweet?url=<?= urlencode($func->getCurrentPageURL()) ?>" target="_blank" class="share-btn tw" title="Twitter/X"><i class="fa-brands fa-x-twitter"></i></a>
+                    <a href="https://zalo.me/share?url=<?= urlencode($func->getCurrentPageURL()) ?>" target="_blank" class="share-btn zalo" title="Zalo"><strong>Z</strong></a>
+                </div>
             </div>
         </div>
-    </div>
-</div>
+    <?php } else { ?>
+        <!-- STANDARD STATIC PAGE TEMPLATE -->
+        <main class="fitnado-wrap py-4">
+            <div class="fitnado-static-page">
+                <div class="fitnado-sectionHead mb-4">
+                    <div>
+                        <h2><?= $static['name' . $lang] ?></h2>
+                        <p>Thông tin chính sách và điều khoản từ Khỏe Pro.</p>
+                    </div>
+                </div>
+                <div class="content-main static-content-box">
+                    <?= $func->decodeHtmlChars($static['content' . $lang]) ?>
+                </div>
+            </div>
+        </main>
+    <?php } ?>
+<?php } else { ?>
+    <main class="fitnado-wrap py-4">
+        <div class="alert alert-warning w-100 text-center my-4" role="alert">
+            <strong><i class="fa-solid fa-triangle-exclamation"></i> <?= dangcapnhatdulieu ?></strong>
+        </div>
+    </main>
+<?php } ?>

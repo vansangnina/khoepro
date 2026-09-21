@@ -6,7 +6,7 @@ define('NN_AUTHOR', 'xxxx.nina@gmail.com');
 $config = array(
     'arrayDomainSSL' => array(),
     'database' => array(
-        'server-name' => !empty($_SERVER["SERVER_NAME"]) ? $_SERVER["SERVER_NAME"] : 'fitnado.local',
+        'server-name' => !empty($_SERVER["SERVER_NAME"]) ? $_SERVER["SERVER_NAME"] : 'khoepro.com',
         'url' => '/',
         'type' => 'mysql',
         'host' => 'localhost',
@@ -139,6 +139,9 @@ $config = array(
 );
 error_reporting(($config['website']['error-reporting']) ? E_ALL : 0);
 $http = 'http://';
+if ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443) || (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] === 'khoepro.com') || (isset($_SERVER['SERVER_NAME']) && $_SERVER['SERVER_NAME'] === 'khoepro.com')) {
+    $http = 'https://';
+}
 
 /* Cấu hình base */
 $configUrl = $config['database']['server-name'] . $config['database']['url'];

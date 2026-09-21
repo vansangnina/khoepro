@@ -77,7 +77,7 @@ if ($id != '') {
 
     /* Lấy thông tin Affiliate Disclosure */
     $staticDisclosure = $d->rawQueryOne("select content$lang as content from #_static where type = 'affiliate-disclosure' and find_in_set('hienthi',status) limit 0,1");
-    $affiliateDisclosure = (!empty($staticDisclosure['content'])) ? $staticDisclosure['content'] : 'FITNADO tham gia tiếp thị liên kết (Affiliate Marketing) cùng Shopee, TikTok Shop, Lazada và các thương hiệu thể thao. Chúng tôi có thể nhận hoa hồng khi bạn mua hàng qua các liên kết giới thiệu mà không làm tăng giá sản phẩm của bạn.';
+    $affiliateDisclosure = (!empty($staticDisclosure['content'])) ? $staticDisclosure['content'] : 'Khỏe Pro cam kết cung cấp các đánh giá chuyên sâu và khách quan. Mọi sản phẩm được đánh giá độc lập dựa trên tiêu chuẩn kỹ thuật thực tế.';
 
     /* Lấy tags */
     $productTags = $d->rawQuery("select id_tags from #_product_tags where id_parent = ?", array($rowDetail['id']));
@@ -133,7 +133,7 @@ if ($id != '') {
     $perPage = 8;
     $startpoint = ($curPage * $perPage) - $perPage;
     $limit = " limit " . $startpoint . "," . $perPage;
-    $sql = "select photo, name$lang, slugvi, slugen, sale_price, regular_price, discount, id from #_product where $where order by numb,id desc $limit";
+    $sql = "select photo, name$lang, slugvi, slugen, sale_price, regular_price, discount, code, review_score, review_count, review_type, id from #_product where $where order by numb,id desc $limit";
     $product = $d->rawQuery($sql, $params);
     $sqlNum = "select count(*) as 'num' from #_product where $where order by numb,id desc";
     $count = $d->rawQueryOne($sqlNum, $params);
@@ -187,7 +187,13 @@ if ($id != '') {
     }
 } else if ($idl != '') {
     /* Lấy cấp 1 detail */
-    $productList = $d->rawQueryOne("select id, name$lang, slugvi, slugen, type, photo, options from #_product_list where id = ? and type = ? limit 0,1", array($idl, $type));
+    $productList = $d->rawQueryOne("select id, name$lang, slugvi, slugen, type, photo, options from #_product_list where id = ? and type = ? and find_in_set('hienthi',status) limit 0,1", array($idl, $type));
+
+    if (empty($productList)) {
+        header('HTTP/1.0 404 Not Found', true, 404);
+        include("404.php");
+        exit;
+    }
 
     /* SEO */
     $titleCate = $productList['name' . $lang];
@@ -219,11 +225,16 @@ if ($id != '') {
     $perPage = 20;
     $startpoint = ($curPage * $perPage) - $perPage;
     $limit = " limit " . $startpoint . "," . $perPage;
-    $sql = "select photo, name$lang, slugvi, slugen, sale_price, regular_price, discount, id from #_product where $where order by numb,id desc $limit";
+    $sql = "select photo, name$lang, slugvi, slugen, sale_price, regular_price, discount, code, review_score, review_count, review_type, id from #_product where $where order by numb,id desc $limit";
     $product = $d->rawQuery($sql, $params);
     $sqlNum = "select count(*) as 'num' from #_product where $where order by numb,id desc";
     $count = $d->rawQueryOne($sqlNum, $params);
     $total = (!empty($count)) ? $count['num'] : 0;
+    if ($curPage > 1 && $total > 0 && $curPage > ceil($total / $perPage)) {
+        header('HTTP/1.0 404 Not Found', true, 404);
+        include("404.php");
+        exit;
+    }
     $url = $func->getCurrentPageURL();
     $paging = $func->pagination($total, $perPage, $curPage, $url);
 
@@ -233,10 +244,16 @@ if ($id != '') {
     $breadcrumbs = $breadcr->get();
 } else if ($idc != '') {
     /* Lấy cấp 2 detail */
-    $productCat = $d->rawQueryOne("select id, id_list, name$lang, slugvi, slugen, type, photo, options from #_product_cat where id = ? and type = ? limit 0,1", array($idc, $type));
+    $productCat = $d->rawQueryOne("select id, id_list, name$lang, slugvi, slugen, type, photo, options from #_product_cat where id = ? and type = ? and find_in_set('hienthi',status) limit 0,1", array($idc, $type));
+
+    if (empty($productCat)) {
+        header('HTTP/1.0 404 Not Found', true, 404);
+        include("404.php");
+        exit;
+    }
 
     /* Lấy cấp 1 */
-    $productList = $d->rawQueryOne("select id, name$lang, slugvi, slugen from #_product_list where id = ? and type = ? limit 0,1", array($productCat['id_list'], $type));
+    $productList = $d->rawQueryOne("select id, name$lang, slugvi, slugen from #_product_list where id = ? and type = ? and find_in_set('hienthi',status) limit 0,1", array($productCat['id_list'], $type));
 
     /* Lấy sản phẩm */
     $where = "";
@@ -247,11 +264,16 @@ if ($id != '') {
     $perPage = 20;
     $startpoint = ($curPage * $perPage) - $perPage;
     $limit = " limit " . $startpoint . "," . $perPage;
-    $sql = "select photo, name$lang, slugvi, slugen, sale_price, regular_price, discount, id from #_product where $where order by numb,id desc $limit";
+    $sql = "select photo, name$lang, slugvi, slugen, sale_price, regular_price, discount, code, review_score, review_count, review_type, id from #_product where $where order by numb,id desc $limit";
     $product = $d->rawQuery($sql, $params);
     $sqlNum = "select count(*) as 'num' from #_product where $where order by numb,id desc";
     $count = $d->rawQueryOne($sqlNum, $params);
     $total = (!empty($count)) ? $count['num'] : 0;
+    if ($curPage > 1 && $total > 0 && $curPage > ceil($total / $perPage)) {
+        header('HTTP/1.0 404 Not Found', true, 404);
+        include("404.php");
+        exit;
+    }
     $url = $func->getCurrentPageURL();
     $paging = $func->pagination($total, $perPage, $curPage, $url);
 
@@ -283,13 +305,19 @@ if ($id != '') {
     $breadcrumbs = $breadcr->get();
 } else if ($idi != '') {
     /* Lấy cấp 3 detail */
-    $productItem = $d->rawQueryOne("select id, id_list, id_cat, name$lang, slugvi, slugen, type, photo, options from #_product_item where id = ? and type = ? limit 0,1", array($idi, $type));
+    $productItem = $d->rawQueryOne("select id, id_list, id_cat, name$lang, slugvi, slugen, type, photo, options from #_product_item where id = ? and type = ? and find_in_set('hienthi',status) limit 0,1", array($idi, $type));
+
+    if (empty($productItem)) {
+        header('HTTP/1.0 404 Not Found', true, 404);
+        include("404.php");
+        exit;
+    }
 
     /* Lấy cấp 1 */
-    $productList = $d->rawQueryOne("select id, name$lang, slugvi, slugen from #_product_list where id = ? and type = ? limit 0,1", array($productItem['id_list'], $type));
+    $productList = $d->rawQueryOne("select id, name$lang, slugvi, slugen from #_product_list where id = ? and type = ? and find_in_set('hienthi',status) limit 0,1", array($productItem['id_list'], $type));
 
     /* Lấy cấp 2 */
-    $productCat = $d->rawQueryOne("select id, name$lang, slugvi, slugen from #_product_cat where id_list = ? and id = ? and type = ? limit 0,1", array($productItem['id_list'], $productItem['id_cat'], $type));
+    $productCat = $d->rawQueryOne("select id, name$lang, slugvi, slugen from #_product_cat where id_list = ? and id = ? and type = ? and find_in_set('hienthi',status) limit 0,1", array($productItem['id_list'], $productItem['id_cat'], $type));
 
     /* Lấy sản phẩm */
     $where = "";
@@ -300,11 +328,16 @@ if ($id != '') {
     $perPage = 20;
     $startpoint = ($curPage * $perPage) - $perPage;
     $limit = " limit " . $startpoint . "," . $perPage;
-    $sql = "select photo, name$lang, slugvi, slugen, sale_price, regular_price, discount, id from #_product where $where order by numb,id desc $limit";
+    $sql = "select photo, name$lang, slugvi, slugen, sale_price, regular_price, discount, code, review_score, review_count, review_type, id from #_product where $where order by numb,id desc $limit";
     $product = $d->rawQuery($sql, $params);
     $sqlNum = "select count(*) as 'num' from #_product where $where order by numb,id desc";
     $count = $d->rawQueryOne($sqlNum, $params);
     $total = (!empty($count)) ? $count['num'] : 0;
+    if ($curPage > 1 && $total > 0 && $curPage > ceil($total / $perPage)) {
+        header('HTTP/1.0 404 Not Found', true, 404);
+        include("404.php");
+        exit;
+    }
     $url = $func->getCurrentPageURL();
     $paging = $func->pagination($total, $perPage, $curPage, $url);
 
@@ -337,13 +370,19 @@ if ($id != '') {
     $breadcrumbs = $breadcr->get();
 } else if ($ids != '') {
     /* Lấy cấp 4 */
-    $productSub = $d->rawQueryOne("select id, id_list, id_cat, id_item, name$lang, slugvi, slugen, type, photo, options from #_product_sub where id = ? and type = ? limit 0,1", array($ids, $type));
+    $productSub = $d->rawQueryOne("select id, id_list, id_cat, id_item, name$lang, slugvi, slugen, type, photo, options from #_product_sub where id = ? and type = ? and find_in_set('hienthi',status) limit 0,1", array($ids, $type));
+
+    if (empty($productSub)) {
+        header('HTTP/1.0 404 Not Found', true, 404);
+        include("404.php");
+        exit;
+    }
 
     /* Lấy cấp 1 */
-    $productList = $d->rawQueryOne("select id, name$lang, slugvi, slugen from #_product_list where id = ? and type = ? limit 0,1", array($productSub['id_list'], $type));
+    $productList = $d->rawQueryOne("select id, name$lang, slugvi, slugen from #_product_list where id = ? and type = ? and find_in_set('hienthi',status) limit 0,1", array($productSub['id_list'], $type));
 
     /* Lấy cấp 2 */
-    $productCat = $d->rawQueryOne("select id, name$lang, slugvi, slugen from #_product_cat where id_list = ? and id = ? and type = ? limit 0,1", array($productSub['id_list'], $productSub['id_cat'], $type));
+    $productCat = $d->rawQueryOne("select id, name$lang, slugvi, slugen from #_product_cat where id_list = ? and id = ? and type = ? and find_in_set('hienthi',status) limit 0,1", array($productSub['id_list'], $productSub['id_cat'], $type));
 
     /* Lấy cấp 3 */
     $productItem = $d->rawQueryOne("select id, name$lang, slugvi, slugen from #_product_item where id_list = ? and id_cat = ? and id = ? and type = ? limit 0,1", array($productSub['id_list'], $productSub['id_cat'], $productSub['id_item'], $type));
@@ -357,11 +396,16 @@ if ($id != '') {
     $perPage = 20;
     $startpoint = ($curPage * $perPage) - $perPage;
     $limit = " limit " . $startpoint . "," . $perPage;
-    $sql = "select photo, name$lang, slugvi, slugen, sale_price, regular_price, discount, id from #_product where $where order by numb,id desc $limit";
+    $sql = "select photo, name$lang, slugvi, slugen, sale_price, regular_price, discount, code, review_score, review_count, review_type, id from #_product where $where order by numb,id desc $limit";
     $product = $d->rawQuery($sql, $params);
     $sqlNum = "select count(*) as 'num' from #_product where $where order by numb,id desc";
     $count = $d->rawQueryOne($sqlNum, $params);
     $total = (!empty($count)) ? $count['num'] : 0;
+    if ($curPage > 1 && $total > 0 && $curPage > ceil($total / $perPage)) {
+        header('HTTP/1.0 404 Not Found', true, 404);
+        include("404.php");
+        exit;
+    }
     $url = $func->getCurrentPageURL();
     $paging = $func->pagination($total, $perPage, $curPage, $url);
 
@@ -395,7 +439,13 @@ if ($id != '') {
     $breadcrumbs = $breadcr->get();
 } else if ($idb != '') {
     /* Lấy brand detail */
-    $productBrand = $d->rawQueryOne("select name$lang, slugvi, slugen, id, type, photo, options from #_product_brand where id = ? and type = ? limit 0,1", array($idb, $type));
+    $productBrand = $d->rawQueryOne("select name$lang, slugvi, slugen, id, type, photo, options from #_product_brand where id = ? and type = ? and find_in_set('hienthi',status) limit 0,1", array($idb, $type));
+
+    if (empty($productBrand)) {
+        header('HTTP/1.0 404 Not Found', true, 404);
+        include("404.php");
+        exit;
+    }
 
     /* SEO */
     $titleCate = $productBrand['name' . $lang];
@@ -427,11 +477,16 @@ if ($id != '') {
     $perPage = 20;
     $startpoint = ($curPage * $perPage) - $perPage;
     $limit = " limit " . $startpoint . "," . $perPage;
-    $sql = "select photo, name$lang, slugvi, slugen, sale_price, regular_price, discount, id from #_product where $where order by numb,id desc $limit";
+    $sql = "select photo, name$lang, slugvi, slugen, sale_price, regular_price, discount, code, review_score, review_count, review_type, id from #_product where $where order by numb,id desc $limit";
     $product = $d->rawQuery($sql, $params);
     $sqlNum = "select count(*) as 'num' from #_product where $where order by numb,id desc";
     $count = $d->rawQueryOne($sqlNum, $params);
     $total = (!empty($count)) ? $count['num'] : 0;
+    if ($curPage > 1 && $total > 0 && $curPage > ceil($total / $perPage)) {
+        header('HTTP/1.0 404 Not Found', true, 404);
+        include("404.php");
+        exit;
+    }
     $url = $func->getCurrentPageURL();
     $paging = $func->pagination($total, $perPage, $curPage, $url);
 
@@ -467,14 +522,19 @@ if ($id != '') {
     $params = array($type);
 
     $curPage = $getPage;
-    $perPage = 2;
+    $perPage = 20;
     $startpoint = ($curPage * $perPage) - $perPage;
     $limit = " limit " . $startpoint . "," . $perPage;
-    $sql = "select photo, name$lang, slugvi, slugen, sale_price, regular_price, discount, id from #_product where $where order by numb,id desc $limit";
+    $sql = "select photo, name$lang, slugvi, slugen, sale_price, regular_price, discount, code, review_score, review_count, review_type, id from #_product where $where order by numb,id desc $limit";
     $product = $d->rawQuery($sql, $params);
     $sqlNum = "select count(*) as 'num' from #_product where $where order by numb,id desc";
     $count = $d->rawQueryOne($sqlNum, $params);
     $total = (!empty($count)) ? $count['num'] : 0;
+    if ($curPage > 1 && $total > 0 && $curPage > ceil($total / $perPage)) {
+        header('HTTP/1.0 404 Not Found', true, 404);
+        include("404.php");
+        exit;
+    }
     $url = $func->getCurrentPageURL();
     $paging = $func->pagination($total, $perPage, $curPage, $url);
 

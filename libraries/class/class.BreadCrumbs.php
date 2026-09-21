@@ -26,10 +26,11 @@ class BreadCrumbs
         if ($this->data) {
             $breadcumb .= '<ol class="breadcrumb">';
             $breadcumb .= '<li class="breadcrumb-item"><a class="text-decoration-none" href="' . $configBase . '"><span>' . trangchu . '</span></a></li>';
-            $k = 1;
+            $json[] = array("@type" => "ListItem", "position" => 1, "name" => (defined('trangchu') ? trangchu : 'Trang chủ'), "item" => $configBase);
+            $k = 2;
             foreach ($this->data as $key => $value) {
                 if ($value['name'] != '') {
-                    $slug = ($value['slug']) ? $configBase . $value['slug'] : '';
+                    $slug = ($value['slug']) ? rtrim($configBase, '/') . '/' . ltrim($value['slug'], '/') : '';
                     $name = $value['name'];
                     $active = ($key == count($this->data) - 1) ? "active" : "";
                     $breadcumb .= '<li class="breadcrumb-item ' . $active . '"><a class="text-decoration-none" href="' . $slug . '"><span>' . $name . '</span></a></li>';
@@ -38,7 +39,7 @@ class BreadCrumbs
                 }
             }
             $breadcumb .= '</ol>';
-            $breadcumb .= '<script type="application/ld+json">{"@context": "https://schema.org","@type": "BreadcrumbList","itemListElement": ' . ((json_encode($json))) . '}</script>';
+            $breadcumb .= '<script type="application/ld+json">{"@context": "https://schema.org","@type": "BreadcrumbList","itemListElement": ' . ((json_encode($json, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE))) . '}</script>';
         }
 
         return $breadcumb;

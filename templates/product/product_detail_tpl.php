@@ -66,7 +66,7 @@ $bestForText = !empty($rowDetail['best_for']) ? $rowDetail['best_for'] : (!empty
                         <?php } ?>
 
                         <!-- Main Image -->
-                        <a id="main-pro-zoom" class="d-flex align-items-center justify-content-center w-100 h-100" href="<?= UPLOAD_PRODUCT_L . $rowDetail['photo'] ?>" data-fancybox="pro-gallery">
+                        <a id="main-pro-zoom" class="d-flex align-items-center justify-content-center w-100 h-100" href="<?= $configBase . UPLOAD_PRODUCT_L . $rowDetail['photo'] ?>" data-fancybox="pro-gallery">
                             <img id="main-pro-img" src="<?= THUMBS ?>/540x540x1/<?= UPLOAD_PRODUCT_L . $rowDetail['photo'] ?>" class="img-fluid" alt="<?= htmlspecialchars($rowDetail['name' . $lang]) ?>" onerror="this.src='<?= THUMBS ?>/540x540x1/assets/images/noimage.png';">
                         </a>
                     </div>
@@ -462,67 +462,91 @@ $bestForText = !empty($rowDetail['best_for']) ? $rowDetail['best_for'] : (!empty
 
     <!-- RELATED PRODUCTS -->
     <?php if (!empty($product)) { ?>
-        <div class="pro-related-section mb-4">
-            <div class="sectionHead mb-3">
+        <section class="fitnado-section mt-5 mb-4">
+            <div class="fitnado-sectionHead">
                 <div>
-                    <h3 class="font-weight-900 text-dark" style="font-size: 22px;">SẢN PHẨM TƯƠNG TỰ CÙNG DANH MỤC</h3>
-                    <p class="text-muted text-sm mb-0">Các lựa chọn phụ kiện gym được cộng đồng đánh giá cao.</p>
+                    <h2>🔥 SẢN PHẨM TƯƠNG TỰ CÙNG DANH MỤC</h2>
+                    <p>Các lựa chọn dụng cụ tập gym & phụ kiện cùng phân khúc được cộng đồng đánh giá cao.</p>
                 </div>
+                <a href="san-pham" class="fitnado-more">Xem tất cả →</a>
             </div>
-            <div class="products">
-                <?php foreach ($product as $v_rel) { ?>
-                    <div class="card">
-                        <a href="<?= $v_rel[$sluglang] ?>" title="<?= htmlspecialchars($v_rel['name' . $lang]) ?>">
-                            <div class="pic">
-                                <img src="<?= THUMBS ?>/285x285x1/<?= UPLOAD_PRODUCT_L . $v_rel['photo'] ?>" class="w-100 h-100 object-cover rounded-top" alt="<?= htmlspecialchars($v_rel['name' . $lang]) ?>" onerror="this.src='<?= THUMBS ?>/285x285x1/assets/images/noimage.png';">
-                            </div>
+
+            <div class="fitnado-products">
+                <?php foreach ($product as $k => $v_rel) {
+                    $emojiIcons = array('➰', '🥊', '〰️', '🥤', '🎒', '💪', '⚡', '🏋️');
+                    $cardEmoji = $emojiIcons[$k % count($emojiIcons)];
+                ?>
+                    <div class="fitnado-card">
+                        <a href="<?= $v_rel[$sluglang] ?>" class="pic" title="<?= htmlspecialchars($v_rel['name' . $lang]) ?>">
+                            <?php if (!empty($v_rel['photo'])) { ?>
+                                <img class="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';" data-src="<?= THUMBS ?>/285x285x2/<?= UPLOAD_PRODUCT_L . $v_rel['photo'] ?>" alt="<?= htmlspecialchars($v_rel['name' . $lang]) ?>" />
+                                <span style="display:none;"><?= $cardEmoji ?></span>
+                            <?php } else { ?>
+                                <span><?= $cardEmoji ?></span>
+                            <?php } ?>
                         </a>
-                        <div class="cardBody">
-                            <h4 class="font-weight-bold text-sm mb-1 line-clamp-2" style="min-height: 38px;">
-                                <a href="<?= $v_rel[$sluglang] ?>" class="text-dark"><?= htmlspecialchars($v_rel['name' . $lang]) ?></a>
-                            </h4>
-                            <div class="price font-weight-900">
-                                <?= ($v_rel['sale_price'] > 0) ? $func->formatMoney($v_rel['sale_price']) : ($v_rel['regular_price'] > 0 ? $func->formatMoney($v_rel['regular_price']) : 'Liên hệ') ?>
+                        <div class="fitnado-cardBody">
+                            <?php if (!empty($v_rel['review_score']) && $v_rel['review_score'] > 0) { ?>
+                                <span class="fitnado-rating">★ <?= number_format($v_rel['review_score'], 1) ?></span>
+                            <?php } else { ?>
+                                <span class="fitnado-rating">★ 9.0</span>
+                            <?php } ?>
+                            <h3>
+                                <a href="<?= $v_rel[$sluglang] ?>" title="<?= htmlspecialchars($v_rel['name' . $lang]) ?>"><?= htmlspecialchars($v_rel['name' . $lang]) ?></a>
+                            </h3>
+                            <div class="fitnado-price">
+                                <?php if (!empty($v_rel['discount'])) { ?>
+                                    <span><?= $func->formatMoney($v_rel['sale_price']) ?></span>
+                                    <span class="fitnado-price-old"><?= $func->formatMoney($v_rel['regular_price']) ?></span>
+                                <?php } else { ?>
+                                    <span><?= ($v_rel['sale_price'] > 0) ? $func->formatMoney($v_rel['sale_price']) : ($v_rel['regular_price'] > 0 ? $func->formatMoney($v_rel['regular_price']) : lienhe) ?></span>
+                                <?php } ?>
                             </div>
-                            <a href="<?= $v_rel[$sluglang] ?>" class="btn btn-primary btn-block text-center font-weight-bold">
-                                Xem chi tiết
-                            </a>
+                            <small><?= (!empty($v_rel['code'])) ? 'Mã: ' . $v_rel['code'] : 'Tập gym | Thể thao | Chính hãng' ?></small>
+                            <a href="<?= $v_rel[$sluglang] ?>" class="fitnado-btn">Xem review →</a>
                         </div>
                     </div>
                 <?php } ?>
             </div>
-        </div>
+        </section>
     <?php } ?>
 
     <!-- RELATED ARTICLES -->
-    <?php if (!empty($relatedNews)) { ?>
-        <div class="pro-related-articles-section mb-4">
-            <div class="sectionHead mb-3">
+    <?php if (!empty($relatedNews)) {
+        $articleIcons = array('🏋️', '🥤', '〰️', '🎒', '💪', '🏃');
+    ?>
+        <section class="fitnado-section mt-4 mb-4">
+            <div class="fitnado-sectionHead">
                 <div>
-                    <h3 class="font-weight-900 text-dark" style="font-size: 22px;">CẨM NANG & KINH NGHIỆM TẬP LUYỆN</h3>
-                    <p class="text-muted text-sm mb-0">Kiến thức và hướng dẫn chọn thiết bị từ FITNADO.</p>
+                    <h2>▣ CẨM NANG & KINH NGHIỆM TẬP LUYỆN</h2>
+                    <p>Kiến thức và hướng dẫn chọn thiết bị từ Khỏe Pro.</p>
                 </div>
+                <a href="tin-tuc" class="fitnado-more">Xem tất cả bài viết →</a>
             </div>
-            <div class="articles">
-                <?php foreach ($relatedNews as $n_item) { ?>
-                    <div class="card">
-                        <a href="<?= $n_item[$sluglang] ?>" title="<?= htmlspecialchars($n_item['name' . $lang]) ?>">
-                            <div class="pic" style="height: 140px;">
-                                <img src="<?= THUMBS ?>/280x180x1/<?= UPLOAD_NEWS_L . $n_item['photo'] ?>" class="w-100 h-100 object-cover rounded-top" alt="<?= htmlspecialchars($n_item['name' . $lang]) ?>" onerror="this.src='<?= THUMBS ?>/280x180x1/assets/images/noimage.png';">
-                            </div>
-                        </a>
-                        <div class="cardBody">
-                            <h5 class="font-weight-bold text-sm line-clamp-2 mb-2" style="min-height: 36px;">
-                                <a href="<?= $n_item[$sluglang] ?>" class="text-dark"><?= htmlspecialchars($n_item['name' . $lang]) ?></a>
-                            </h5>
-                            <span class="text-muted text-xs d-block">
-                                <i class="far fa-calendar-alt mr-1"></i><?= date('d/m/Y', $n_item['date_created']) ?>
-                            </span>
+
+            <div class="fitnado-articles">
+                <?php foreach ($relatedNews as $k => $n_item) {
+                    $aIcon = $articleIcons[$k % count($articleIcons)];
+                ?>
+                    <a href="<?= $n_item[$sluglang] ?>" class="fitnado-article" title="<?= htmlspecialchars($n_item['name' . $lang]) ?>">
+                        <div class="pic">
+                            <?php if (!empty($n_item['photo'])) { ?>
+                                <img class="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';" data-src="<?= THUMBS ?>/280x180x1/<?= UPLOAD_NEWS_L . $n_item['photo'] ?>" alt="<?= htmlspecialchars($n_item['name' . $lang]) ?>" />
+                                <span style="display:none;"><?= $aIcon ?></span>
+                            <?php } else { ?>
+                                <span><?= $aIcon ?></span>
+                            <?php } ?>
                         </div>
-                    </div>
+                        <div class="fitnado-article-info">
+                            <b><?= htmlspecialchars($n_item['name' . $lang]) ?></b>
+                            <?php if (!empty($n_item['desc' . $lang])) { ?>
+                                <p><?= strip_tags($n_item['desc' . $lang]) ?></p>
+                            <?php } ?>
+                        </div>
+                    </a>
                 <?php } ?>
             </div>
-        </div>
+        </section>
     <?php } ?>
 </div>
 
@@ -552,10 +576,10 @@ $bestForText = !empty($rowDetail['best_for']) ? $rowDetail['best_for'] : (!empty
     "<?= $configBase . UPLOAD_PRODUCT_L . $rowDetail['photo'] ?>"
   ],
   "description": "<?= addslashes(strip_tags($rowDetail['desc' . $lang])) ?>",
-  "sku": "FIT-<?= $rowDetail['id'] ?>",
+  "sku": "KP-<?= $rowDetail['id'] ?>",
   "brand": {
     "@type": "Brand",
-    "name": "<?= !empty($productBrand['name' . $lang]) ? addslashes($productBrand['name' . $lang]) : 'FITNADO' ?>"
+    "name": "<?= !empty($productBrand['name' . $lang]) ? addslashes($productBrand['name' . $lang]) : 'Khỏe Pro' ?>"
   },
   "aggregateRating": {
     "@type": "AggregateRating",
@@ -567,7 +591,7 @@ $bestForText = !empty($rowDetail['best_for']) ? $rowDetail['best_for'] : (!empty
   <?php if (!empty($bestOffer)) { ?>,
   "offers": {
     "@type": "Offer",
-    "url": "<?= $configBase . $bestOffer['go_url'] ?>",
+    "url": "<?= $seo->get('url') ?>",
     "priceCurrency": "VND",
     "price": "<?= $bestOffer['affiliate_price'] ?>",
     "priceValidUntil": "<?= date('Y-12-31') ?>",

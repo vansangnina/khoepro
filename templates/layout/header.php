@@ -9,7 +9,7 @@
             <div class="fitnado-topbar-right">
                 <a href="phuong-phap-danh-gia" class="topbar-link"><i class="fa-solid fa-circle-check"></i> Tiêu chuẩn biên tập</a>
                 <span class="topbar-sep">|</span>
-                <a href="minh-bach-lien-ket-affiliate" class="topbar-link"><i class="fa-solid fa-handshake"></i> Minh bạch đối tác</a>
+                <a href="cam-ket-khach-quan" class="topbar-link"><i class="fa-solid fa-handshake"></i> Đánh giá khách quan</a>
                 <?php if (!empty($optsetting['hotline'])) { ?>
                     <span class="topbar-sep">|</span>
                     <a href="tel:<?= preg_replace('/[^0-9]/', '', $optsetting['hotline']) ?>" class="topbar-link topbar-hotline"><i class="fa-solid fa-phone"></i> <?= $optsetting['hotline'] ?></a>

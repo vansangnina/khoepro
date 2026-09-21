@@ -5,7 +5,6 @@
             <div class="footer-col-brand">
                 <a class="fitnado-logo" href="" title="<?= (!empty($setting['name' . $lang])) ? $setting['name' . $lang] : 'Khỏe Pro' ?>">
                     <?php if (!empty($logo['photo'])) { ?>
-                        <img onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" src="<?= THUMBS ?>/150x60x2/<?= UPLOAD_PHOTO_L . $logo['photo'] ?>" alt="<?= (!empty($setting['name' . $lang])) ? $setting['name' . $lang] : 'Khỏe Pro' ?>" />
                         <div class="logo-fallback" style="display:none;">
                             <span class="logo-text">Khỏe Pro</span>
                             <small><?= (!empty($slogan['name' . $lang])) ? $slogan['name' . $lang] : 'Lựa chọn thông minh hơn. Tập luyện khỏe hơn.' ?></small>
@@ -19,10 +18,6 @@
                     Khỏe Pro (khoepro.com) là nền tảng đánh giá, so sánh dụng cụ tập gym, thiết bị thể thao và chia sẻ kiến thức thể hình chuyên sâu. Chúng tôi giúp bạn lựa chọn đúng thiết bị, nâng cao hiệu quả tập luyện và phòng ngừa chấn thương.
                 </p>
                 <div class="footer-contact-list">
-                    <div class="footer-contact-item">
-                        <i class="fa-solid fa-location-dot"></i>
-                        <span><?= !empty($optsetting['address']) ? $optsetting['address'] : '123 Huỳnh Thúc Kháng, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh' ?></span>
-                    </div>
                     <div class="footer-contact-item">
                         <i class="fa-solid fa-phone"></i>
                         <span>Hotline: <a href="tel:<?= preg_replace('/[^0-9]/', '', $optsetting['hotline'] ?? '0867508149') ?>"><?= !empty($optsetting['hotline']) ? $optsetting['hotline'] : '086 750 8149' ?></a></span>
@@ -90,13 +85,7 @@
                         <i class="fa-regular fa-envelope"></i> <span>Gửi Thư Tòa Soạn</span>
                     </a>
                 </div>
-                <div class="footer-trust-badge">
-                    <i class="fa-solid fa-shield-halved text-success"></i>
-                    <div>
-                        <strong>100% Khách quan</strong>
-                        <span>Nền tảng kiểm định & review độc lập</span>
-                    </div>
-                </div>
+                
             </div>
         </div>
 

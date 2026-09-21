@@ -1,6 +1,6 @@
 # KHOEPRO SEO & SOCIAL IMAGE AUDIT REPORT
 
-**Audit Date:** 2026-09-21 15:04:47
+**Audit Date:** 2026-09-21 15:13:09
 **Domain:** `https://khoepro.com`
 **Brand:** `Khỏe Pro`
 

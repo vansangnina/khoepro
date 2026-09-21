@@ -1,61 +1,93 @@
-<div class="title-main"><span><?= (!empty($titleCate)) ? $titleCate : @$titleMain ?></span></div>
-<?php if ($com == 'tim-kiem') { ?>
-    <div class="div_kq_search mb-4"><?= $titleMain ?> (<?= $total ?>): <span>"<?php echo $tukhoa_show; ?>"</span></div>
-<?php } ?>
-<div class="row row-20">
-    <?php if (!empty($product)) { ?>
-        <?php foreach ($product as $k => $v) { ?>
-            <div class="col-md-3 col-sm-6 col-6 col-20" data-aos="fade-up" data-aos-duration="1000">
-                <div class="box-product">
-                    <div class="pic-product">
-                        <a class="text-decoration-none scale-img" href="<?= $v[$sluglang] ?>" title="<?= $v['name' . $lang] ?>">
-                            <img class="lazy w-100" onerror="this.src='<?= THUMBS ?>/285x285x1/assets/images/noimage.png';" data-src="<?= WATERMARK ?>/product/285x285x2/<?= UPLOAD_PRODUCT_L . $v['photo'] ?>" alt="<?= $v['name' . $lang] ?>" title="<?= $v['name' . $lang] ?>" />
-                        </a>
-                        <div class="product-tool d-flex align-items-stretch justify-content-between transition mb-0">
-                            <a class="product-detail-view text-decoration-none text-hover-main transition" href="<?= $v[$sluglang] ?>" title="Xem chi tiêt">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="18" height="18" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffffff" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <circle cx="10" cy="10" r="7" />
-                                    <line x1="21" y1="21" x2="15" y2="15" />
-                                </svg>
-                                <span>Chi tiêt</span>
-                            </a>
-                            <a class="product-quick-view text-decoration-none text-hover-main transition" data-slug="<?= $v[$sluglang] ?>" title="Xem nhanh">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-eye" width="18" height="18" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffffff" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <circle cx="12" cy="12" r="2" />
-                                    <path d="M22 12c-2.667 4.667 -6 7 -10 7s-7.333 -2.333 -10 -7c2.667 -4.667 6 -7 10 -7s7.333 2.333 10 7" />
-                                </svg>
-                                <span>Xem nhanh</span>
-                            </a>
-                        </div>
-                    </div>
-                    <h3 class="mb-0"><a class="text-decoration-none text-split name-product" href="<?= $v[$sluglang] ?>" title="<?= $v['name' . $lang] ?>"><?= $v['name' . $lang] ?></a></h3>
-                    <p class="price-product">
-                        <?php if ($v['discount']) { ?>
-                            <span class="price-new"><?= $func->formatMoney($v['sale_price']) ?></span>
-                            <span class="price-old"><?= $func->formatMoney($v['regular_price']) ?></span>
-                            <span class="price-per"><?= '-' . $v['discount'] . '%' ?></span>
+<main class="fitnado-wrap py-4">
+    <!-- Category & Brand Filters -->
+    <?php if (!empty($productListMenu)) {
+        $iconList = array('🏋️', '〰️', '🥤', '🎒', '🏠', '⌚', '🧘', '👕');
+    ?>
+        <div class="fitnado-cats mb-4">
+            <?php foreach ($productListMenu as $k => $v) {
+                $icon = isset($iconList[$k % count($iconList)]) ? $iconList[$k % count($iconList)] : '🏋️';
+            ?>
+                <a href="<?= $v[$sluglang] ?>" class="fitnado-cat" title="<?= $v['name' . $lang] ?>">
+                    <span class="ico">
+                        <?php if (!empty($v['photo'])) { ?>
+                            <img class="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';" data-src="<?= THUMBS ?>/50x50x2/<?= UPLOAD_PRODUCT_L . $v['photo'] ?>" alt="<?= $v['name' . $lang] ?>" />
+                            <span style="display:none;"><?= $icon ?></span>
                         <?php } else { ?>
-                            <span class="price-new"><?= ($v['regular_price']) ? $func->formatMoney($v['regular_price']) : lienhe ?></span>
+                            <span><?= $icon ?></span>
                         <?php } ?>
-                    </p>
-                    <p class="cart-product d-flex flex-wrap justify-content-between">
-                        <span class="cart-add addcart transition" data-id="<?= $v['id'] ?>" data-action="addnow"><?= themvaogiohang ?></span>
-                        <span class="cart-buy addcart transition" data-id="<?= $v['id'] ?>" data-action="buynow"><?= muangay ?></span>
-                    </p>
-                </div>
-            </div>
-        <?php } ?>
-    <?php } else { ?>
-        <div class="col-12">
-            <div class="alert alert-warning w-100" role="alert">
-                <strong><?= khongtimthayketqua ?></strong>
-            </div>
+                    </span>
+                    <?= $v['name' . $lang] ?>
+                </a>
+            <?php } ?>
         </div>
     <?php } ?>
 
-    <div class="col-12">
-        <div class="pagination-home w-100"><?= (!empty($paging)) ? $paging : '' ?></div>
-    </div>
-</div>
+    <!-- Product Listing Section -->
+    <section class="fitnado-section">
+        <div class="fitnado-sectionHead">
+            <div>
+                <h2><?= (!empty($titleCate)) ? '🏷️ ' . mb_strtoupper($titleCate, 'UTF-8') : '🔥 TẤT CẢ SẢN PHẨM & DỤNG CỤ TẬP GYM' ?></h2>
+                <?php if ($com == 'tim-kiem') { ?>
+                    <p>Kết quả tìm kiếm cho từ khóa: <strong>"<?= htmlspecialchars($tukhoa_show ?? '') ?>"</strong> (<?= $total ?? 0 ?> sản phẩm)</p>
+                <?php } else { ?>
+                    <p>Dụng cụ tập gym, thiết bị thể thao & phụ kiện chất lượng cao được tuyển chọn và đánh giá chuyên sâu.</p>
+                <?php } ?>
+            </div>
+            <?php if (!empty($total)) { ?>
+                <span class="fitnado-more" style="cursor: default;"><?= number_format($total) ?> sản phẩm</span>
+            <?php } ?>
+        </div>
+
+        <?php if (!empty($product)) { ?>
+            <div class="fitnado-products">
+                <?php foreach ($product as $k => $v) {
+                    $emojiIcons = array('➰', '🥊', '〰️', '🥤', '🎒', '💪', '⚡', '🏋️');
+                    $cardEmoji = $emojiIcons[$k % count($emojiIcons)];
+                ?>
+                    <div class="fitnado-card">
+                        <a href="<?= $v[$sluglang] ?>" class="pic" title="<?= $v['name' . $lang] ?>">
+                            <?php if (!empty($v['photo'])) { ?>
+                                <img class="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';" data-src="<?= THUMBS ?>/285x285x2/<?= UPLOAD_PRODUCT_L . $v['photo'] ?>" alt="<?= $v['name' . $lang] ?>" />
+                                <span style="display:none;"><?= $cardEmoji ?></span>
+                            <?php } else { ?>
+                                <span><?= $cardEmoji ?></span>
+                            <?php } ?>
+                        </a>
+                        <div class="fitnado-cardBody">
+                            <?php if (!empty($v['review_score']) && $v['review_score'] > 0) { ?>
+                                <span class="fitnado-rating">★ <?= number_format($v['review_score'], 1) ?></span>
+                            <?php } else { ?>
+                                <span class="fitnado-rating">★ 9.0</span>
+                            <?php } ?>
+                            <h3>
+                                <a href="<?= $v[$sluglang] ?>" title="<?= $v['name' . $lang] ?>"><?= $v['name' . $lang] ?></a>
+                            </h3>
+                            <div class="fitnado-price">
+                                <?php if (!empty($v['discount'])) { ?>
+                                    <span><?= $func->formatMoney($v['sale_price']) ?></span>
+                                    <span class="fitnado-price-old"><?= $func->formatMoney($v['regular_price']) ?></span>
+                                <?php } else { ?>
+                                    <span><?= (!empty($v['regular_price'])) ? $func->formatMoney($v['regular_price']) : ((!empty($v['sale_price'])) ? $func->formatMoney($v['sale_price']) : lienhe) ?></span>
+                                <?php } ?>
+                            </div>
+                            <small><?= (!empty($v['code'])) ? 'Mã: ' . $v['code'] : 'Tập gym | Thể thao | Chính hãng' ?></small>
+                            <a href="<?= $v[$sluglang] ?>" class="fitnado-btn">Xem review →</a>
+                        </div>
+                    </div>
+                <?php } ?>
+            </div>
+        <?php } else { ?>
+            <div class="alert alert-warning w-100 my-4 text-center" role="alert">
+                <strong><i class="fa-solid fa-triangle-exclamation"></i> <?= khongtimthayketqua ?></strong>
+                <p class="mb-0 mt-2">Vui lòng thử tìm kiếm với từ khóa khác hoặc duyệt danh mục sản phẩm bên trên.</p>
+            </div>
+        <?php } ?>
+
+        <!-- Pagination -->
+        <?php if (!empty($paging)) { ?>
+            <div class="pagination-home w-100 my-4 d-flex justify-content-center">
+                <?= $paging ?>
+            </div>
+        <?php } ?>
+    </section>
+</main>

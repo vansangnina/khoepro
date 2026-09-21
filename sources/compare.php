@@ -76,15 +76,15 @@ $product2 = getCompareProductDetail($id2);
 /* Breadcrumbs & SEO */
 $breadcr->set('so-sanh', 'So sánh sản phẩm');
 if (!empty($product1) && !empty($product2)) {
-    $seoTitle = "So sánh " . $product1['name'] . " vs " . $product2['name'] . " | FITNADO";
+    $seoTitle = "So sánh " . $product1['name'] . " vs " . $product2['name'] . " | Khỏe Pro";
     $seoDesc = "Đặt lên bàn cân so sánh chi tiết giữa " . $product1['name'] . " và " . $product2['name'] . ": Giá bán, thông số kỹ thuật, ưu nhược điểm, đánh giá thực tế và nơi mua tốt nhất.";
 } else {
-    $seoTitle = "So sánh sản phẩm dụng cụ tập Gym | FITNADO";
-    $seoDesc = "Công cụ so sánh trực quan thông số, tính năng và giá bán các phụ kiện, dụng cụ tập thể hình tại FITNADO.";
+    $seoTitle = "So sánh sản phẩm dụng cụ tập Gym & Thể thao | Khỏe Pro";
+    $seoDesc = "Công cụ so sánh trực quan thông số, tính năng và giá bán các phụ kiện, dụng cụ tập thể hình tại Khỏe Pro.";
 }
 
 $seo->set('title', $seoTitle);
-$seo->set('keywords', 'so sanh san pham, fitnado compare, danh gia do tap gym');
+$seo->set('keywords', 'so sanh san pham, khoepro compare, danh gia do tap gym');
 $seo->set('description', $seoDesc);
 $seo->set('url', $func->getPageURL());
 $seo->set('h1', 'So sánh sản phẩm');

@@ -117,14 +117,17 @@ $requick = array(
     array("tbl" => "product", "field" => "id", "source" => "product", "com" => "san-pham", "type" => "san-pham", "menu" => true),
 
     /* Tags */
-    array("tbl" => "tags", "tbltag" => "product", "field" => "id", "source" => "tags", "com" => "tags-san-pham", "type" => "san-pham", "menu" => true),
-    array("tbl" => "tags", "tbltag" => "news", "field" => "id", "source" => "tags", "com" => "tags-tin-tuc", "type" => "tin-tuc", "menu" => true),
+    array("tbl" => "tags", "tbltag" => "product", "field" => "id", "source" => "tags", "com" => "tags-san-pham", "type" => "san-pham", "menu" => false),
+    array("tbl" => "tags", "tbltag" => "news", "field" => "id", "source" => "tags", "com" => "tags-tin-tuc", "type" => "tin-tuc", "menu" => false),
 
     /* Thư viện ảnh */
-    array("tbl" => "product", "field" => "id", "source" => "product", "com" => "thu-vien-anh", "type" => "thu-vien-anh", "menu" => true),
+    array("tbl" => "product", "field" => "id", "source" => "product", "com" => "thu-vien-anh", "type" => "thu-vien-anh", "menu" => false),
 
     /* Video */
     array("tbl" => "photo", "field" => "id", "source" => "video", "com" => "video", "type" => "video", "menu" => true),
+
+    /* So sánh */
+    array("tbl" => "", "field" => "id", "source" => "compare", "com" => "so-sanh", "type" => "", "menu" => true),
 
     /* Tin tức */
     array("tbl" => "news_list", "field" => "idl", "source" => "news", "com" => "tin-tuc", "type" => "tin-tuc"),
@@ -133,8 +136,7 @@ $requick = array(
     array("tbl" => "news_sub", "field" => "ids", "source" => "news", "com" => "tin-tuc", "type" => "tin-tuc"),
     array("tbl" => "news", "field" => "id", "source" => "news", "com" => "tin-tuc", "type" => "tin-tuc", "menu" => true),
 
-    /* Bài viết */
-    array("tbl" => "news", "field" => "id", "source" => "news", "com" => "tuyen-dung", "type" => "tuyen-dung", "menu" => true),
+    /* Chính sách */
     array("tbl" => "news", "field" => "id", "source" => "news", "com" => "chinh-sach", "type" => "chinh-sach", "menu" => false),
 
     /* Trang tĩnh */
@@ -142,9 +144,6 @@ $requick = array(
 
     /* Liên hệ */
     array("tbl" => "", "field" => "id", "source" => "", "com" => "lien-he", "type" => "", "menu" => true),
-
-    /* Booking */
-    array("tbl" => "", "field" => "id", "source" => "", "com" => "booking", "type" => "", "menu" => false),
 );
 
 /* Find data */
@@ -205,13 +204,13 @@ switch ($com) {
         $titleMain = tintuc;
         break;
 
-    case 'tuyen-dung':
-        $source = "news";
-        $template = isset($_GET['id']) ? "news/news_detail" : "news/news";
-        $seo->set('type', isset($_GET['id']) ? "article" : "object");
-        $type = $com;
-        $titleMain = tuyendung;
-        break;
+    // case 'tuyen-dung':
+    //     $source = "news";
+    //     $template = isset($_GET['id']) ? "news/news_detail" : "news/news";
+    //     $seo->set('type', isset($_GET['id']) ? "article" : "object");
+    //     $type = $com;
+    //     $titleMain = tuyendung;
+    //     break;
 
     case 'chinh-sach':
         $source = "news";
@@ -278,12 +277,12 @@ switch ($com) {
         $titleMain = "Video";
         break;
 
-    case 'gio-hang':
-        $source = "order";
-        $template = 'order/order';
-        $titleMain = giohang;
-        $seo->set('type', 'object');
-        break;
+    // case 'gio-hang':
+    //     $source = "order";
+    //     $template = 'order/order';
+    //     $titleMain = giohang;
+    //     $seo->set('type', 'object');
+    //     break;
 
     case 'account':
         $source = "user";

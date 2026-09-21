@@ -11,6 +11,12 @@ if ($id != '') {
     /* Lấy bài viết detail */
     $rowDetail = $d->rawQueryOne("select id, view, date_created, id_list, id_cat, id_item, id_sub, type, name$lang, slugvi, slugen, desc$lang, content$lang, photo, options from #_news where id = ? and type = ? and find_in_set('hienthi',status) limit 0,1", array($id, $type));
 
+    if (empty($rowDetail)) {
+        header('HTTP/1.0 404 Not Found', true, 404);
+        include("404.php");
+        exit;
+    }
+
     /* Cập nhật lượt xem */
     $views = array();
     $views['view'] = $rowDetail['view'] + 1;
@@ -76,7 +82,13 @@ if ($id != '') {
     $breadcrumbs = $breadcr->get();
 } else if ($idl != '') {
     /* Lấy cấp 1 detail */
-    $newsList = $d->rawQueryOne("select id, name$lang, slugvi, slugen, type, photo, options from #_news_list where id = ? and type = ? limit 0,1", array($idl, $type));
+    $newsList = $d->rawQueryOne("select id, name$lang, slugvi, slugen, type, photo, options from #_news_list where id = ? and type = ? and find_in_set('hienthi',status) limit 0,1", array($idl, $type));
+
+    if (empty($newsList)) {
+        header('HTTP/1.0 404 Not Found', true, 404);
+        include("404.php");
+        exit;
+    }
 
     /* SEO */
     $titleCate = $newsList['name' . $lang];
@@ -113,6 +125,11 @@ if ($id != '') {
     $sqlNum = "select count(*) as 'num' from #_news where $where order by numb,id desc";
     $count = $d->rawQueryOne($sqlNum, $params);
     $total = (!empty($count)) ? $count['num'] : 0;
+    if ($curPage > 1 && $total > 0 && $curPage > ceil($total / $perPage)) {
+        header('HTTP/1.0 404 Not Found', true, 404);
+        include("404.php");
+        exit;
+    }
     $url = $func->getCurrentPageURL();
     $paging = $func->pagination($total, $perPage, $curPage, $url);
 
@@ -122,10 +139,16 @@ if ($id != '') {
     $breadcrumbs = $breadcr->get();
 } else if ($idc != '') {
     /* Lấy cấp 2 detail */
-    $newsCat = $d->rawQueryOne("select id, id_list, name$lang, slugvi, slugen, type, photo, options from #_news_cat where id = ? and type = ? limit 0,1", array($idc, $type));
+    $newsCat = $d->rawQueryOne("select id, id_list, name$lang, slugvi, slugen, type, photo, options from #_news_cat where id = ? and type = ? and find_in_set('hienthi',status) limit 0,1", array($idc, $type));
+
+    if (empty($newsCat)) {
+        header('HTTP/1.0 404 Not Found', true, 404);
+        include("404.php");
+        exit;
+    }
 
     /* Lấy cấp 1 */
-    $newsList = $d->rawQueryOne("select id, name$lang, slugvi, slugen from #_news_list where id = ? and type = ? limit 0,1", array($newsCat['id_list'], $type));
+    $newsList = $d->rawQueryOne("select id, name$lang, slugvi, slugen from #_news_list where id = ? and type = ? and find_in_set('hienthi',status) limit 0,1", array($newsCat['id_list'], $type));
 
     /* Lấy bài viết */
     $where = "";
@@ -141,6 +164,11 @@ if ($id != '') {
     $sqlNum = "select count(*) as 'num' from #_news where $where order by numb,id desc";
     $count = $d->rawQueryOne($sqlNum, $params);
     $total = (!empty($count)) ? $count['num'] : 0;
+    if ($curPage > 1 && $total > 0 && $curPage > ceil($total / $perPage)) {
+        header('HTTP/1.0 404 Not Found', true, 404);
+        include("404.php");
+        exit;
+    }
     $url = $func->getCurrentPageURL();
     $paging = $func->pagination($total, $perPage, $curPage, $url);
 
@@ -172,13 +200,19 @@ if ($id != '') {
     $breadcrumbs = $breadcr->get();
 } else if ($idi != '') {
     /* Lấy cấp 3 detail */
-    $newsItem = $d->rawQueryOne("select id, id_list, id_cat, name$lang, slugvi, slugen, type, photo, options from #_news_item where id = ? and type = ? limit 0,1", array($idi, $type));
+    $newsItem = $d->rawQueryOne("select id, id_list, id_cat, name$lang, slugvi, slugen, type, photo, options from #_news_item where id = ? and type = ? and find_in_set('hienthi',status) limit 0,1", array($idi, $type));
+
+    if (empty($newsItem)) {
+        header('HTTP/1.0 404 Not Found', true, 404);
+        include("404.php");
+        exit;
+    }
 
     /* Lấy cấp 1 */
-    $newsList = $d->rawQueryOne("select id, name$lang, slugvi, slugen from #_news_list where id = ? and type = ? limit 0,1", array($newsItem['id_list'], $type));
+    $newsList = $d->rawQueryOne("select id, name$lang, slugvi, slugen from #_news_list where id = ? and type = ? and find_in_set('hienthi',status) limit 0,1", array($newsItem['id_list'], $type));
 
     /* Lấy cấp 2 */
-    $newsCat = $d->rawQueryOne("select id, name$lang, slugvi, slugen from #_news_cat where id_list = ? and id = ? and type = ? limit 0,1", array($newsItem['id_list'], $newsItem['id_cat'], $type));
+    $newsCat = $d->rawQueryOne("select id, name$lang, slugvi, slugen from #_news_cat where id_list = ? and id = ? and type = ? and find_in_set('hienthi',status) limit 0,1", array($newsItem['id_list'], $newsItem['id_cat'], $type));
 
     /* Lấy bài viết */
     $where = "";
@@ -194,6 +228,11 @@ if ($id != '') {
     $sqlNum = "select count(*) as 'num' from #_news where $where order by numb,id desc";
     $count = $d->rawQueryOne($sqlNum, $params);
     $total = (!empty($count)) ? $count['num'] : 0;
+    if ($curPage > 1 && $total > 0 && $curPage > ceil($total / $perPage)) {
+        header('HTTP/1.0 404 Not Found', true, 404);
+        include("404.php");
+        exit;
+    }
     $url = $func->getCurrentPageURL();
     $paging = $func->pagination($total, $perPage, $curPage, $url);
 
@@ -226,7 +265,13 @@ if ($id != '') {
     $breadcrumbs = $breadcr->get();
 } else if ($ids != '') {
     /* Lấy cấp 4 */
-    $newsSub = $d->rawQueryOne("select id, id_list, id_cat, id_item, name$lang, slugvi, slugen, type, photo, options from #_news_sub where id = ? and type = ? limit 0,1", array($ids, $type));
+    $newsSub = $d->rawQueryOne("select id, id_list, id_cat, id_item, name$lang, slugvi, slugen, type, photo, options from #_news_sub where id = ? and type = ? and find_in_set('hienthi',status) limit 0,1", array($ids, $type));
+
+    if (empty($newsSub)) {
+        header('HTTP/1.0 404 Not Found', true, 404);
+        include("404.php");
+        exit;
+    }
 
     /* Lấy cấp 1 */
     $newsList = $d->rawQueryOne("select id, name$lang, slugvi, slugen from #_news_list where id = ? and type = ? limit 0,1", array($newsSub['id_list'], $type));

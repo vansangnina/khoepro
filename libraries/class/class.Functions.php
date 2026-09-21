@@ -63,11 +63,10 @@ class Functions
     {
         $content = '';
 
-        if (!empty($path)) {
+        if (!empty($path) && file_exists(dirname(__DIR__) . "/sample/" . $path . ".php")) {
             ob_start();
             include dirname(__DIR__) . "/sample/" . $path . ".php";
-            $content = ob_get_contents();
-            ob_clean();
+            $content = ob_get_clean();
         }
 
         return $content;
@@ -239,15 +238,26 @@ class Functions
 
         if (!empty($type) && !in_array($table, ['photo', 'static'])) {
             $where = "type = ? and find_in_set('hienthi',status)";
-            $where .= ($table != 'static') ? 'order by ' . $orderby . ' desc' : '';
-            $sitemap = $this->d->rawQuery("select slug$lang, date_created from #_$table where $where", array($type));
+            $where .= ($table != 'static') ? ' order by ' . $orderby . ' desc' : '';
+            $sitemap = $this->d->rawQuery("select slug$lang, date_created, date_updated from #_$table where $where", array($type));
         }
 
         if ($menu == true && $field == 'id') {
-            $urlSm = $configBase . $com;
+            $urlSm = rtrim($configBase, '/') . '/' . ltrim($com, '/');
+            // Fetch real lastmod for static landing page if available
+            $lastmodTime = time();
+            if ($table == 'static' && !empty($type)) {
+                $st = $this->d->rawQueryOne("select date_updated, date_created from #_static where type = ? limit 0,1", array($type));
+                if (!empty($st['date_updated'])) $lastmodTime = $st['date_updated'];
+                elseif (!empty($st['date_created'])) $lastmodTime = $st['date_created'];
+            } elseif ($com == 'tin-tuc' || $com == 'san-pham') {
+                $lastItem = $this->d->rawQueryOne("select max(date_updated) as u, max(date_created) as c from #_" . ($com == 'san-pham' ? 'product' : 'news') . " where find_in_set('hienthi',status)");
+                if (!empty($lastItem['u'])) $lastmodTime = $lastItem['u'];
+                elseif (!empty($lastItem['c'])) $lastmodTime = $lastItem['c'];
+            }
             echo '<url>';
             echo '<loc>' . $urlSm . '</loc>';
-            echo '<lastmod>' . date('c', time()) . '</lastmod>';
+            echo '<lastmod>' . date('c', $lastmodTime) . '</lastmod>';
             echo '<changefreq>' . $changefreq . '</changefreq>';
             echo '<priority>' . $priority . '</priority>';
             echo '</url>';
@@ -256,10 +266,11 @@ class Functions
         if (!empty($sitemap)) {
             foreach ($sitemap as $value) {
                 if (!empty($value['slug' . $lang])) {
-                    $urlSm = $configBase . $value['slug' . $lang];
+                    $urlSm = rtrim($configBase, '/') . '/' . ltrim($value['slug' . $lang], '/');
+                    $modTime = !empty($value['date_updated']) ? $value['date_updated'] : (!empty($value['date_created']) ? $value['date_created'] : time());
                     echo '<url>';
                     echo '<loc>' . $urlSm . '</loc>';
-                    echo '<lastmod>' . date('c', $value['date_created']) . '</lastmod>';
+                    echo '<lastmod>' . date('c', $modTime) . '</lastmod>';
                     echo '<changefreq>' . $changefreq . '</changefreq>';
                     echo '<priority>' . $priority . '</priority>';
                     echo '</url>';
@@ -1142,17 +1153,27 @@ $search = array(
     /* Lấy getCurrentPageURL Cano */
     public function getCurrentPageURL_CANO()
     {
+        global $configBase;
         $pageURL = 'http';
-        if (array_key_exists('HTTPS', $_SERVER) && $_SERVER["HTTPS"] == "on") $pageURL .= "s";
+        $isHttps = (array_key_exists('HTTPS', $_SERVER) && $_SERVER["HTTPS"] == "on")
+            || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')
+            || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)
+            || (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] === 'khoepro.com')
+            || (isset($_SERVER['SERVER_NAME']) && $_SERVER['SERVER_NAME'] === 'khoepro.com');
+        if ($isHttps) $pageURL .= "s";
         $pageURL .= "://";
-        $pageURL .= $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
+        $host = !empty($_SERVER["HTTP_HOST"]) ? $_SERVER["HTTP_HOST"] : (!empty($_SERVER["SERVER_NAME"]) ? $_SERVER["SERVER_NAME"] : 'khoepro.com');
+        $uri = !empty($_SERVER["REQUEST_URI"]) ? $_SERVER["REQUEST_URI"] : '/';
+        $pageURL .= $host . $uri;
         $pageURL = str_replace("amp/", "", $pageURL);
-        $urlpos = strpos($pageURL, "?p");
-        $pageURL = ($urlpos) ? explode("?p=", $pageURL) : explode("&p=", $pageURL);
-        $pageURL = explode("?", $pageURL[0]);
-        $pageURL = explode("#", $pageURL[0]);
-        $pageURL = explode("index", $pageURL[0]);
-        return $pageURL[0];
+        $pageURL = explode("?", $pageURL)[0];
+        $pageURL = explode("#", $pageURL)[0];
+        if (substr($pageURL, -9) === 'index.php') {
+            $pageURL = substr($pageURL, 0, -9);
+        } elseif (substr($pageURL, -5) === 'index') {
+            $pageURL = substr($pageURL, 0, -5);
+        }
+        return $pageURL;
     }
 
     /* Has file */

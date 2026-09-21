@@ -6,7 +6,7 @@
 ?>
 <div class="row">
     <div class="col-lg-9 mb-3">
-        <div class="title-detail-main"><?= $rowDetail['name' . $lang] ?></div>
+        <h1 class="title-detail-main"><?= htmlspecialchars($rowDetail['name' . $lang]) ?></h1>
         <div class="time-main"><i class="bi bi-calendar-check-fill"></i><span class="mr-2"><?= date("d/m/Y h:i A", $rowDetail['date_created']) ?></span> <i class="bi bi-eye-fill"></i> <?= $rowDetail['view'] ?> <?= luotxem ?></div>
         <?php if (!empty($rowDetail['content' . $lang])) { ?>
             <div class="meta-toc">
@@ -16,8 +16,7 @@
                 </div>
             </div>
             <div class="content-main content-text w-clear content-text" id="toc-content">
-                <?htmlspecialchars_decode($rowDetail['content' . $lang]) ?>
-                <?=htmlspecialchars_decode($final_content)?>
+                <?= htmlspecialchars_decode($final_content) ?>
             </div>
             <div class="share">
                 <b><?= chiase ?>:</b>
@@ -59,4 +58,34 @@
     </div>
 </div>
 
-<a href="./#gdaf">đái dsahds dhs</a>
+<!-- Article Schema -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "<?= $seo->get('url') ?>"
+    },
+    "headline": "<?= addslashes($rowDetail['name' . $lang]) ?>",
+    "image": [
+        "<?= $configBase . UPLOAD_NEWS_L . $rowDetail['photo'] ?>"
+    ],
+    "datePublished": "<?= !empty($rowDetail['date_created']) ? date('c', $rowDetail['date_created']) : date('c') ?>",
+    "dateModified": "<?= !empty($rowDetail['date_updated']) ? date('c', $rowDetail['date_updated']) : (!empty($rowDetail['date_created']) ? date('c', $rowDetail['date_created']) : date('c')) ?>",
+    "author": {
+        "@type": "Organization",
+        "name": "Khỏe Pro",
+        "url": "<?= $configBase ?>"
+    },
+    "publisher": {
+        "@type": "Organization",
+        "name": "Khỏe Pro",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "<?= $configBase . UPLOAD_PHOTO_L . @$logo['photo'] ?>"
+        }
+    },
+    "description": "<?= addslashes($seo->get('description')) ?>"
+}
+</script>
