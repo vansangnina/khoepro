@@ -1,3 +1,13 @@
+/* GLOBAL TYPOGRAPHY: Inter, Arial, sans-serif */
+:root {
+  --bs-font-sans-serif: 'Inter', Arial, sans-serif;
+  --bs-body-font-family: 'Inter', Arial, sans-serif;
+  font-family: 'Inter', Arial, sans-serif;
+}
+body, html {
+  font-family: 'Inter', Arial, sans-serif !important;
+}
+
 @keyframes spin {
   to {
     -webkit-transform: rotate(360deg);
