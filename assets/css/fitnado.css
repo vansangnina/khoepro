@@ -15,13 +15,26 @@
     font-family: 'Inter', Arial, sans-serif;
 }
 
-*, *::before, *::after {
-    font-family: 'Inter', Arial, sans-serif;
+* {
     box-sizing: border-box;
 }
 
-body, html, input, button, select, textarea, h1, h2, h3, h4, h5, h6, p, span, a, label, li, table {
-    font-family: 'Inter', Arial, sans-serif !important;
+body, html, input, button, select, textarea, h1, h2, h3, h4, h5, h6, p, a, label, li, table, div, header, nav, footer, section, article {
+    font-family: 'Inter', Arial, sans-serif;
+}
+
+/* Ensure FontAwesome & Icon fonts always render properly without font-family collision */
+.fa, .fas, .far, .fab, .fal, .fad, .fat,
+.fa-solid, .fa-regular, .fa-light, .fa-thin, .fa-duotone, .fa-brands,
+[class*="fa-"],
+[class*="fa-"]::before, [class*="fa-"]::after,
+i[class*="fa"]::before, i[class*="fa"]::after,
+.bi, [class*="bi-"], [class*="bi-"]::before {
+    font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "FontAwesome", bootstrap-icons !important;
+}
+
+.fa-brands, .fab, [class*="fa-brands"]::before {
+    font-family: "Font Awesome 6 Brands", "FontAwesome" !important;
 }
 
 /* Base Wrapper */
