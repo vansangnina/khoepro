@@ -1511,57 +1511,230 @@ i[class*="fa"]::after,
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
 }
 
-/* Footer */
+/* ========================================================
+   KHOE PRO FOOTER (PRO STANDARD)
+   ======================================================== */
 .fitnado-footer {
-    background: #f5f8fc;
-    border-top: 1px solid var(--line);
-    padding: 45px 0 25px;
+    background: #0f172a;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 55px 0 25px;
+    color: #94a3b8;
 }
 
 .fitnado-foot {
     display: grid;
-    grid-template-columns: 2fr repeat(4, 1fr);
-    gap: 30px;
-    margin-bottom: 35px;
+    grid-template-columns: 2.2fr 1.2fr 1.2fr 1.3fr 1.6fr;
+    gap: 32px;
+    margin-bottom: 40px;
 }
 
-.fitnado-foot b {
-    display: block;
-    margin-bottom: 14px;
+@media (max-width: 1199px) {
+    .fitnado-foot {
+        grid-template-columns: 2fr 1fr 1fr 1fr;
+    }
+    .footer-col-social {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 767px) {
+    .fitnado-foot {
+        grid-template-columns: 1fr;
+        gap: 28px;
+    }
+}
+
+.footer-col-brand .fitnado-logo {
+    margin-bottom: 12px;
+}
+
+.footer-col-brand .fitnado-logo .logo-text {
+    color: #ffffff;
+}
+
+.footer-brand-desc {
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: #94a3b8;
+    margin: 12px 0 18px;
+}
+
+.footer-contact-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.footer-contact-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+    color: #cbd5e1;
+}
+
+.footer-contact-item i {
+    color: #38bdf8;
+    margin-top: 3px;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.footer-contact-item a {
+    color: #cbd5e1;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.footer-contact-item a:hover {
+    color: #38bdf8;
+}
+
+/* Footer Headings & Nav */
+.footer-heading {
     font-size: 15px;
     font-weight: 600;
-    color: var(--t);
+    color: #ffffff;
+    margin: 0 0 16px;
+    letter-spacing: -0.2px;
+    position: relative;
+    padding-bottom: 8px;
 }
 
-.fitnado-foot a,
-.fitnado-foot span {
-    display: block;
-    color: var(--m);
-    margin: 9px 0;
+.footer-heading::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 24px;
+    height: 2px;
+    background: #0256aa;
+    border-radius: 2px;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.footer-links li a {
+    color: #94a3b8;
     font-size: 13.5px;
     text-decoration: none;
-    transition: color 0.15s, transform 0.15s;
+    transition: all 0.2s ease;
+    display: inline-block;
 }
 
-.fitnado-foot a:hover {
-    color: var(--b);
-    transform: translateX(2px);
+.footer-links li a:hover {
+    color: #ffffff;
+    transform: translateX(4px);
 }
 
+.footer-links li a.link-view-all {
+    color: #38bdf8;
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+/* Footer Social & Trust */
+.footer-social-links {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.footer-social-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none !important;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e2e8f0 !important;
+    transition: all 0.2s ease;
+}
+
+.footer-social-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateX(3px);
+}
+
+.footer-social-btn.btn-fb:hover {
+    background: #1877f2;
+    color: #ffffff !important;
+}
+
+.footer-social-btn.btn-zl:hover {
+    background: #0068ff;
+    color: #ffffff !important;
+}
+
+.footer-social-btn.btn-em:hover {
+    background: #0256aa;
+    color: #ffffff !important;
+}
+
+.footer-trust-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 10px 14px;
+}
+
+.footer-trust-badge i {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.footer-trust-badge strong {
+    display: block;
+    color: #ffffff;
+    font-size: 12.5px;
+    margin-bottom: 1px;
+}
+
+.footer-trust-badge span {
+    font-size: 11px;
+    color: #64748b;
+}
+
+/* Powered & Copyright Bar */
 .fitnado-footer-powered {
-    border-top: 1px solid var(--line);
-    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 22px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-size: 13px;
-    color: var(--m);
+    color: #64748b;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
-.fitnado-footer-powered a {
-    color: var(--b);
-    text-decoration: none;
-    font-weight: 600;
+.footer-copyright-text {
+    color: #94a3b8;
+}
+
+.footer-analytics-text {
+    color: #94a3b8;
+}
+
+.footer-analytics-text strong {
+    color: #f1f5f9;
 }
 
 /* Mobile Fixed Bottom Navigation */
