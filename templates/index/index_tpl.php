@@ -320,15 +320,22 @@
 
     <!-- Newsletter -->
     <div class="fitnado-newsletter">
-        <div>
+        <div class="newsletter-text-wrap">
+            <div class="newsletter-badge"><i class="fa-solid fa-envelope-open-text"></i> Bản Tin Khỏe Pro</div>
             <h2>Nhận kiến thức & ưu đãi mới nhất</h2>
-            <p>Đăng ký email để không bỏ lỡ bài review và hướng dẫn tập luyện bổ ích.</p>
+            <p>Đăng ký email để không bỏ lỡ các bài review chuyên sâu và cẩm nang chọn đồ tập bổ ích.</p>
         </div>
         <form class="fitnado-newsletter-form form-newsletter" method="post" action="">
-            <input type="email" name="dataNewsletter[email]" placeholder="Nhập email của bạn..." required />
+            <div class="newsletter-input-group">
+                <i class="fa-regular fa-envelope newsletter-input-icon"></i>
+                <input type="email" name="dataNewsletter[email]" placeholder="Nhập địa chỉ email của bạn..." required />
+            </div>
             <input type="hidden" name="dataNewsletter[type]" value="dangkynhantin" />
             <input type="hidden" name="dataNewsletter[date_created]" value="<?= time() ?>" />
-            <button type="submit" name="submit-newsletter" value="1" class="fitnado-btn">Đăng ký</button>
+            <button type="submit" name="submit-newsletter" value="1" class="fitnado-newsletter-btn">
+                <span>Đăng ký</span>
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
         </form>
     </div>
 </main>
