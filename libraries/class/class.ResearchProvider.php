@@ -412,12 +412,15 @@ class CsvProvider extends BaseResearchProvider
 class AccessTradeResearchProvider extends BaseResearchProvider
 {
     private $atProvider;
+    private $relevanceFilter;
 
-    public function __construct($d = null, $func = null)
+    public function __construct($d = null, $func = null, $relevanceFilter = null)
     {
         parent::__construct($d, $func);
         require_once __DIR__ . '/class.AccessTradeProvider.php';
+        require_once __DIR__ . '/class.ProductRelevanceFilter.php';
         $this->atProvider = new AccessTradeProvider($d, $func);
+        $this->relevanceFilter = $relevanceFilter ?: new ProductRelevanceFilter($d, $func);
     }
 
     public function getName()
@@ -430,9 +433,14 @@ class AccessTradeResearchProvider extends BaseResearchProvider
         return 'accesstrade';
     }
 
+    public function getRelevanceFilter()
+    {
+        return $this->relevanceFilter;
+    }
+
     public function discover($seed, array $options = array())
     {
-        $options['keyword'] = $seed;
+        $options['keyword'] = is_array($seed) ? ($seed['keyword'] ?? '') : (string)$seed;
         return $this->discoverCandidates($options);
     }
 
@@ -450,9 +458,28 @@ class AccessTradeResearchProvider extends BaseResearchProvider
             'limit' => $params['limit'] ?? 20
         ));
 
+        $filterActive = isset($params['filter_relevance']) ? (bool)$params['filter_relevance'] : true;
         $results = array();
+
         if ($searchRes['success'] && !empty($searchRes['products'])) {
             foreach ($searchRes['products'] as $p) {
+                // Two-Stage Relevance Filter Gate
+                $filterVerdict = ProductRelevanceFilter::VERDICT_RELEVANT;
+                $filterResult = null;
+
+                if ($filterActive) {
+                    $filterResult = $this->relevanceFilter->evaluateProduct($p);
+                    $filterVerdict = $filterResult['verdict'];
+
+                    // Drop NOT_RELEVANT products (e.g. hair gel, cosmetics, banking)
+                    if ($filterVerdict === ProductRelevanceFilter::VERDICT_NOT_RELEVANT) {
+                        continue;
+                    }
+                }
+
+                $niche = !empty($filterResult['fitness_niche']) ? $filterResult['fitness_niche'] : ($p['category'] ?: 'Gym & Fitness');
+                $reasonsText = (!empty($filterResult['reasons']) && is_array($filterResult['reasons'])) ? implode('; ', $filterResult['reasons']) : 'ACCESSTRADE Product Discovery';
+
                 $dto = new ResearchCandidateDTO(array(
                     'name' => $p['name'],
                     'platform' => 'accesstrade',
@@ -466,12 +493,17 @@ class AccessTradeResearchProvider extends BaseResearchProvider
                     'rating' => $p['rating'],
                     'commission_rate' => $p['commission_rate'],
                     'commission_value' => $p['commission_value'],
-                    'category_hint' => $p['category'] ?: 'Gym & Fitness',
-                    'brand_hint' => $p['brand'],
-                    'problem_solved' => 'Hỗ trợ tập luyện thể hình, thể thao tối ưu hiệu năng',
-                    'target_audience' => 'Người tập Gym, Fitness, Vận động viên',
+                    'category_hint' => $niche,
+                    'brand_hint' => $p['brand'] ?: $p['merchant'],
+                    'problem_solved' => 'Hỗ trợ tập luyện thể hình, thể thao & phong cách sống năng động KhoePro',
+                    'target_audience' => 'Người tập Gym, Fitness, Vận động viên & Khách hàng KhoePro',
+                    'research_notes' => $reasonsText,
                     'discovery_source' => 'ACCESSTRADE_API',
-                    'raw_data' => $p['raw'],
+                    'raw_data' => array(
+                        'feed_item' => $p['raw'],
+                        'relevance_filter' => $filterResult,
+                        'confidence' => $filterResult['confidence'] ?? 85.0
+                    ),
                     'evidence' => array(
                         array(
                             'field_name' => 'accesstrade_commission_rate',
@@ -483,6 +515,12 @@ class AccessTradeResearchProvider extends BaseResearchProvider
                             'field_name' => 'accesstrade_sales_signal',
                             'field_value' => (string)$p['sales_count'],
                             'evidence_type' => 'BENCHMARK',
+                            'source_url' => $p['url']
+                        ),
+                        array(
+                            'field_name' => 'relevance_verdict',
+                            'field_value' => $filterVerdict,
+                            'evidence_type' => 'AI_GATE',
                             'source_url' => $p['url']
                         )
                     )

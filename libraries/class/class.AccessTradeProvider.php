@@ -428,7 +428,7 @@ class AccessTradeProvider
      * Generate ACCESSTRADE Custom Tracking Link with FITNADO sub-ID parameters
      *
      * Logical Sub-ID Parameter Strategy:
-     * - utm_source = fitnado
+     * - utm_source = khoepro
      * - utm_medium = website | tiktok | social
      * - utm_campaign = <campaign_slug>
      * - utm_content = <tracking_code>
@@ -454,7 +454,7 @@ class AccessTradeProvider
             return array('success' => false, 'tracking_url' => '', 'short_url' => '', 'error' => 'Đường dẫn sản phẩm đích (destinationUrl) không được để trống.');
         }
 
-        $utmSource = $trackingParams['utm_source'] ?? 'fitnado';
+        $utmSource = $trackingParams['utm_source'] ?? 'khoepro';
         $utmMedium = $trackingParams['utm_medium'] ?? 'organic_video';
         $utmCampaign = $trackingParams['utm_campaign'] ?? 'fitnado_product';
         $utmContent = $trackingParams['utm_content'] ?? ($trackingParams['tracking_code'] ?? '');
@@ -545,7 +545,7 @@ class AccessTradeProvider
             $queryParams['status'] = $status;
         }
 
-        $res = $this->request('GET', '/v1/orders', $queryParams);
+        $res = $this->request('GET', '/v1/transactions', $queryParams);
         if (!$res['success']) {
             return array('success' => false, 'orders' => array(), 'total' => 0, 'error' => $res['error']);
         }

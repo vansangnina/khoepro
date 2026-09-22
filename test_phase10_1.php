@@ -119,8 +119,8 @@ $params = array(
     'id_product' => 42,
     'id_post' => 108,
     'id_experiment' => 5,
-    'tracking_code' => 'FITNADO_TRK_9999',
-    'utm_source' => 'fitnado',
+    'tracking_code' => 'KP_TRK_9999',
+    'utm_source' => 'khoepro',
     'utm_medium' => 'organic_video',
     'utm_campaign' => 'whey_review',
     'utm_content' => 'hook_variant_a'
@@ -131,8 +131,8 @@ $generatedLink = $linkResult['tracking_url'] ?? '';
 assertTest(strpos($generatedLink, 'sub1=42') !== false, "Link Generator: sub1 correctly mapped to id_product (42)");
 assertTest(strpos($generatedLink, 'sub2=108') !== false, "Link Generator: sub2 correctly mapped to id_post (108)");
 assertTest(strpos($generatedLink, 'sub3=5') !== false, "Link Generator: sub3 correctly mapped to id_experiment (5)");
-assertTest(strpos($generatedLink, 'sub4=FITNADO_TRK_9999') !== false, "Link Generator: sub4 correctly mapped to tracking_code ('FITNADO_TRK_9999')");
-assertTest(strpos($generatedLink, 'utm_source=fitnado') !== false, "Link Generator: utm_source standard parameter injected");
+assertTest(strpos($generatedLink, 'sub4=KP_TRK_9999') !== false, "Link Generator: sub4 correctly mapped to tracking_code ('KP_TRK_9999')");
+assertTest(strpos($generatedLink, 'utm_source=khoepro') !== false, "Link Generator: utm_source standard parameter injected");
 
 // --- 7. Outbound Affiliate Link Resolution ---
 echo "\n--- 7. Testing Outbound Affiliate Link Resolution ---\n";

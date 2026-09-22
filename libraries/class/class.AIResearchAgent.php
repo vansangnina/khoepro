@@ -452,6 +452,68 @@ class MockAIProvider implements AIProviderInterface
             );
         }
 
+        // 7. Product Relevance Filter Analysis for KhoePro
+        if (strpos($prompt, 'Nền tảng Review & Trải nghiệm Đồ tập Gym') !== false || strpos($prompt, 'TIÊU CHUẨN ĐÁNH GIÁ CỦA KHOEPRO') !== false) {
+            // Extract only the product info lines (between 'Nhiệm vụ:' and 'TIÊU CHUẨN')
+            $productInfo = $prompt;
+            if (preg_match('/Nhiệm vụ:.*?\n\n(.*?)\n\nTIÊU CHUẨN/su', $prompt, $matches)) {
+                $productInfo = $matches[1];
+            }
+            $promptLower = mb_strtolower($productInfo, 'UTF-8');
+            $isNotRelevant = false;
+            $notReasons = array();
+
+            // Check negative patterns in product info
+            $negKeywords = array('gôm xịt tóc', 'sữa rửa mặt', 'máy cạo râu', 'máy sấy tóc', 'dầu gội', 'dầu xả', 'son dưỡng', 'mặt nạ', 'tẩy da chết', 'trị mụn', 'banking', 'tài khoản', 'thẻ tín dụng', 'khoản vay', 'iphone', 'laptop', 'sim cước', 'tài xế', '30shine', 'homefarm', 'cellphones', 'viet credit');
+            foreach ($negKeywords as $nkw) {
+                if (mb_strpos($promptLower, $nkw, 0, 'UTF-8') !== false) {
+                    $isNotRelevant = true;
+                    $notReasons[] = "Sản phẩm chứa yếu tố không thuộc chủ đề thể hình/thể thao ({$nkw})";
+                }
+            }
+
+            if ($isNotRelevant) {
+                return array(
+                    'status' => true,
+                    'provider' => 'mock',
+                    'model' => 'mock-filter-v1',
+                    'data' => array(
+                        'verdict' => 'NOT_RELEVANT',
+                        'confidence' => 95.0,
+                        'fitness_niche' => 'Non-fitness (Cosmetics / Grooming / General)',
+                        'khoepro_audience_fit' => 'NONE',
+                        'review_potential' => 'LOW',
+                        'comparison_potential' => 'LOW',
+                        'content_potential' => 'LOW',
+                        'reasons' => $notReasons,
+                        'summary_rationale' => 'Sản phẩm nằm ngoài hệ sinh thái Gym/Fitness/Sports của KhoePro.'
+                    )
+                );
+            }
+
+            // Positive gym/fitness items
+            return array(
+                'status' => true,
+                'provider' => 'mock',
+                'model' => 'mock-filter-v1',
+                'data' => array(
+                    'verdict' => 'RELEVANT',
+                    'confidence' => 90.0,
+                    'fitness_niche' => 'Gym, Fitness & Active Lifestyle Gear',
+                    'khoepro_audience_fit' => 'HIGH',
+                    'review_potential' => 'HIGH',
+                    'comparison_potential' => 'HIGH',
+                    'content_potential' => 'HIGH',
+                    'reasons' => array(
+                        'Sản phẩm đáp ứng đúng nhu cầu tập luyện thể hình, bảo vệ cơ khớp hoặc phục hồi cơ bắp',
+                        'Độc giả KhoePro có nhu cầu tìm hiểu thông số kỹ thuật và so sánh giá cao',
+                        'Phù hợp sản xuất video trải nghiệm thực tế và bài viết review chuyên sâu'
+                    ),
+                    'summary_rationale' => 'Sản phẩm hoàn toàn phù hợp với định vị nội dung và độc giả của KhoePro.'
+                )
+            );
+        }
+
         $seedHash = substr(md5($prompt), 0, 8);
         // Discovery candidates list
         return array(
