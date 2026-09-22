@@ -65,6 +65,12 @@ if (isset($config['news'])) {
 
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto align-items-center">
+        <!-- Quick User Guide Link -->
+        <li class="nav-item d-sm-inline-block mr-2">
+            <a href="index.php?com=huongdan&act=man" class="btn btn-sm btn-outline-primary shadow-sm" style="font-weight: 600; border-radius: 6px;">
+                <i class="fas fa-question-circle text-primary mr-1"></i> Hướng Dẫn Sử Dụng
+            </a>
+        </li>
         <!-- Notifications -->
         <?php if($config['website']['adminlang']['active'] == true){?>
         <li class="nav-item d-sm-inline-block">
@@ -73,7 +79,7 @@ if (isset($config['news'])) {
         </li>
         <?php } ?>
         <li class="nav-item d-sm-inline-block">
-            <a href="../" target="_blank" class="nav-link"><i class="fas fa-reply"></i></a>
+            <a href="../" target="_blank" class="nav-link" title="Xem website"><i class="fas fa-reply"></i></a>
         </li>
         <li class="nav-item dropdown">
             <a id="dropdownSubMenu-info" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-toggle"><i class="fas fa-cogs"></i></a>

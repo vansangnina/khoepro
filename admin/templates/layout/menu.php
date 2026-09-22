@@ -21,6 +21,14 @@
                     </a>
                 </li>
 
+                <!-- Hướng Dẫn Sử Dụng -->
+                <li class="nav-item <?= ($com == 'huongdan') ? 'active' : '' ?>">
+                    <a class="nav-link <?= ($com == 'huongdan') ? 'active bg-primary' : '' ?>" href="index.php?com=huongdan&act=man" title="Hướng dẫn sử dụng">
+                        <i class="nav-icon text-sm fas fa-book-reader text-warning"></i>
+                        <p class="font-weight-600 text-warning">HƯỚNG DẪN SỬ DỤNG</p>
+                    </a>
+                </li>
+
                 <!-- Product Research & AI Agent (Phase 03 + Phase 04) -->
                 <?php
                 $isResearchActive = ($com == 'product_research');
