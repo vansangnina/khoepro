@@ -11,6 +11,9 @@ if (!defined('LIBRARIES')) {
 }
 
 require_once LIBRARIES . 'class/class.PublishProvider.php';
+if (!class_exists('ComplianceGuardrail')) {
+    require_once LIBRARIES . 'class/class.ComplianceGuardrail.php';
+}
 
 class PublishingCenter {
     private $d;
@@ -255,7 +258,25 @@ class PublishingCenter {
             $errors[] = 'Chưa chọn nền tảng xuất bản hợp lệ.';
         }
 
-        // 5. Kiểm tra Provider Readiness
+        // 5. Compliance Guardrail Checklist (Health claims, PII, clickbait, affiliate disclosure, platform safety)
+        $guardrailResult = ComplianceGuardrail::evaluate(array(
+            'content_text' => ($post['caption'] ?? '') . "\n" . ($post['disclosure_text'] ?? ''),
+            'caption' => $post['caption'] ?? '',
+            'hashtags' => $post['hashtags'] ?? '',
+            'platform' => $post['platform'] ?? 'tiktok',
+            'content_type' => 'video_post',
+            'has_affiliate' => !empty($post['affiliate_offer_id']),
+            'is_ai_generated' => true,
+            'allow_auto_publish_low' => false
+        ));
+
+        if ($guardrailResult['risk_level'] === ComplianceGuardrail::RISK_BLOCKED) {
+            $errors[] = "VI PHẠM QUY TẮC AN TOÀN (BLOCKED): " . implode('; ', $guardrailResult['issues']);
+        } elseif ($guardrailResult['risk_level'] === ComplianceGuardrail::RISK_HIGH) {
+            $errors[] = "CẦN KIỂM DUYỆT (HIGH RISK): " . implode('; ', $guardrailResult['issues']);
+        }
+
+        // 6. Kiểm tra Provider Readiness
         $provider = PublishProviderFactory::create($post['provider'] ?? 'manual', $this->d, $this->func);
         $providerVal = $provider->validate(array(
             'id_video' => $post['id_video'],
@@ -271,6 +292,7 @@ class PublishingCenter {
         return array(
             'valid' => empty($errors),
             'errors' => $errors,
+            'compliance_report' => $guardrailResult,
             'post' => $post
         );
     }

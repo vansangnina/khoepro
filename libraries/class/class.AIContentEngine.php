@@ -11,6 +11,9 @@ if (!class_exists('AIResearchAgent')) {
 if (!class_exists('ProductResearch')) {
     require_once __DIR__ . '/class.ProductResearch.php';
 }
+if (!class_exists('ComplianceGuardrail')) {
+    require_once __DIR__ . '/class.ComplianceGuardrail.php';
+}
 
 class AIContentEngine
 {
@@ -251,10 +254,29 @@ class AIContentEngine
 
         $jsonStr = json_encode($data, JSON_UNESCAPED_UNICODE);
 
-        // 1. Check for Fake Personal Testing Claims without REAL_TEST evidence
+        // 1. Run Comprehensive Compliance Guardrail Check
+        $guardrailResult = ComplianceGuardrail::evaluate(array(
+            'content_text' => $jsonStr,
+            'structured_data' => $data,
+            'content_type' => $contentType,
+            'platform' => 'website',
+            'has_affiliate' => !empty($aggregatedData['affiliates']),
+            'is_ai_generated' => true,
+            'has_real_test' => $hasRealTest,
+            'evidence' => $aggregatedData['evidence'] ?? array()
+        ));
+
+        if ($guardrailResult['risk_level'] === ComplianceGuardrail::RISK_BLOCKED || $guardrailResult['risk_level'] === ComplianceGuardrail::RISK_HIGH) {
+            $passed = false;
+            foreach ($guardrailResult['issues'] as $iss) {
+                $flags[] = "[COMPLIANCE GUARDRAIL - {$guardrailResult['risk_level']}] " . $iss;
+            }
+        }
+
+        // 2. Check for Fake Personal Testing Claims without REAL_TEST evidence
         $firstPersonClaims = array(
             'tôi đã dùng', 'mình đã test', 'tôi đã thử', 'mình đã trải nghiệm',
-            'fitnado đã test', 'chúng tôi đã dùng thử', 'kinh nghiệm 30 ngày dùng của tôi'
+            'fitnado đã test', 'khoepro đã test', 'chúng tôi đã dùng thử', 'kinh nghiệm 30 ngày dùng của tôi'
         );
         if (!$hasRealTest) {
             foreach ($firstPersonClaims as $claim) {
@@ -265,7 +287,7 @@ class AIContentEngine
             }
         }
 
-        // 2. Check for Illegal Medical Promises
+        // 3. Check for Illegal Medical Promises
         $medicalClaims = array(
             'chữa đau lưng', 'điều trị thoát vị', 'chữa dứt điểm', 'trị dứt điểm chấn thương',
             'chữa khỏi', 'cam kết tăng 5kg cơ', 'cam kết giảm 10kg'
@@ -277,7 +299,7 @@ class AIContentEngine
             }
         }
 
-        // 3. Check for Fake Customer Testimonials
+        // 4. Check for Fake Customer Testimonials
         if (empty($aggregatedData['reviews'])) {
             $testimonialPatterns = array(
                 'anh nam chia sẻ:', 'chị lan đánh giá:', 'khách hàng review 5 sao:', 'người mua nhận xét:'
@@ -290,7 +312,7 @@ class AIContentEngine
             }
         }
 
-        // 4. Check for Invented Exact Ratings / Sales Count in Product Analysis
+        // 5. Check for Invented Exact Ratings / Sales Count in Product Analysis
         if ($contentType === 'product_analysis') {
             if (isset($data['rating']) && empty($aggregatedData['research']['rating'])) {
                 $flags[] = "AI tự ý bổ sung số liệu đánh giá sao (rating) không có trong dữ liệu nguồn";
@@ -304,7 +326,8 @@ class AIContentEngine
 
         return array(
             'passed' => $passed,
-            'flags' => $flags,
+            'flags' => array_values(array_unique($flags)),
+            'compliance_report' => $guardrailResult,
             'checked_at' => time()
         );
     }
@@ -571,12 +594,13 @@ class AIContentEngine
         }
         $evidenceText = !empty($evidenceFacts) ? implode("; ", $evidenceFacts) : "Không có bằng chứng sàn bổ sung";
 
-        $systemInstruction = "Bạn là Giám đốc Sáng tạo Nội dung Gym/Fitness của FITNADO.\n"
+        $systemInstruction = ComplianceGuardrail::getSystemPrompt() . "\n"
+            . "VAI TRÒ CỤ THỂ: Bạn là Giám đốc Sáng tạo Nội dung Gym/Fitness/Sức khỏe của KhoePro.\n"
             . "NGUYÊN TẮC BẮT BUỘC:\n"
             . "1. DỮ LIỆU THỰC TẾ LÀ CHÂN LÝ: Không tự bịa đặt thông số kỹ thuật, lượt bán, đánh giá sao, giấy chứng nhận y tế.\n"
             . "2. CẤM XƯNG TRẢI NGHIỆM CÁ NHÂN: Tuyệt đối không tự xưng 'Tôi đã test 30 ngày', 'Mình đã dùng...' trừ khi hệ thống có bằng chứng REAL_TEST.\n"
             . "3. CẤM FAKE REVIEW: Không bịa lời chứng thực hay trích dẫn khách hàng giả định.\n"
-            . "4. AN TOÀN Y KHOA: Không cam kết chữa bệnh, chữa đau lưng, trị thoát vị.\n"
+            . "4. AN TOÀN Y KHOA: Không cam kết chữa bệnh, chữa đau lưng, trị thoát vị, không cam kết giảm cân cấp tốc.\n"
             . "5. TRẢ VỀ JSON THUẦN TÚY theo đúng schema được chỉ định.\n";
 
         switch ($contentType) {
