@@ -1,5 +1,5 @@
-# KHOEPRO — PRODUCTION DEPLOYMENT PACKAGE & PROCEDURE
-## AccessTrade Discovery Filter & Pre-Cron Production Runbook
+# KHOEPRO — PRODUCTION DEPLOYMENT PACKAGE & RUNBOOK
+## AccessTrade Discovery Filter & Production Cron Safety Runbook
 
 **Deployment Date:** September 22, 2026  
 **Target Domain:** `khoepro.com` (LIVE Production)  
@@ -8,126 +8,133 @@
 
 ---
 
-## 1. Files to Upload (Deployment Payload)
+## 1. Separation of Local vs Production Database State
 
-Upload ONLY the following files to production via Git pull or SFTP:
+> [!IMPORTANT]
+> **Production database is authoritative.**
+> Local development fixtures existed only on local development environment and were already cleaned locally.
+> **Production requires ZERO mandatory database migrations or schema alterations.**
 
-| Path | Type | Purpose |
-| :--- | :--- | :--- |
-| `libraries/class/class.ProductRelevanceFilter.php` | NEW | Two-Stage Product Relevance Filter Engine (Basic heuristic + AI semantic gate) |
-| `libraries/class/class.AccessTradeProvider.php` | MODIFIED | Updated `utm_source=khoepro` default, `/v1/transactions` endpoint fix |
-| `libraries/class/class.ResearchProvider.php` | MODIFIED | Integrated `ProductRelevanceFilter` gate into `AccessTradeResearchProvider` |
-| `libraries/class/class.AIResearchAgent.php` | MODIFIED | Added KhoePro relevance analysis handler in `MockAIProvider` |
-| `cron/accesstrade_sync_worker.php` | EXISTING/VERIFIED | Background transaction sync & reconciliation worker |
-| `database/migrations/cleanup_dev_fixtures_20260922.sql` | MIGRATION | Incremental SQL script to archive/clean dev fixtures |
+| Environment | Database Schema Change | Database Data Change | Required Migration |
+| :--- | :--- | :--- | :--- |
+| **LOCAL** | NONE | 23 Dev Fixtures Cleaned | Completed locally |
+| **PRODUCTION** | **NONE** | **NONE** | **NONE** |
 
 ---
 
-## 2. Files NOT to Upload (Strictly Protected)
+## 2. Files to Upload (Verified Code Changes Only)
+
+Based on exact git diff against base, only the following **4 PHP files** contain changes:
+
+| File Path | Status | Rationale & Change Summary |
+| :--- | :--- | :--- |
+| `libraries/class/class.ProductRelevanceFilter.php` | **NEW** | Two-stage product relevance filter engine (Heuristic negative blacklist + AI semantic analysis gate). |
+| `libraries/class/class.AccessTradeProvider.php` | **MODIFIED** | Set default `utm_source=khoepro` for all new deep links; corrected transaction endpoint to `/v1/transactions`. |
+| `libraries/class/class.ResearchProvider.php` | **MODIFIED** | Integrated `ProductRelevanceFilter` gate into `AccessTradeResearchProvider::discoverCandidates()`. |
+| `libraries/class/class.AIResearchAgent.php` | **MODIFIED** | Added KhoePro fitness relevance prompt handler in `MockAIProvider` for test/fallback coverage. |
+
+*(Note: `cron/accesstrade_sync_worker.php` is already in place on production from Phase 10.1 and has zero code diff).*
+
+---
+
+## 3. Files to Preserve (DO NOT OVERWRITE)
 
 > [!CAUTION]
-> **DO NOT UPLOAD OR OVERWRITE THE FOLLOWING FILES:**
-> 1. `libraries/config.php` — **NEVER OVERWRITE**. Production database credentials, live domain SSL, and production AccessTrade API key (`access_key`) must remain untouched.
-> 2. `admin/` directory or admin source files unless specifically designated.
-> 3. `.git/` or local test scripts (`test_*.php`).
+> **STRICT SECURITY RULE — NEVER OVERWRITE THE FOLLOWING FILES:**
+> 1. **`libraries/config.php`** — Contains live production database credentials, production domain SSL rules, and production AccessTrade API key (`access_key`).
+> 2. **Production `.htaccess` / Web Server Config**.
+> 3. **Production storage directories:** `upload/`, `cache/`, `logs/`.
 
 ---
 
-## 3. Database Changes & SQL Migration
+## 4. Production Database Verification (Optional Read-Only Preview)
 
-### Schema Changes:
-- **NONE** (Schema was fully prepared in Phase 03/Phase 04/Phase 10.1).
-- `table_product_research`, `table_product_research_evidence`, `table_product_research_snapshot`, `table_affiliate_conversion`, `table_analytics_event` already exist.
+If the production database administrator wishes to inspect for any old development test markers before running cron, use the safe **semantic-only** script:
 
-### Data Changes & Cleanup:
-Execute the safe incremental cleanup migration on production database:
-```sql
--- Run database/migrations/cleanup_dev_fixtures_20260922.sql
+`database/migrations/cleanup_dev_fixtures_20260922.sql`
 
-DELETE FROM `table_product_research_snapshot` 
-WHERE `id_research` IN (6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 18, 19, 20, 22, 23, 24, 26, 27, 28, 30, 31, 32, 33);
-
-DELETE FROM `table_product_research_evidence` 
-WHERE `id_research` IN (6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 18, 19, 20, 22, 23, 24, 26, 27, 28, 30, 31, 32, 33);
-
-DELETE FROM `table_product_research` 
-WHERE `id` IN (6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 18, 19, 20, 22, 23, 24, 26, 27, 28, 30, 31, 32, 33);
-
-DELETE FROM `table_product_research_job` 
-WHERE `id` >= 1;
-
-UPDATE `table_product_research_seed` 
-SET `status` = 'active', `last_run` = NULL, `next_run` = UNIX_TIMESTAMP() 
-WHERE `id` <= 3;
-
-DELETE FROM `table_product_research_seed` 
-WHERE `id` > 3;
-```
+**Safety Rules Enforced:**
+- **Zero hardcoded numeric IDs** (No `WHERE id IN (...)`).
+- **Zero broad table deletions** (No `WHERE id >= 1`).
+- All deletions require `id_product IS NULL` to guarantee real production catalog products are never touched.
+- Step 1 provides `SELECT` preview queries before any transaction is opened.
 
 ---
 
-## 4. PHP 7.4 Production Syntax Validation Step
+## 5. Step-by-Step Production Deployment Procedure
 
-Before enabling cron or executing workers on the live server, run syntax linting using production PHP 7.4 binary:
-
+### Step 1: Pre-Deployment Backup
+Create a timestamped backup of the 3 existing files on the production server:
 ```bash
-# Execute on production server:
-php7.4 -l libraries/class/class.ProductRelevanceFilter.php
-php7.4 -l libraries/class/class.AccessTradeProvider.php
-php7.4 -l libraries/class/class.ResearchProvider.php
-php7.4 -l libraries/class/class.AIResearchAgent.php
-php7.4 -l cron/accesstrade_sync_worker.php
+# On production server:
+cp libraries/class/class.AccessTradeProvider.php libraries/class/class.AccessTradeProvider.php.bak_20260922
+cp libraries/class/class.ResearchProvider.php libraries/class/class.ResearchProvider.php.bak_20260922
+cp libraries/class/class.AIResearchAgent.php libraries/class/class.AIResearchAgent.php.bak_20260922
 ```
 
-All files must return `No syntax errors detected in <file>`.
+### Step 2: Upload Verified Code Files
+Upload the 4 files listed in Section 2 to their respective paths under the production webroot.
 
----
+### Step 3: Production PHP 7.4 Syntax Validation
+Validate syntax of all 4 uploaded files using the production server's PHP 7.4 CLI binary:
+```bash
+# Find production PHP 7.4 binary (e.g., /usr/bin/php7.4 or via which):
+PHP_BIN=$(which php7.4 || which php)
 
-## 5. Production Step-by-Step Deployment Procedure
+$PHP_BIN -l libraries/class/class.ProductRelevanceFilter.php
+$PHP_BIN -l libraries/class/class.AccessTradeProvider.php
+$PHP_BIN -l libraries/class/class.ResearchProvider.php
+$PHP_BIN -l libraries/class/class.AIResearchAgent.php
+$PHP_BIN -l cron/accesstrade_sync_worker.php
+```
+**Assertion:** Every file must output `No syntax errors detected`.
 
-### Step 1: Code Synchronization
-Pull or upload the verified files from Section 1 to the webroot `/home/khoepro/public_html/` (or production path).
-
-### Step 2: Database Migration
-Execute `database/migrations/cleanup_dev_fixtures_20260922.sql` via phpMyAdmin or MySQL CLI.
-
-### Step 3: Verify Live API Connection via Admin Panel
-Access KhoePro Admin Panel:
+### Step 4: Admin Live API Verification
+Log into KhoePro Admin Panel:
 - URL: `https://khoepro.com/admin/index.php?com=operations&act=providers`
 - Click **"Kiểm Tra Kết Nối (ACCESSTRADE)"**
-- Verify response: `HTTP 200 OK — Kết nối thành công`.
+- Verify output: `HTTP 200 OK — Kết nối thành công`.
 
-### Step 4: Dry-run Manual Sync
-Run sync worker manually once to verify transaction and campaign sync:
+### Step 5: Manual One-Time Worker Test Run
+Execute the worker manually once from CLI:
 ```bash
-php cron/accesstrade_sync_worker.php
+$PHP_BIN cron/accesstrade_sync_worker.php
 ```
-Verify output shows: `Status: SUCCESS`, `0 duplicates`.
+**Expected Output:**
+- `Status: SUCCESS`
+- `0 duplicates created`
+- Zero fatal errors or warnings.
+- Verify in Admin that NO public products were created and NO research candidates were auto-approved.
 
-### Step 5: Configure Production Crontab (When Approved)
-Add the cron entry to crontab (`crontab -e`):
+### Step 6: Configure Production Crontab (Initial Controlled Logging)
+Configure the crontab using the resolved PHP 7.4 binary and absolute webroot path. For the initial rollout period, log output to a dedicated log file rather than `/dev/null`:
+
 ```cron
-# KhoePro ACCESSTRADE Automated Sync Worker (Every 30 minutes)
-*/30 * * * * /usr/bin/php /home/khoepro/public_html/cron/accesstrade_sync_worker.php > /dev/null 2>&1
+# KhoePro ACCESSTRADE Background Sync Worker (Runs every 30 minutes)
+*/30 * * * * /usr/bin/php7.4 /path/to/khoepro.com/cron/accesstrade_sync_worker.php >> /path/to/khoepro.com/logs/accesstrade_cron.log 2>&1
 ```
+*(After 48 hours of stable operation with zero errors, logging may be redirected or rotated).*
 
 ---
 
 ## 6. Rollback Plan
 
-If any anomaly occurs:
-1. **Disable Cron:** Comment out the cron entry in `crontab -e`.
-2. **Revert Files:**
+If any issue is detected after upload:
+1. **Disable Cron:** Comment out the cron line in `crontab -e`.
+2. **Restore Backups:**
    ```bash
-   git checkout HEAD~1 libraries/class/class.AccessTradeProvider.php libraries/class/class.ResearchProvider.php
+   cp libraries/class/class.AccessTradeProvider.php.bak_20260922 libraries/class/class.AccessTradeProvider.php
+   cp libraries/class/class.ResearchProvider.php.bak_20260922 libraries/class/class.ResearchProvider.php
+   cp libraries/class/class.AIResearchAgent.php.bak_20260922 libraries/class/class.AIResearchAgent.php
+   rm -f libraries/class/class.ProductRelevanceFilter.php
    ```
-3. **Database:** No schema rollback required (no DDL applied).
+3. **Database:** No database rollback needed (Zero DDL/DML applied).
 
 ---
 
-## 7. Production Verification URLs
+## 7. Production Test & Monitoring Endpoints
 
 - Operations Control Center: `https://khoepro.com/admin/index.php?com=operations&act=list`
-- Affiliate Providers: `https://khoepro.com/admin/index.php?com=operations&act=providers`
-- Product Research Queue: `https://khoepro.com/admin/index.php?com=product_research&act=man`
-- Affiliate Conversions: `https://khoepro.com/admin/index.php?com=affiliate&act=conversions`
+- Affiliate Providers & Connection Ping: `https://khoepro.com/admin/index.php?com=operations&act=providers`
+- Candidate Research Staging Queue: `https://khoepro.com/admin/index.php?com=product_research&act=man`
+- Affiliate Conversion Ledger: `https://khoepro.com/admin/index.php?com=affiliate&act=conversions`
