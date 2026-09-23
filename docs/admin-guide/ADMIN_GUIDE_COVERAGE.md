@@ -40,11 +40,20 @@
 | 23 | Trung tâm Vận hành | Giám sát Sức khỏe & Workers | `index.php?com=operations&act=overview` | `trung-tam-van-hanh-tong-quan` | `operations-health-badge.svg`, `operations-workers-status.svg`, `operations-costs-summary.svg` | Có | **100% COVERED** |
 | 24 | Trung tâm Vận hành | Ngân sách API & Cảnh báo Sự cố | `index.php?com=operations&act=costs` | `trung-tam-van-hanh-tong-quan` | `operations-costs-summary.svg` | Có | **100% COVERED** |
 | 25 | Cấu hình & Tiện ích | Thiết lập chung & Xóa Cache | `index.php?com=setting&act=update` | `tong-quan-dashboard` | `dashboard-header-notify.svg` | Có | **100% COVERED** |
+| 26 | Nghiên cứu sản phẩm | Multi-Platform Scoring & Candidate Pool | `index.php?com=product_research&act=man` | `nghien-cuu-multi-platform-scoring` | `research-platform-scores.svg`, `research-selection-reason.svg`, `research-candidate-approve.svg` | Có | **100% COVERED** |
+| 27 | AI Content Engine | Master Content Package & Multi-Adapters | `index.php?com=ai_content&act=generate` | `ai-content-master-package` | `ai-master-content-facts.svg`, `ai-master-content-adapters.svg`, `ai-master-content-save.svg` | Có | **100% COVERED** |
+| 28 | AI Content Engine | Compliance Guardrail Policy Gate | `index.php?com=ai_content&act=view` | `compliance-guardrail-policy-gate` | `compliance-scan-overview.svg`, `compliance-gate-badges.svg`, `compliance-auto-sanitize.svg` | Có | **100% COVERED** |
+| 29 | Xuất bản Đa Kênh | Approved Pool & Social Scheduler Engine | `index.php?com=publishing&act=calendar` | `xuat-ban-approved-pool-scheduler` | `publishing-pool-counter.svg`, `publishing-schedule-rules.svg`, `publishing-worker-dispatch.svg` | Có | **100% COVERED** |
+| 30 | Đo lường & Winner | Social Analytics & Feedback Loop Boost | `index.php?com=analytics&act=overview` | `do-luong-feedback-loop` | `analytics-social-metrics.svg`, `analytics-attribution-match.svg`, `analytics-score-boost.svg` | Có | **100% COVERED** |
+| 31 | Tối ưu hóa (A/B) | Khuyến nghị AI & Thử nghiệm A/B | `index.php?com=optimization&act=recommendations` | `toi-uu-ab-khuyen-nghi` | `ab-test-recommendations.svg`, `ab-test-create-variant.svg`, `ab-test-winner-report.svg` | Có | **100% COVERED** |
+| 32 | Bài viết & Tin tức | Quản lý Blog chuẩn SEO & Bình luận | `index.php?com=news&act=man&type=tin-tuc` | `tin-tuc-bai-viet-quan-ly` | `news-article-editor.svg`, `news-article-seo.svg`, `news-comments-moderation.svg` | Có | **100% COVERED** |
 
 ---
 
 ## 3. KẾT LUẬN ĐỘ PHỦ
 - **Tổng số nhóm chức năng**: 10/10 nhóm (**Đạt 100%**)
-- **Tổng số ảnh minh họa thực tế**: 44 file SVG vector tương ứng đúng từng bước thao tác.
+- **Tổng số bài hướng dẫn chi tiết**: 21 bài viết chuẩn hóa từng bước.
+- **Tổng số ảnh minh họa thực tế**: 65 file SVG vector sắc nét tương ứng đúng từng bước thao tác.
 - **Tính năng tìm kiếm**: Hỗ trợ tra cứu theo tiêu đề, tóm tắt, mô tả, từ khóa nghiệp vụ.
 - **Tính năng liên kết**: Mỗi bài đều có breadcrumbs, link điều hướng danh mục và danh sách bài liên quan.
+

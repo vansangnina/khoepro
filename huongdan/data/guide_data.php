@@ -203,8 +203,46 @@ class GuideRepository {
                 'delete_instructions' => 'Bấm icon thùng rác để xóa từ khóa không còn muốn theo dõi.',
                 'warnings' => 'Tránh nhập từ khóa quá chung chung (như "áo", "quần") để không làm lẫn các sản phẩm thời trang thông thường.',
                 'troubleshooting' => 'Từ khóa không ra kết quả: Thử rút ngắn từ khóa hoặc kiểm tra lại kết nối API tại mục "Cấu hình AI & API".',
-                'related_links' => array('nghien-cuu-ung-vien', 'trung-tam-van-hanh-pipeline'),
+                'related_links' => array('nghien-cuu-ung-vien', 'nghien-cuu-multi-platform-scoring', 'trung-tam-van-hanh-pipeline'),
                 'keywords' => array('từ khóa', 'seeds', 'quét sản phẩm', 'cấu hình cào', 'từ khóa gym')
+            ),
+
+            'nghien-cuu-multi-platform-scoring' => array(
+                'id' => 'nghien-cuu-multi-platform-scoring',
+                'category_id' => 'nghien-cuu-san-pham',
+                'title' => 'Chấm điểm Tiềm năng Đa Nền tảng (TikTok, FB, YouTube) & Ứng viên',
+                'summary' => 'Hệ thống tự động tính điểm Global, TikTok Score, Facebook Score, YouTube Score và chọn lọc ứng viên kèm lý do rõ ràng',
+                'purpose' => 'Giúp đội ngũ Marketing biết chính xác sản phẩm nào phù hợp nhất cho kênh nào (Ví dụ: Sản phẩm giá rẻ, visual bắt mắt cho TikTok; sản phẩm cao cấp, giải pháp rõ ràng cho Facebook Reels; sản phẩm chuyên sâu, từ khóa ngách cho YouTube Shorts).',
+                'when_to_use' => 'Khi lọc danh sách sản phẩm để đưa vào quy trình sản xuất nội dung tự động.',
+                'prerequisites' => 'Đã có sản phẩm và dữ liệu nghiên cứu thị trường.',
+                'menu_path' => 'Menu bên trái → Nghiên cứu sản phẩm → Ứng viên nghiên cứu.',
+                'steps' => array(
+                    array(
+                        'step_num' => 1,
+                        'title' => 'Xem bảng điểm đa nền tảng (Platform Scores)',
+                        'content' => 'Mỗi sản phẩm hiển thị 4 cột điểm chuẩn hóa từ 0 - 100: Global Score (Tổng quan), TikTok Score (Visual & Nỗi đau), Facebook Score (Lợi ích & Hoa hồng) và YouTube Score (SEO & Từ khóa).',
+                        'image' => 'research-platform-scores.svg'
+                    ),
+                    array(
+                        'step_num' => 2,
+                        'title' => 'Đọc cột Lý do chọn lọc (Selection Reason)',
+                        'content' => 'Hệ thống tự động ghi nhận lý do tại sao sản phẩm được chọn (VD: "Tiềm năng TikTok cao 81.7/100 nhờ định dạng visual và giá phù hợp chốt đơn nhanh; Tỷ lệ hoa hồng 12%").',
+                        'image' => 'research-selection-reason.svg'
+                    ),
+                    array(
+                        'step_num' => 3,
+                        'title' => 'Phê duyệt Ứng viên vào Pipeline Nội dung',
+                        'content' => 'Bấm nút "Duyệt ứng viên" để đưa sản phẩm vào danh sách sẵn sàng tạo Master Content Package.',
+                        'image' => 'research-candidate-approve.svg'
+                    )
+                ),
+                'result' => 'Ứng viên được gán nhãn APPROVED và tự động chuyển sang Hàng đợi Sản xuất Nội dung của AI Content Engine.',
+                'edit_instructions' => 'Có thể điều chỉnh trọng số tính điểm cho từng nền tảng tại mục Trọng số chấm điểm.',
+                'delete_instructions' => 'Loại bỏ ứng viên không phù hợp bằng nút "Từ chối / Loại bỏ".',
+                'warnings' => 'Sản phẩm đang trong thời gian giãn cách (Cooldown < 14 ngày) sẽ bị bộ lọc tự động tạm ẩn để tránh spam trùng lặp.',
+                'troubleshooting' => 'Điểm nền tảng bị thấp: Bổ sung thêm thông số kỹ thuật (specs), hình ảnh thực tế và từ khóa ngách trong chi tiết sản phẩm.',
+                'related_links' => array('nghien-cuu-ung-vien', 'ai-content-master-package', 'xuat-ban-approved-pool-scheduler'),
+                'keywords' => array('chấm điểm', 'tiktok score', 'facebook score', 'youtube score', 'selection reason', 'candidate', 'lý do chọn')
             ),
 
             // -------------------------------------------------------------
@@ -282,8 +320,84 @@ class GuideRepository {
                 'delete_instructions' => 'Nếu không ưng ý, có thể bấm "Tạo lại phiên bản mới" (Regenerate).',
                 'warnings' => 'Hệ thống tuân thủ 21 quy tắc Guardrail: AI sẽ từ chối đưa các thông tin sai sự thật hoặc cam kết y khoa quá đà vào nội dung.',
                 'troubleshooting' => 'Báo lỗi "Vượt quá giới hạn request": Kiểm tra cấu hình API Key trong Cấu hình & Prompts hoặc chờ sang ngày mới.',
-                'related_links' => array('ai-content-kho-noi-dung', 'ai-video-tao-moi'),
+                'related_links' => array('ai-content-kho-noi-dung', 'ai-content-master-package', 'ai-video-tao-moi'),
                 'keywords' => array('tạo nội dung ai', 'viết bài tự động', 'sinh kịch bản', 'prompt ai', 'gemini')
+            ),
+
+            'ai-content-master-package' => array(
+                'id' => 'ai-content-master-package',
+                'category_id' => 'ai-content',
+                'title' => 'Tạo Master Content Package & Tự động Thích ứng Đa Nền tảng',
+                'summary' => 'Đóng gói nội dung gốc chuẩn sự thật (Zero Hallucination) và phân nhánh tự động sang TikTok, Facebook Reels, YouTube Shorts',
+                'purpose' => 'Đảm bảo tính nhất quán tuyệt đối về sự thật sản phẩm (giá, thông số, ưu đãi thực từ DB), đồng thời tối ưu từng định dạng chuyên biệt cho từng mạng xã hội mà không phải viết lại từ đầu.',
+                'when_to_use' => 'Khi ứng viên sản phẩm đã được duyệt và bạn muốn sinh toàn bộ các biến thể nội dung đa kênh đồng bộ.',
+                'prerequisites' => 'Sản phẩm đã có trong kho hàng và có link affiliate hợp lệ.',
+                'menu_path' => 'AI Content Engine → Tạo nội dung mới → Chọn "Gói Master Content Đa Kênh".',
+                'steps' => array(
+                    array(
+                        'step_num' => 1,
+                        'title' => 'Tổng hợp Dữ liệu Sự thật (Factual Ingestion)',
+                        'content' => 'Hệ thống tự động gom các thông số kỹ thuật thực, ưu nhược điểm chuyên gia, giá và ưu đãi affiliate từ CSDL, tạo mã băm SHA-256 (Source Hash) chống bịa đặt.',
+                        'image' => 'ai-master-content-facts.svg'
+                    ),
+                    array(
+                        'step_num' => 2,
+                        'title' => 'Tự động phân nhánh 3 Biến thể Nền tảng (Platform Adapters)',
+                        'content' => 'Hệ thống tự sinh đồng thời: Kịch bản TikTok 30s (Hook ngắn + CTA Bio), Bài viết Facebook Reels (Lợi ích sâu + CTA Mua ngay) và YouTube Shorts (Tiêu đề SEO + Mô tả kèm link ghim bình luận).',
+                        'image' => 'ai-master-content-adapters.svg'
+                    ),
+                    array(
+                        'step_num' => 3,
+                        'title' => 'Lưu vào Kho Master Content (table_master_content)',
+                        'content' => 'Bấm "Lưu Gói Master Content". Gói nội dung được đưa vào Hàng đợi Kiểm duyệt Chính sách (Policy Gate).',
+                        'image' => 'ai-master-content-save.svg'
+                    )
+                ),
+                'result' => 'Tạo thành công gói Master Content độc lập nền tảng, sẵn sàng phục vụ quy trình làm video và đăng bài tự động đa kênh.',
+                'edit_instructions' => 'Có thể chỉnh sửa từng phân cảnh hoặc nội dung bài viết Facebook riêng biệt trước khi bấm duyệt.',
+                'delete_instructions' => 'Gói nội dung có thể hủy bất kỳ lúc nào nếu thay đổi kế hoạch marketing.',
+                'warnings' => 'Không tự ý sửa giá sản phẩm khác với dữ liệu niêm yết trong bảng Affiliate Offer.',
+                'troubleshooting' => 'Thiếu biến thể YouTube: Kiểm tra xem sản phẩm đã có trường Primary Keyword hay chưa.',
+                'related_links' => array('ai-content-kho-noi-dung', 'compliance-guardrail-policy-gate', 'xuat-ban-approved-pool-scheduler'),
+                'keywords' => array('master content', 'đa nền tảng', 'tiktok script', 'facebook reels', 'youtube shorts', 'zero hallucination')
+            ),
+
+            'compliance-guardrail-policy-gate' => array(
+                'id' => 'compliance-guardrail-policy-gate',
+                'category_id' => 'ai-content',
+                'title' => 'Cổng Kiểm duyệt Chính sách (Policy Gate: PASS / WARNING / FAIL)',
+                'summary' => 'Hệ thống tự động kiểm duyệt 21 nguyên tắc an toàn nội dung, ngăn chặn rủi ro vi phạm pháp luật và chính sách mạng xã hội',
+                'purpose' => 'Bảo vệ thương hiệu KhoePro và tài khoản mạng xã hội tuyệt đối an toàn trước các rủi ro: cam kết chữa bệnh y tế, tuyên bố quá đà, dùng từ ngữ miệt thị hoặc bịa đặt review.',
+                'when_to_use' => 'Tự động kích hoạt mỗi khi AI sinh nội dung hoặc khi Admin bấm "Kiểm tra Tuân thủ".',
+                'prerequisites' => 'Nội dung hoặc kịch bản đã được tạo trong hệ thống.',
+                'menu_path' => 'AI Content Engine → Cấu hình & Prompts → Kiểm định Tuân thủ.',
+                'steps' => array(
+                    array(
+                        'step_num' => 1,
+                        'title' => 'Quét toàn bộ bề mặt văn bản và kịch bản',
+                        'content' => 'Engine quét tự động phát hiện: Cụm từ cấm y tế ("chữa dứt điểm", "cam kết khỏi 100%"), ngôn từ clickbait giật gân, số điện thoại cá nhân không ẩn danh, và rủi ro vi phạm bản quyền.',
+                        'image' => 'compliance-scan-overview.svg'
+                    ),
+                    array(
+                        'step_num' => 2,
+                        'title' => 'Phân loại kết quả thành 3 Cổng Kiểm duyệt',
+                        'content' => '• PASS (Màu xanh): Đạt chuẩn an toàn 100% → Được chuyển sang Approved Pool.\n• WARNING (Màu vàng): Có từ ngữ hơi giật gân → Cần Biên tập viên duyệt thủ công.\n• FAIL (Màu đỏ): Tuyên bố y tế nguy hiểm/bịa đặt → Bị chặn xuất bản tuyệt đối.',
+                        'image' => 'compliance-gate-badges.svg'
+                    ),
+                    array(
+                        'step_num' => 3,
+                        'title' => 'Tự động Làm sạch (Auto-Sanitization)',
+                        'content' => 'Với các cảnh báo WARNING, bạn có thể bấm nút "Làm sạch tự động" để chuyển các câu giật gân sang ngôn ngữ trung lập, khách quan theo chuẩn thương mại điện tử.',
+                        'image' => 'compliance-auto-sanitize.svg'
+                    )
+                ),
+                'result' => 'Nội dung đạt chuẩn PASS sẵn sàng chuyển tiếp sang quy trình sản xuất Video và Hàng đợi Xuất bản.',
+                'edit_instructions' => 'Có thể tùy biến danh sách từ cấm hoặc bổ sung từ khóa nhạy cảm trong file cấu hình Guardrail.',
+                'delete_instructions' => 'Không thể xóa các quy tắc kiểm duyệt an toàn cốt lõi.',
+                'warnings' => 'Nguyên tắc an toàn cao nhất: WHEN IN DOUBT -> DO NOT AUTO-PUBLISH (Khi còn nghi ngờ, tuyệt đối không tự động đăng bài).',
+                'troubleshooting' => 'Bị báo FAIL liên tục: Đọc cột "Lý do vi phạm" để xóa bỏ các từ khóa chữa bệnh hoặc cam kết hiệu quả 100%.',
+                'related_links' => array('ai-content-master-package', 'xuat-ban-approved-pool-scheduler'),
+                'keywords' => array('kiểm duyệt', 'guardrail', 'policy gate', 'pass warn fail', 'từ cấm', 'an toàn nội dung')
             ),
 
             // -------------------------------------------------------------
@@ -440,8 +554,46 @@ class GuideRepository {
                 'delete_instructions' => 'Bài đã PUBLISHED (Đã đăng) sẽ bị khóa chỉnh sửa vĩnh viễn để bảo vệ tính toàn vẹn của lịch sử đối soát.',
                 'warnings' => 'Tuyệt đối không tìm cách lách các cảnh báo màu đỏ của Checklist.',
                 'troubleshooting' => 'Checklist báo lỗi Caption: Kiểm tra xem bạn có bỏ trống caption hoặc dùng từ ngữ nhạy cảm bị Guardrail chặn không.',
-                'related_links' => array('xuat-ban-tao-post', 'trung-tam-van-hanh-nhat-ky'),
+                'related_links' => array('xuat-ban-tao-post', 'xuat-ban-approved-pool-scheduler', 'trung-tam-van-hanh-nhat-ky'),
                 'keywords' => array('pre-publish checklist', 'kiểm duyệt', 'snapshot bất biến', 'ready', 'scheduled', 'an toàn xuất bản')
+            ),
+
+            'xuat-ban-approved-pool-scheduler' => array(
+                'id' => 'xuat-ban-approved-pool-scheduler',
+                'category_id' => 'xuat-ban-tiktok',
+                'title' => 'Kho Approved Pool & Bộ Lập lịch Đa Kênh Tự động',
+                'summary' => 'Hệ thống đệm nội dung đã duyệt (Approved Pool), phân phối theo hạn ngạch ngày, khung giờ vàng và giãn cách Cooldown',
+                'purpose' => 'Đảm bảo kênh mạng xã hội (TikTok, Facebook Reels, YouTube Shorts) luôn có bài đăng đều đặn mỗi ngày mà không bị gián đoạn, đồng thời tuyệt đối không đăng lặp sản phẩm/merchant/nội dung quá gần nhau (Tránh bị bóp tương tác).',
+                'when_to_use' => 'Khi cấu hình lịch đăng tự động cho từng tài khoản mạng xã hội hoặc theo dõi số lượng video đang nằm trong kho đệm.',
+                'prerequisites' => 'Đã có video và bài đăng đạt trạng thái APPROVED trong kho.',
+                'menu_path' => 'Xuất bản & TikTok → Hàng đợi / Lịch → Lập lịch Tự động.',
+                'steps' => array(
+                    array(
+                        'step_num' => 1,
+                        'title' => 'Xem số lượng nội dung trong Approved Content Pool',
+                        'content' => 'Hệ thống hiển thị bộ đếm đệm (Buffer Counter, ví dụ: 13 bài sẵn sàng). Nếu số lượng đệm thấp hơn mức tối thiểu (VD: < 3 bài), hệ thống sẽ gửi cảnh báo cần bổ sung nội dung.',
+                        'image' => 'publishing-pool-counter.svg'
+                    ),
+                    array(
+                        'step_num' => 2,
+                        'title' => 'Thiết lập Hạn ngạch & Khung giờ đăng (Schedule Rules)',
+                        'content' => 'Cấu hình theo từng tài khoản: Số bài/ngày (TikTok: 3 bài, FB: 2 bài, YouTube: 1 bài), các mốc giờ đăng vàng (09:00, 14:00, 20:00) và khoảng cách Cooldown (Sản phẩm lặp lại ≥ 14 ngày, Merchant lặp lại ≥ 3 bài).',
+                        'image' => 'publishing-schedule-rules.svg'
+                    ),
+                    array(
+                        'step_num' => 3,
+                        'title' => 'Tiến trình Worker tự động điều phối bài đăng (Publish Worker)',
+                        'content' => 'Background Worker quét mỗi 10 phút. Nếu tài khoản còn hạn ngạch ngày, worker sẽ tự động lấy bài từ Approved Pool và xếp vào khung giờ tương ứng với khóa chống chạy trùng (`publish_lock`).',
+                        'image' => 'publishing-worker-dispatch.svg'
+                    )
+                ),
+                'result' => 'Hệ thống vận hành hoàn toàn tự động, phân phối bài đều đặn lên các kênh theo đúng tiêu chuẩn an toàn và hạn ngạch quản trị viên đã đặt ra.',
+                'edit_instructions' => 'Có thể tạm dừng lịch đăng của một tài khoản bất kỳ lúc nào bằng cách tắt cờ "Kích hoạt (is_enabled)".',
+                'delete_instructions' => 'Bài đăng trong hàng đợi có thể hủy lịch hoặc đẩy lên đăng ngay lập tức (Publish Now).',
+                'warnings' => 'Nguyên tắc bất biến: Scheduler CHỈ lấy các bài đã APPROVED từ kho đệm. Nếu ngày hôm đó chỉ có 2 bài đã duyệt trong khi quota là 3, hệ thống sẽ chỉ đăng 2 bài, tuyệt đối KHÔNG lấy bài nháp hoặc bài bị từ chối để ép đủ quota.',
+                'troubleshooting' => 'Đến giờ mà chưa thấy bài đăng: Kiểm tra trạng thái worker `publish_worker` tại Trung tâm Vận hành xem có bị tắt cờ tự động hóa hay không.',
+                'related_links' => array('xuat-ban-tao-post', 'xuat-ban-kiem-duyet-ready', 'trung-tam-van-hanh-tong-quan'),
+                'keywords' => array('approved pool', 'lập lịch', 'hạn ngạch', 'cooldown', 'publish worker', 'khung giờ vàng', 'đăng tự động')
             ),
 
             // -------------------------------------------------------------
@@ -481,8 +633,46 @@ class GuideRepository {
                 'delete_instructions' => 'Không áp dụng thao tác xóa trên dữ liệu phân tích.',
                 'warnings' => 'Đơn hàng từ sàn thường có độ trễ đối soát 15-30 phút từ hệ thống AccessTrade / Shopee.',
                 'troubleshooting' => 'Không thấy đơn hàng mới: Vào mục "Đơn hàng & Chuyển đổi" bấm nút "Đồng bộ giao dịch ngay" (Sync Now).',
-                'related_links' => array('do-luong-winner-detection', 'do-luong-doi-soat-csv'),
+                'related_links' => array('do-luong-winner-detection', 'do-luong-feedback-loop', 'do-luong-doi-soat-csv'),
                 'keywords' => array('đo lường', 'analytics', 'báo cáo hoa hồng', 'doanh thu affiliate', 'tỷ lệ chuyển đổi', 'clicks')
+            ),
+
+            'do-luong-feedback-loop' => array(
+                'id' => 'do-luong-feedback-loop',
+                'category_id' => 'do-luong-winner',
+                'title' => 'Vòng lặp Phản hồi Hiệu suất & Tự động Tối ưu Trọng số (Feedback Loop)',
+                'summary' => 'Kết nối dữ liệu tương tác mạng xã hội và đơn hàng hoa hồng thực tế để tự động cải thiện điểm số đề xuất sản phẩm',
+                'purpose' => 'Tạo ra một bộ máy tự học (Self-improving Engine): Sản phẩm nào đăng lên TikTok/Facebook mang lại nhiều chuyển đổi và hoa hồng cao sẽ được tự động cộng điểm ưu tiên (Score Boost) để được chọn làm nội dung trong các chu kỳ tiếp theo.',
+                'when_to_use' => 'Theo dõi cách hệ thống tự động điều chỉnh độ ưu tiên của sản phẩm dựa trên số liệu doanh thu thực tế.',
+                'prerequisites' => 'Hệ thống đã ghi nhận bài đăng và các đơn hàng đối soát thành công.',
+                'menu_path' => 'Đo lường & Winner → Winner Detection → Vòng lặp Phản hồi (Feedback Loop).',
+                'steps' => array(
+                    array(
+                        'step_num' => 1,
+                        'title' => 'Thu thập chỉ số tương tác mạng xã hội (Social Metrics Ingestion)',
+                        'content' => 'Hệ thống tự động ghi nhận số lượt xem (Views), thích (Likes), bình luận (Comments), chia sẻ (Shares) và số lượt click từ từng video vào bảng `table_social_post_metric`.',
+                        'image' => 'analytics-social-metrics.svg'
+                    ),
+                    array(
+                        'step_num' => 2,
+                        'title' => 'Liên kết đối soát Đơn hàng và Hoa hồng (Attribution Matching)',
+                        'content' => 'Thuật toán đối soát Sub-ID kết nối chính xác: Bài đăng Video → Lượt click link tiếp thị → Mã đơn hàng sàn → Hoa hồng thực nhận (VND).',
+                        'image' => 'analytics-attribution-match.svg'
+                    ),
+                    array(
+                        'step_num' => 3,
+                        'title' => 'Tự động Nâng điểm Tiềm năng Sản phẩm (Performance Score Boost)',
+                        'content' => 'Sản phẩm có hiệu suất cao được tự động cộng thêm điểm (từ +5 đến +15 điểm) vào `tiktok_score`, `facebook_score` hoặc `youtube_score`, giúp sản phẩm đó tiếp tục được ưu tiên sản xuất nội dung mới.',
+                        'image' => 'analytics-score-boost.svg'
+                    )
+                ),
+                'result' => 'Độ chính xác của Product Intelligence liên tục gia tăng theo thời gian, giúp doanh thu affiliate tăng trưởng bền vững.',
+                'edit_instructions' => 'Có thể điều chỉnh công thức tính điểm thưởng hoặc ngưỡng đơn hàng tại mục Cấu hình Vận hành.',
+                'delete_instructions' => 'Không áp dụng xóa trên nhật ký vòng lặp phản hồi.',
+                'warnings' => 'Giai đoạn đầu hệ thống chỉ tích lũy dữ liệu, chỉ áp dụng điểm thưởng khi có dữ liệu đơn hàng thực tế.',
+                'troubleshooting' => 'Sản phẩm có đơn nhưng chưa được cộng điểm: Đảm bảo đơn hàng đã được đối soát sang trạng thái CONFIRMED / APPROVED.',
+                'related_links' => array('do-luong-tong-quan', 'do-luong-winner-detection', 'nghien-cuu-multi-platform-scoring'),
+                'keywords' => array('feedback loop', 'vòng lặp phản hồi', 'attribution', 'đối soát hoa hồng', 'tối ưu điểm số', 'roi')
             ),
 
             'do-luong-winner-detection' => array(
@@ -653,6 +843,88 @@ class GuideRepository {
                 'troubleshooting' => 'Một Worker hiển thị FAILED: Vào mục "Quản lý Tác vụ" bấm nút "Chạy lại (Retry)" để khởi động lại tiến trình.',
                 'related_links' => array('trung-tam-van-hanh-pipeline', 'trung-tam-van-hanh-nhat-ky', 'tong-quan-dashboard'),
                 'keywords' => array('vận hành', 'operations', 'sức khỏe hệ thống', 'healthy', 'chi phí api', 'worker cron', 'quản trị hệ thống')
+            ),
+
+            // -------------------------------------------------------------
+            // NHÓM 9: TỐI ƯU HÓA & THỬ NGHIỆM A/B
+            // -------------------------------------------------------------
+            'toi-uu-ab-khuyen-nghi' => array(
+                'id' => 'toi-uu-ab-khuyen-nghi',
+                'category_id' => 'toi-uu-ab',
+                'title' => 'Khuyến nghị Tối ưu Chuyển đổi & Thử nghiệm A/B Nội dung',
+                'summary' => 'Xem danh sách khuyến nghị AI để tăng CTR, điều chỉnh Hook/CTA và thiết lập thử nghiệm A/B cho video/bài viết',
+                'purpose' => 'Giúp nhà sáng tạo nội dung và nhà tiếp thị liên tục nâng cao tỷ lệ chuyển đổi, thử nghiệm các biến thể kịch bản và tối ưu hóa doanh thu hoa hồng.',
+                'when_to_use' => 'Định kỳ hàng tuần khi đánh giá hiệu suất bài đăng hoặc khi một nhóm sản phẩm có lượt xem cao nhưng tỷ lệ click mua hàng thấp.',
+                'prerequisites' => 'Đã có bài đăng xuất bản và dữ liệu đo lường phát sinh tối thiểu 7 ngày.',
+                'menu_path' => 'Menu bên trái → Tối ưu hóa & A/B → Khuyến nghị AI / Thử nghiệm.',
+                'steps' => array(
+                    array(
+                        'step_num' => 1,
+                        'title' => 'Xem bảng khuyến nghị AI (AI Optimization Recommendations)',
+                        'content' => 'Hệ thống tự động phân tích các bài đăng có CTR thấp và đưa ra đề xuất cụ thể: thay đổi 3 giây đầu (Hook), điều chỉnh nút kêu gọi hành động (CTA), hoặc đổi khung giờ đăng sang khung giờ vàng (11:30 - 13:00 hoặc 19:30 - 21:30).',
+                        'image' => 'ab-test-recommendations.svg'
+                    ),
+                    array(
+                        'step_num' => 2,
+                        'title' => 'Tạo thử nghiệm A/B mới cho Biến thể Kịch bản / Hook',
+                        'content' => 'Nhấn nút "Tạo Thử Nghiệm A/B", chọn Sản phẩm đích, nhập Biến thể A (Hook Dạng Câu hỏi tò mò) và Biến thể B (Hook Dạng Cảnh báo sai lầm).',
+                        'image' => 'ab-test-create-variant.svg'
+                    ),
+                    array(
+                        'step_num' => 3,
+                        'title' => 'Theo dõi Báo cáo So sánh & Áp dụng Biến thể Chiến thắng (Winner Variant)',
+                        'content' => 'Sau khi cả 2 biến thể được phân phối, hệ thống thống kê so sánh trực quan CTR, lượt xem trung bình và tỷ lệ chuyển đổi đơn hàng. Nhấn "Chọn làm Kịch bản Mặc định" để áp dụng cho các lần tạo nội dung tiếp theo.',
+                        'image' => 'ab-test-winner-report.svg'
+                    )
+                ),
+                'result' => 'Tối ưu hóa liên tục chất lượng nội dung dựa trên số liệu thực tế, loại bỏ cảm tính và gia tăng hoa hồng bền vững.',
+                'edit_instructions' => 'Có thể tạm dừng hoặc kết thúc sớm thử nghiệm bất kỳ lúc nào nếu một biến thể vượt trội rõ rệt.',
+                'delete_instructions' => 'Xóa thử nghiệm đã lưu trữ từ danh sách Quản lý Thử nghiệm A/B.',
+                'warnings' => 'Mỗi thử nghiệm A/B nên chạy song song ít nhất 500 lượt xem trên mỗi biến thể để đảm bảo ý nghĩa thống kê.',
+                'troubleshooting' => 'Thử nghiệm không ghi nhận số liệu: Kiểm tra lại tham số UTM tag đã được gắn chính xác vào link Affiliate chưa.',
+                'related_links' => array('do-luong-feedback-loop', 'ai-content-master-package', 'xuat-ban-approved-pool-scheduler'),
+                'keywords' => array('ab testing', 'thử nghiệm ab', 'tối ưu hóa', 'tăng ctr', 'khuyến nghị ai', 'hook biến thể', 'tối ưu chuyển đổi')
+            ),
+
+            // -------------------------------------------------------------
+            // NHÓM 10: TIN TỨC, BÌNH LUẬN & CẤU HÌNH WEB
+            // -------------------------------------------------------------
+            'tin-tuc-bai-viet-quan-ly' => array(
+                'id' => 'tin-tuc-bai-viet-quan-ly',
+                'category_id' => 'tin-tuc-bai-viet',
+                'title' => 'Quản lý Bài viết Tin tức, Blog & Phê duyệt Đánh giá Bình luận',
+                'summary' => 'Hướng dẫn đăng bài viết tin tức chuẩn SEO, quản lý chuyên mục kiến thức thể hình và duyệt bình luận/đánh giá người dùng',
+                'purpose' => 'Xây dựng trang blog chuyên sâu về sức khỏe/fitness để kéo traffic tự nhiên (SEO Organic) và quản lý uy tín thương hiệu qua tương tác của người dùng.',
+                'when_to_use' => 'Khi xuất bản bài chia sẻ kiến thức tập luyện dinh dưỡng, hoặc kiểm duyệt các đánh giá sao và bình luận mới từ độc giả.',
+                'prerequisites' => 'Tài khoản quản trị viên (Admin / Content Editor).',
+                'menu_path' => 'Menu bên trái → Tin tức & Bài viết (hoặc Bình luận & Đánh giá).',
+                'steps' => array(
+                    array(
+                        'step_num' => 1,
+                        'title' => 'Soạn thảo bài viết Tin tức / Kiến thức chuẩn SEO',
+                        'content' => 'Vào "Quản lý Tin tức" → Bấm "+ Thêm mới". Nhập Tiêu đề bài viết, Chọn chuyên mục (Kiến thức tập gym, Chế độ ăn, Review phụ kiện), tải Ảnh đại diện và soạn nội dung bằng trình biên tập CKEditor phong phú.',
+                        'image' => 'news-article-editor.svg'
+                    ),
+                    array(
+                        'step_num' => 2,
+                        'title' => 'Cấu hình Thẻ Meta SEO & Từ khóa',
+                        'content' => 'Tại khối "Cấu hình SEO": Điền Meta Title, Meta Description và Meta Keywords. Xem trước Snippet hiển thị trên kết quả tìm kiếm Google.',
+                        'image' => 'news-article-seo.svg'
+                    ),
+                    array(
+                        'step_num' => 3,
+                        'title' => 'Kiểm duyệt Bình luận & Đánh giá sao của Người dùng',
+                        'content' => 'Mở mục "Bình luận & Đánh giá": Xem danh sách đánh giá mới, kiểm tra nội dung và nhấn nút "Duyệt (Hiển thị)" hoặc "Từ chối (Ẩn)" nếu bình luận chứa spam hoặc từ ngữ không phù hợp.',
+                        'image' => 'news-comments-moderation.svg'
+                    )
+                ),
+                'result' => 'Bài viết tin tức được hiển thị đẹp mắt trên website kèm link sản phẩm liên quan; bình luận tích cực được hiển thị giúp tăng niềm tin cho khách hàng.',
+                'edit_instructions' => 'Chọn bài viết trong danh sách và bấm biểu tượng "Bút chì (Sửa)" để cập nhật nội dung.',
+                'delete_instructions' => 'Chọn bài viết và bấm biểu tượng "Thùng rác (Xóa)" để xóa bài khỏi website.',
+                'warnings' => 'Không sao chép 100% nội dung từ trang khác để tránh thuật toán phạt của Google (Duplicate Content).',
+                'troubleshooting' => 'Ảnh bài viết không hiển thị: Kiểm tra quyền ghi thư mục /upload/news/ hoặc kích thước ảnh vượt quá dung lượng cho phép.',
+                'related_links' => array('tong-quan-dashboard', 'quan-ly-san-pham-danh-sach', 'ai-content-kho-noi-dung'),
+                'keywords' => array('tin tức', 'blog', 'bài viết seo', 'bình luận', 'đánh giá sao', 'kiểm duyệt', 'ckeditor', 'quản lý nội dung')
             )
         );
     }

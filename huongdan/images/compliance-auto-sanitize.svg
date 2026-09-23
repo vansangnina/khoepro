@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 420" width="100%" height="100%">
+    <defs>
+        <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+            <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.08"/>
+        </filter>
+    </defs>
+    <!-- Background Frame -->
+    <rect x="10" y="10" width="760" height="420" rx="12" fill="#ffffff" stroke="#e3e6ec" stroke-width="1.5" filter="url(#shadow)"/>
+    
+    <!-- Header Bar -->
+    <rect x="10" y="10" width="760" height="64" rx="12" fill="#f8fafc" stroke="#e3e6ec" stroke-width="1.5"/>
+    <rect x="10" y="60" width="760" height="14" fill="#f8fafc"/>
+    
+    <!-- Window Control Dots -->
+    <circle cx="36" cy="38" r="6" fill="#ff5f56"/>
+    <circle cx="56" cy="38" r="6" fill="#ffbd2e"/>
+    <circle cx="76" cy="38" r="6" fill="#27c93f"/>
+    
+    <!-- Badge & Title -->
+    <rect x="100" y="26" width="130" height="26" rx="6" fill="#17a2b8" fill-opacity="0.15"/>
+    <text x="165" y="44" font-family="Inter, Arial, sans-serif" font-size="11" font-weight="600" fill="#17a2b8" text-anchor="middle">AUTO SANITIZE</text>
+    <text x="245" y="44" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="600" fill="#1e293b">Tính Năng Tự Động Khử Độc Từ Ngữ (Auto-Sanitization)</text>
+    
+    <!-- Content Elements -->
+    <rect x='40' y='110' width='700' height='54' rx='8' fill='#ffffff' stroke='#dee2e6' stroke-width='1.5'/>
+<circle cx='65' cy='137' r='6' fill='#17a2b8'/>
+<text x='85' y='143' font-family='Inter, Arial, sans-serif' font-size='14' font-weight='500' fill='#212529'>Gốc: &quot;Đai lưng giúp bạn chữa dứt điểm đau lưng khi squat!&quot;</text>
+<rect x='40' y='178' width='700' height='54' rx='8' fill='#ffffff' stroke='#dee2e6' stroke-width='1.5'/>
+<circle cx='65' cy='205' r='6' fill='#17a2b8'/>
+<text x='85' y='211' font-family='Inter, Arial, sans-serif' font-size='14' font-weight='500' fill='#212529'>Đã khử độc: &quot;Đai lưng giúp bạn hỗ trợ bảo vệ lưng và giảm nguy cơ chấn thương!&quot;</text>
+<rect x='40' y='246' width='320' height='46' rx='6' fill='#28a745' stroke='#28a745' stroke-width='1'/>
+<text x='55' y='274' font-family='Inter, Arial, sans-serif' font-size='13' font-weight='600' fill='#ffffff'>✨ ÁP DỤNG TỰ ĐỘNG KHỬ ĐỘC</text>
+<rect x='40' y='306' width='700' height='46' rx='6' fill='#e8f4fd' stroke='#bee5eb' stroke-width='1.5'/>
+<text x='60' y='334' font-family='Inter, Arial, sans-serif' font-size='13' font-weight='600' fill='#0c5460'>💡 1-Click thay thế an toàn các từ nhạy cảm mà vẫn giữ nguyên thông điệp hấp dẫn</text>
+
+</svg>

@@ -441,6 +441,240 @@ $images = array(
             array('card', 'Gemini AI: 12,000 VND | TTS Voice: 33,000 VND | Video Veo: 0 VND (Economy)'),
             array('callout', 'Tự động ngắt gọi API nếu chạm 100% hạn mức để bảo vệ ngân sách')
         )
+    ),
+
+    // --- PHASE 12 AUTOMATION & MISSING MODULES ---
+    'research-platform-scores.svg' => array(
+        'title' => 'Bảng Điểm Tiềm Năng Đa Nền Tảng (Multi-Platform Scoring)',
+        'badge' => 'PLATFORM SCORES',
+        'color' => '#6f42c1',
+        'elements' => array(
+            array('table', array(
+                array('Đai lưng tập Gym da bò', 'Global: 88 | TikTok: 92 | FB: 84 | YT: 79', 'TIỀM NĂNG CAO', 'ELIGIBLE'),
+                array('Dây kháng lực ngũ sắc FITPRO', 'Global: 76 | TikTok: 85 | FB: 78 | YT: 65', 'TIỀM NĂNG', 'ELIGIBLE'),
+                array('Bình giữ nhiệt Inox 304', 'Global: 62 | TikTok: 55 | FB: 64 | YT: 60', 'TRUNG BÌNH', 'NOT ELIGIBLE')
+            )),
+            array('callout', 'Sản phẩm có TikTok Score >= 65 hoặc Global >= 65 đủ điều kiện sang Content Engine')
+        )
+    ),
+    'research-selection-reason.svg' => array(
+        'title' => 'Lý Do Lựa Chọn & Phân Tích Tiềm Năng (Selection Reason)',
+        'badge' => 'SELECTION REASON',
+        'color' => '#17a2b8',
+        'elements' => array(
+            array('card', 'Lý do: Nhu cầu bảo vệ cột sống cao trong mùa cao điểm tập gym, hoa hồng 18% hấp dẫn'),
+            array('card', 'TikTok: Lực hút thị giác tốt, dễ quay video test độ bền và khả năng chịu lực'),
+            array('callout', 'Lý do được ghi nhận minh bạch làm cơ sở cho AI viết kịch bản đúng trọng tâm')
+        )
+    ),
+    'research-candidate-approve.svg' => array(
+        'title' => 'Nút Phê Duyệt Đẩy Ứng Viên Sang Content Candidate Pool',
+        'badge' => 'APPROVE CANDIDATE',
+        'color' => '#28a745',
+        'elements' => array(
+            array('btn', '⚡ PHÊ DUYỆT & ĐẨY VÀO CONTENT ENGINE', '#28a745'),
+            array('callout', 'Trạng thái chuyển sang APPROVED và tự động tạo hàng đợi Master Content')
+        )
+    ),
+    'ai-master-content-facts.svg' => array(
+        'title' => 'Dữ Liệu Sự Thật Cốt Lõi (Core Fact Sheet & Zero Hallucination)',
+        'badge' => 'CORE FACTS',
+        'color' => '#007bff',
+        'elements' => array(
+            array('card', 'Tên & Thương hiệu: Đai lưng Aolikes da bò 3 lớp chính hãng | Giá: 199,000 đ'),
+            array('card', 'Tính năng xác thực: Da bò dày 8mm, khóa inox kép chịu lực 250kg, 6 nấc chỉnh'),
+            array('card', 'Ưu đãi & Hoa hồng: Freeship toàn quốc, hoàn tiền 100% nếu nứt da | Hoa hồng 18%'),
+            array('callout', 'Dữ liệu gốc được mã hóa SHA-256 source_hash đảm bảo AI không bịa đặt thông tin')
+        )
+    ),
+    'ai-master-content-adapters.svg' => array(
+        'title' => 'Bộ Chuyển Đổi Kịch Bản Đa Nền Tảng (Platform Adapters)',
+        'badge' => 'PLATFORM ADAPTERS',
+        'color' => '#e83e8c',
+        'elements' => array(
+            array('box', 'TikTok: 30s Hook + 6 Phân cảnh Shot-list', 'FB Reels: Benefit Body + CTA mua', '#e83e8c', '#17a2b8'),
+            array('card', 'YouTube Shorts: SEO Title chuẩn tìm kiếm + 3 Thẻ Tags ngách + Call to Action'),
+            array('callout', 'Mỗi nền tảng có định dạng tối ưu riêng biệt từ cùng một gói Master Content')
+        )
+    ),
+    'ai-master-content-save.svg' => array(
+        'title' => 'Lưu Gói Nội Dung & Kích Hoạt Policy Gate Scan',
+        'badge' => 'SAVE MASTER PACKAGE',
+        'color' => '#28a745',
+        'elements' => array(
+            array('btn', '💾 LƯU MASTER PACKAGE & QUÉT POLICY GATE', '#007bff'),
+            array('callout', 'Hệ thống lưu gói nội dung và tự động chuyển sang bước kiểm duyệt an toàn')
+        )
+    ),
+    'compliance-scan-overview.svg' => array(
+        'title' => 'Tổng Quan Bảng Quét Vi Phạm Chính Sách (Compliance Scan)',
+        'badge' => 'POLICY SCAN',
+        'color' => '#fd7e14',
+        'elements' => array(
+            array('card', 'Từ cấm y tế/dược: "chữa dứt điểm", "trị khỏi 100%" → 0 vi phạm phát hiện'),
+            array('card', 'Cam kết thái quá: "cam kết 100%", "tuyệt đối không đau" → 0 vi phạm'),
+            array('card', 'Chính sách Affiliate sàn: Tuân thủ quy định hiển thị giá và xuất xứ sản phẩm'),
+            array('callout', 'Quét tự động theo bộ quy tắc kiểm duyệt nội dung quảng cáo đa nền tảng')
+        )
+    ),
+    'compliance-gate-badges.svg' => array(
+        'title' => 'Huy Hiệu Phân Loại Policy Gate (PASS / WARNING / FAIL)',
+        'badge' => 'POLICY BADGES',
+        'color' => '#28a745',
+        'elements' => array(
+            array('badge', '🟢 PASS: Đạt 100% tiêu chuẩn - Sẵn sàng xuất bản ngay', '#28a745'),
+            array('badge', '🟡 WARNING: Có từ nhạy cảm nhẹ - Tự động khử độc (Sanitize) hoặc duyệt tay', '#ffc107'),
+            array('badge', '🔴 FAIL: Vi phạm nghiêm trọng từ cấm - Chặn đăng hoàn toàn', '#dc3545'),
+            array('callout', 'Chỉ các nội dung đạt PASS hoặc WARNING đã sửa mới được vào Approved Pool')
+        )
+    ),
+    'compliance-auto-sanitize.svg' => array(
+        'title' => 'Tính Năng Tự Động Khử Độc Từ Ngữ (Auto-Sanitization)',
+        'badge' => 'AUTO SANITIZE',
+        'color' => '#17a2b8',
+        'elements' => array(
+            array('card', 'Gốc: "Đai lưng giúp bạn chữa dứt điểm đau lưng khi squat!"'),
+            array('card', 'Đã khử độc: "Đai lưng giúp bạn hỗ trợ bảo vệ lưng và giảm nguy cơ chấn thương!"'),
+            array('btn', '✨ ÁP DỤNG TỰ ĐỘNG KHỬ ĐỘC', '#28a745'),
+            array('callout', '1-Click thay thế an toàn các từ nhạy cảm mà vẫn giữ nguyên thông điệp hấp dẫn')
+        )
+    ),
+    'publishing-pool-counter.svg' => array(
+        'title' => 'Bộ Đếm Kho Nội Dung Sẵn Sàng (Approved Content Pool)',
+        'badge' => 'APPROVED POOL',
+        'color' => '#28a745',
+        'elements' => array(
+            array('box', 'Approved Pool: 14 Bài Sẵn Sàng', 'Đã Lên Lịch Hôm Nay: 6 Bài', '#28a745', '#007bff'),
+            array('card', 'TikTok Ready: 5 video | Facebook Reels Ready: 5 video | YouTube Ready: 4 shorts'),
+            array('callout', 'Bộ lập lịch tự động lấy nội dung từ kho này theo hạn mức và khung giờ vàng')
+        )
+    ),
+    'publishing-schedule-rules.svg' => array(
+        'title' => 'Cấu Hình Quy Tắc Lập Lịch & Thời Gian Giãn Cách (Cooldown)',
+        'badge' => 'SCHEDULE RULES',
+        'color' => '#6f42c1',
+        'elements' => array(
+            array('card', 'Hạn mức kênh (Daily Quota): 3 bài/ngày/tài khoản'),
+            array('card', 'Khung giờ vàng: 11:30 - 13:00 (Trưa) | 19:30 - 21:30 (Tối)'),
+            array('card', 'Giãn cách (Cooldown): Tối thiểu 120 phút giữa 2 bài đăng liên tiếp cùng kênh'),
+            array('callout', 'Đảm bảo đăng đều đặn, tối đa tương tác và tránh thuật toán spam của mạng xã hội')
+        )
+    ),
+    'publishing-worker-dispatch.svg' => array(
+        'title' => 'Tiến Trình Xuất Bản Tự Động (Publishing Worker & Lock Token)',
+        'badge' => 'AUTO DISPATCH',
+        'color' => '#007bff',
+        'elements' => array(
+            array('table', array(
+                array('TikTok @khoepro_gym', 'Video Đai lưng Aolikes #shorts', 'Published at 11:45', 'SUCCESS'),
+                array('FB Page KhoePro Store', 'Reels Đai lưng da bò tập tạ', 'Published at 12:00', 'SUCCESS'),
+                array('YouTube Shorts KhoePro', 'Shorts Hướng dẫn chọn đai lưng', 'Scheduled at 19:30', 'QUEUED')
+            )),
+            array('callout', 'Tiến trình sử dụng Atomic Lock Token chống trùng lặp bài đăng tuyệt đối')
+        )
+    ),
+    'analytics-social-metrics.svg' => array(
+        'title' => 'Bảng Thống Kê Chỉ Số Tương Tác Mạng Xã Hội Đa Kênh',
+        'badge' => 'SOCIAL METRICS',
+        'color' => '#17a2b8',
+        'elements' => array(
+            array('box', 'Tổng Lượt Xem: 145,200 views', 'Tổng Lượt Thích & Share: 8,940', '#17a2b8', '#e83e8c'),
+            array('card', 'Thời lượng xem trung bình: 18.5s/30s (Tỷ lệ giữ chân 61.6%)'),
+            array('callout', 'Chỉ số đo lường được đồng bộ tự động định kỳ từ API các nền tảng')
+        )
+    ),
+    'analytics-attribution-match.svg' => array(
+        'title' => 'Đối Soát Nguồn Gốc Doanh Thu (Multi-Touch Attribution)',
+        'badge' => 'ATTRIBUTION MATCH',
+        'color' => '#28a745',
+        'elements' => array(
+            array('table', array(
+                array('Đơn hàng #AT-98421', 'TikTok @khoepro_gym (utm_source=tiktok)', 'Hoa hồng: 35,820 đ', 'MATCHED'),
+                array('Đơn hàng #AT-98425', 'FB Reels #post-44 (utm_source=facebook)', 'Hoa hồng: 26,100 đ', 'MATCHED'),
+                array('Đơn hàng #AT-98430', 'YT Shorts #post-49 (utm_source=youtube)', 'Hoa hồng: 41,500 đ', 'MATCHED')
+            )),
+            array('callout', 'Truy vết chính xác từng đơn hàng về video và tài khoản tạo ra chuyển đổi')
+        )
+    ),
+    'analytics-score-boost.svg' => array(
+        'title' => 'Tự Động Tăng Điểm Tiềm Năng Sản Phẩm (Score Boost Feedback Loop)',
+        'badge' => 'SCORE BOOST',
+        'color' => '#ffc107',
+        'elements' => array(
+            array('card', 'Sản phẩm: Đai lưng tập Gym Aolikes da bò'),
+            array('card', 'Điểm ban đầu: 88/100 → Phát sinh 12 đơn hàng mới → Boost: +5.0 điểm'),
+            array('card', 'Điểm cập nhật mới: 93/100 [WINNER] → Ưu tiên sản xuất thêm 3 kịch bản phái sinh'),
+            array('callout', 'Vòng lặp phản hồi giúp hệ thống thông minh hơn sau mỗi chiến dịch')
+        )
+    ),
+    'ab-test-recommendations.svg' => array(
+        'title' => 'Bảng Khuyến Nghị Tối Ưu AI (AI Optimization Recommendations)',
+        'badge' => 'AI RECOMMENDATIONS',
+        'color' => '#6f42c1',
+        'elements' => array(
+            array('card', 'Đề xuất 1: Video #18 có view cao nhưng CTR chỉ 1.2% → Đổi Hook 3s sang dạng "Cảnh báo sai lầm"'),
+            array('card', 'Đề xuất 2: Dời CTA xuất hiện ở giây thứ 18 thay vì cuối video để đón đầu điểm rơi khán giả'),
+            array('callout', 'Khuyến nghị dựa trên mô hình học máy phân tích từ 500+ bài đăng thành công')
+        )
+    ),
+    'ab-test-create-variant.svg' => array(
+        'title' => 'Tạo Thử Nghiệm A/B Mới Cho Biến Thể Kịch Bản',
+        'badge' => 'CREATE A/B TEST',
+        'color' => '#007bff',
+        'elements' => array(
+            array('form', 'Biến thể A: Hook Tò mò ("Bạn có chắc mình đang Squat đúng cách?") | CTA: Mua ngay'),
+            array('form', 'Biến thể B: Hook Cảnh báo ("90% Gymer chấn thương lưng vì lỗi này!") | CTA: Nhận ưu đãi'),
+            array('btn', '🧪 BẮT ĐẦU THỬ NGHIỆM A/B', '#28a745'),
+            array('callout', 'Hai biến thể sẽ được đăng luân phiên để đo lường công bằng')
+        )
+    ),
+    'ab-test-winner-report.svg' => array(
+        'title' => 'Báo Cáo So Sánh & Chọn Biến Thể Chiến Thắng (Winner Variant)',
+        'badge' => 'A/B WINNER REPORT',
+        'color' => '#28a745',
+        'elements' => array(
+            array('table', array(
+                array('Biến thể A (Tò mò)', '2,400 Views | CTR: 2.8%', '6 Đơn hàng', 'RUNNER UP'),
+                array('Biến thể B (Cảnh báo)', '3,800 Views | CTR: 6.4%', '19 Đơn hàng', '🏆 WINNER (+128%)')
+            )),
+            array('btn', '⭐ CHỌN LÀM KỊCH BẢN MẶC ĐỊNH', '#28a745'),
+            array('callout', 'Tự động áp dụng kịch bản chiến thắng cho các chu kỳ sản xuất tiếp theo')
+        )
+    ),
+    'news-article-editor.svg' => array(
+        'title' => 'Trình Soạn Thảo Bài Viết Tin Tức & Blog Chuẩn SEO',
+        'badge' => 'BLOG EDITOR',
+        'color' => '#17a2b8',
+        'elements' => array(
+            array('form', 'Tiêu đề bài viết: [ Hướng dẫn chọn đai lưng tập gym đúng chuẩn cho người mới ]'),
+            array('form', 'Chuyên mục: [ Kiến thức tập luyện ] | Tác giả: [ HLV Thể hình KhoePro ]'),
+            array('card', 'Nội dung tích hợp ảnh minh họa, bảng so sánh kích thước và link sản phẩm tiện lợi'),
+            array('callout', 'Soạn thảo trực quan với đầy đủ công cụ định dạng văn bản chuyên nghiệp')
+        )
+    ),
+    'news-article-seo.svg' => array(
+        'title' => 'Cấu Hình Thẻ Meta SEO & Xem Trước Snippet Google',
+        'badge' => 'SEO META CONFIG',
+        'color' => '#ffc107',
+        'elements' => array(
+            array('card', 'Google Preview: Hướng dẫn chọn đai lưng tập gym đúng chuẩn | KhoePro Blog'),
+            array('card', 'https://khoepro.com/tin-tuc/huong-dan-chon-dai-lung-tap-gym'),
+            array('card', 'Meta Description: Bí quyết chọn đai lưng tập gym bảo vệ cột sống tốt nhất... (155 ký tự)'),
+            array('callout', 'Tối ưu chuẩn kỹ thuật SEO On-page giúp bài viết lên top tìm kiếm tự nhiên')
+        )
+    ),
+    'news-comments-moderation.svg' => array(
+        'title' => 'Bảng Kiểm Duyệt Bình Luận & Đánh Giá Sao Của Người Dùng',
+        'badge' => 'MODERATION',
+        'color' => '#28a745',
+        'elements' => array(
+            array('table', array(
+                array('Nguyễn Văn Nam (⭐⭐⭐⭐⭐)', 'Sản phẩm dùng rất chắc chắn, đỡ đau lưng hẳn khi deadlift!', '10m ago', 'ĐÃ DUYỆT'),
+                array('Trần Thu Hà (⭐⭐⭐⭐⭐)', 'Giao hàng nhanh, đóng gói cẩn thận da xịn', '1h ago', 'ĐÃ DUYỆT'),
+                array('Spam bot quảng cáo', 'Bấm vào link này để nhận thưởng...', '2h ago', 'TỪ CHỐI')
+            )),
+            array('callout', 'Duyệt hoặc ẩn nhanh bình luận chỉ với 1 click chuột')
+        )
     )
 );
 
