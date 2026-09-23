@@ -403,6 +403,137 @@ class ProductResearch
     }
 
     /**
+     * Calculate Platform-Specific Potential Scores (TikTok, Facebook, YouTube)
+     * Dynamic weight formulation based on platform strengths.
+     * @param array $data Product and research attributes
+     * @return array ['global_score' => float, 'tiktok_score' => float, 'facebook_score' => float, 'youtube_score' => float, 'breakdown' => array, 'reasons' => array]
+     */
+    public function calculatePlatformScores($data)
+    {
+        $baseTotal = $this->calculateTotalScore($data);
+        $globalScore = (float)($baseTotal['total_score'] ?? 50.0);
+        $demand = (float)($baseTotal['demand_score'] ?? 50.0);
+        $content = (float)($baseTotal['content_score'] ?? 50.0);
+        $commission = (float)($baseTotal['commission_score'] ?? 50.0);
+        $competition = (float)($baseTotal['competition_score'] ?? 50.0);
+        $seo = (float)($baseTotal['seo_score'] ?? 50.0);
+
+        $price = (float)($data['price'] ?? ($data['sale_price'] ?? 0));
+        $views = (int)($data['top_video_views'] ?? 0);
+        $hasPainPoint = !empty(trim($data['problem_solved'] ?? ''));
+
+        // 1. TikTok Potential Score:
+        // Prioritizes: High Content potential (40%), Demand/Views (30%), Commission (20%), Affordable Impulse Buying price <= 450k (10%)
+        $tiktokPriceBonus = ($price > 0 && $price <= 450000) ? 10.0 : (($price <= 800000) ? 5.0 : 0.0);
+        $tiktokViralBonus = ($views >= 100000) ? 10.0 : ($views >= 20000 ? 5.0 : 0.0);
+        $tiktokScore = round(($content * 0.40) + ($demand * 0.30) + ($commission * 0.20) + ($competition * 0.10) + ($tiktokPriceBonus * 0.5) + ($tiktokViralBonus * 0.5), 1);
+        $tiktokScore = min(100.0, max(10.0, $tiktokScore));
+
+        // 2. Facebook Reels / Fanpage Potential Score:
+        // Prioritizes: Demand & Social Proof/Rating (35%), Commission Value (30%), Problem/Solution Clarity (25%), Mid-range price 200k-1.5M (10%)
+        $fbPriceBonus = ($price >= 200000 && $price <= 1500000) ? 10.0 : 5.0;
+        $fbClarityBonus = $hasPainPoint ? 8.0 : 0.0;
+        $fbScore = round(($demand * 0.35) + ($commission * 0.30) + ($content * 0.25) + ($seo * 0.10) + ($fbPriceBonus * 0.5) + ($fbClarityBonus * 0.5), 1);
+        $fbScore = min(100.0, max(10.0, $fbScore));
+
+        // 3. YouTube Shorts / Search Potential Score:
+        // Prioritizes: SEO / Search intent (35%), Content In-depth potential (30%), Demand (20%), Competition Opportunity (15%)
+        $ytSeoBonus = (!empty($data['primary_keyword']) && count(explode(' ', trim($data['primary_keyword']))) >= 2) ? 10.0 : 0.0;
+        $ytScore = round(($seo * 0.35) + ($content * 0.30) + ($demand * 0.20) + ($competition * 0.15) + ($ytSeoBonus * 0.5), 1);
+        $ytScore = min(100.0, max(10.0, $ytScore));
+
+        $reasons = array(
+            "TikTok: {$tiktokScore}/100 (Trọng tâm visual, nỗi đau nhanh và giá dễ chốt)",
+            "Facebook: {$fbScore}/100 (Trọng tâm giải pháp rõ ràng, hoa hồng đơn cao)",
+            "YouTube: {$ytScore}/100 (Trọng tâm từ khóa tìm kiếm và đánh giá chuyên sâu)"
+        );
+
+        return array(
+            'global_score' => $globalScore,
+            'tiktok_score' => $tiktokScore,
+            'facebook_score' => $fbScore,
+            'youtube_score' => $ytScore,
+            'breakdown' => array(
+                'global' => $globalScore,
+                'tiktok' => $tiktokScore,
+                'facebook' => $fbScore,
+                'youtube' => $ytScore
+            ),
+            'reasons' => $reasons
+        );
+    }
+
+    /**
+     * Strict Product Eligibility Gate for Content Automation
+     * Verifies if product meets all criteria before entering Content Candidate Pool
+     * @param array $productData
+     * @param string $platform
+     * @param int $cooldownDays
+     * @return array ['eligible' => bool, 'status' => string, 'reasons' => array(), 'cooldown_until' => int|null]
+     */
+    public function checkEligibilityForContent(array $productData, $platform = 'all', $cooldownDays = 14)
+    {
+        $reasons = array();
+        $isEligible = true;
+
+        $name = trim($productData['namevi'] ?? ($productData['name'] ?? ($productData['title'] ?? '')));
+        $price = (float)($productData['sale_price'] ?? ($productData['price'] ?? ($productData['regular_price'] ?? 0)));
+        $affUrl = trim($productData['affiliate_url'] ?? ($productData['aff_url'] ?? ($productData['url'] ?? '')));
+        $photo = trim($productData['photo'] ?? ($productData['image_url'] ?? ($productData['image'] ?? '')));
+        $status = (string)($productData['status'] ?? '');
+        $productId = (int)($productData['id'] ?? ($productData['id_product'] ?? 0));
+
+        // 1. Mandatory Data Completeness
+        if (empty($name)) {
+            $isEligible = false;
+            $reasons[] = 'Thiếu tên sản phẩm';
+        }
+        if ($price <= 0) {
+            $isEligible = false;
+            $reasons[] = 'Giá sản phẩm không hợp lệ (<= 0)';
+        }
+        if (empty($affUrl)) {
+            $isEligible = false;
+            $reasons[] = 'Chưa có đường dẫn Affiliate (URL)';
+        }
+        if (empty($photo)) {
+            $isEligible = false;
+            $reasons[] = 'Thiếu hình ảnh sản phẩm';
+        }
+
+        // 2. Active Status Check
+        if (!empty($status) && strpos($status, 'hienthi') === false && $status !== 'APPROVED' && $status !== 'ACTIVE' && $status !== 'active') {
+            $isEligible = false;
+            $reasons[] = 'Trạng thái sản phẩm không hoạt động (' . $status . ')';
+        }
+
+        // 3. Cooldown Verification (Anti-Spam)
+        $cooldownUntil = null;
+        if ($this->d && $productId > 0) {
+            $lastPost = $this->d->rawQueryOne(
+                "SELECT date_created, published_at FROM table_publish_post WHERE id_product = ? AND status IN ('PUBLISHED', 'SCHEDULED', 'QUEUED') ORDER BY id DESC LIMIT 1",
+                array($productId)
+            );
+            if (!empty($lastPost)) {
+                $lastTime = !empty($lastPost['published_at']) ? (int)$lastPost['published_at'] : (int)$lastPost['date_created'];
+                $cooldownSeconds = $cooldownDays * 86400;
+                if ((time() - $lastTime) < $cooldownSeconds) {
+                    $isEligible = false;
+                    $cooldownUntil = $lastTime + $cooldownSeconds;
+                    $reasons[] = "Sản phẩm đang trong thời gian giãn cách đăng bài (Cooldown đến " . date('d/m/Y H:i', $cooldownUntil) . ")";
+                }
+            }
+        }
+
+        return array(
+            'eligible' => $isEligible,
+            'status' => $isEligible ? 'ELIGIBLE' : ($cooldownUntil ? 'COOLDOWN' : 'INELIGIBLE'),
+            'reasons' => $reasons,
+            'cooldown_until' => $cooldownUntil
+        );
+    }
+
+    /**
      * Normalize Product URL
      * Strips UTM tags, affiliate tracking, session IDs, and normalizes format
      */

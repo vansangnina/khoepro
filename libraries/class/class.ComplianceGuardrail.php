@@ -340,4 +340,35 @@ class ComplianceGuardrail
 
         return $sanitized;
     }
+
+    /**
+     * Standard Content Policy Engine Gate (PASS / WARNING / FAIL)
+     * @param array $input Text or structured content input
+     * @return array ['policy_status' => 'PASS'|'WARNING'|'FAIL', 'can_publish' => bool, 'issues' => array(), 'details' => array()]
+     */
+    public static function validatePolicyGate(array $input)
+    {
+        $eval = self::evaluate($input);
+        $risk = $eval['risk_level'];
+
+        if ($risk === self::RISK_BLOCKED || $risk === self::RISK_HIGH) {
+            $policyStatus = 'FAIL';
+            $canPublish = false;
+        } elseif ($risk === self::RISK_MEDIUM) {
+            $policyStatus = 'WARNING';
+            $canPublish = false;
+        } else {
+            $policyStatus = 'PASS';
+            $canPublish = true;
+        }
+
+        return array(
+            'policy_status' => $policyStatus,
+            'can_publish' => $canPublish,
+            'risk_level' => $risk,
+            'issues' => $eval['issues'],
+            'reason' => $eval['reason'],
+            'evaluation' => $eval
+        );
+    }
 }

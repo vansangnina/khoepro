@@ -10,7 +10,11 @@ if (!defined('LIBRARIES')) {
     define('LIBRARIES', __DIR__ . '/../');
 }
 
-class AccessTradeProvider
+if (!interface_exists('AffiliateProviderInterface')) {
+    require_once __DIR__ . '/class.AffiliateProviderInterface.php';
+}
+
+class AccessTradeProvider implements AffiliateProviderInterface
 {
     private $d;
     private $func;
@@ -18,6 +22,9 @@ class AccessTradeProvider
     private $baseUrl;
     private $timeout;
     private $rateLimitPerMinute;
+
+    const PROVIDER_KEY = 'accesstrade';
+    const PROVIDER_NAME = 'ACCESSTRADE Publisher Network';
 
     const DEFAULT_BASE_URL = 'https://api.accesstrade.vn';
     const DEFAULT_TIMEOUT = 30;
@@ -42,6 +49,24 @@ class AccessTradeProvider
         $this->baseUrl = rtrim($customConfig['base_url'] ?? ($atConfig['base_url'] ?? self::DEFAULT_BASE_URL), '/');
         $this->timeout = (int)($customConfig['timeout'] ?? ($atConfig['timeout'] ?? self::DEFAULT_TIMEOUT));
         $this->rateLimitPerMinute = (int)($customConfig['rate_limit_per_minute'] ?? ($atConfig['rate_limit_per_minute'] ?? self::DEFAULT_RATE_LIMIT));
+    }
+
+    /**
+     * Get Provider Identifier Key
+     * @return string
+     */
+    public function getProviderKey()
+    {
+        return self::PROVIDER_KEY;
+    }
+
+    /**
+     * Get Human Readable Provider Name
+     * @return string
+     */
+    public function getProviderName()
+    {
+        return self::PROVIDER_NAME;
     }
 
     /**
@@ -274,6 +299,33 @@ class AccessTradeProvider
             'success' => true,
             'products' => $products,
             'total' => count($products),
+            'error' => null
+        );
+    }
+
+    /**
+     * Search products and return as NormalizedProductDTO collection
+     * @param string $keyword
+     * @param array $params
+     * @return array ['success' => bool, 'products' => NormalizedProductDTO[], 'total' => int, 'error' => string|null]
+     */
+    public function searchNormalizedProducts($keyword, array $params = array())
+    {
+        $rawRes = $this->searchProducts($keyword, $params);
+        if (!$rawRes['success']) {
+            return array('success' => false, 'products' => array(), 'total' => 0, 'error' => $rawRes['error']);
+        }
+
+        $normalizedList = array();
+        foreach ($rawRes['products'] as $p) {
+            $norm = $this->normalizeDatafeedProduct($p);
+            $normalizedList[] = new NormalizedProductDTO($norm);
+        }
+
+        return array(
+            'success' => true,
+            'products' => $normalizedList,
+            'total' => count($normalizedList),
             'error' => null
         );
     }
