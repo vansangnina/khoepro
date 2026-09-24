@@ -19,4 +19,3 @@
 <link href="assets/fancybox5/fancybox.css" rel="stylesheet">
 <link href="assets/css/adminlte.css" rel="stylesheet">
 <link href="assets/css/adminlte-style.css" rel="stylesheet">
-<link href="../assets/fontawesome611/all.css" rel="stylesheet">
