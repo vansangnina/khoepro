@@ -123,10 +123,18 @@ $config = array(
         'hybrid_max_ai_scenes' => 2,
         'hybrid_max_ai_seconds' => 8,
         'ai_scene_cost_estimate' => 50000, // Estimated VND per 8s AI clip
-        'ffmpeg_path' => (file_exists('C:/Users/VanSang/AppData/Local/Microsoft/WinGet/Packages/Gyan.FFmpeg.Essentials_Microsoft.Winget.Source_8wekyb3d8bbwe/ffmpeg-9.0.1-essentials_build/bin/ffmpeg.exe')) ? 'C:/Users/VanSang/AppData/Local/Microsoft/WinGet/Packages/Gyan.FFmpeg.Essentials_Microsoft.Winget.Source_8wekyb3d8bbwe/ffmpeg-9.0.1-essentials_build/bin/ffmpeg.exe' : (getenv('FFMPEG_PATH') ?: 'ffmpeg'),
-        'ffprobe_path' => (file_exists('C:/Users/VanSang/AppData/Local/Microsoft/WinGet/Packages/Gyan.FFmpeg.Essentials_Microsoft.Winget.Source_8wekyb3d8bbwe/ffmpeg-9.0.1-essentials_build/bin/ffprobe.exe')) ? 'C:/Users/VanSang/AppData/Local/Microsoft/WinGet/Packages/Gyan.FFmpeg.Essentials_Microsoft.Winget.Source_8wekyb3d8bbwe/ffmpeg-9.0.1-essentials_build/bin/ffprobe.exe' : (getenv('FFPROBE_PATH') ?: 'ffprobe'),
-        'ffmpeg_binary' => 'ffmpeg',
-        'ffprobe_binary' => 'ffprobe',
+        'ffmpeg_path' => getenv('FFMPEG_PATH')
+            ?: (PHP_OS_FAMILY === 'Windows'
+            ? 'C:/Users/VanSang/AppData/Local/Microsoft/WinGet/Packages/Gyan.FFmpeg.Essentials_Microsoft.Winget.Source_8wekyb3d8bbwe/ffmpeg-9.0.1-essentials_build/bin/ffmpeg.exe'
+            : '/usr/bin/ffmpeg'),
+        'ffprobe_path' => getenv('FFPROBE_PATH')
+            ?: (PHP_OS_FAMILY === 'Windows'
+            ? 'C:/Users/VanSang/AppData/Local/Microsoft/WinGet/Packages/Gyan.FFmpeg.Essentials_Microsoft.Winget.Source_8wekyb3d8bbwe/ffmpeg-9.0.1-essentials_build/bin/ffprobe.exe'
+            : '/usr/bin/ffprobe'),
+        'ffmpeg_binary' => getenv('FFMPEG_PATH')
+    ?: (PHP_OS_FAMILY === 'Windows' ? 'ffmpeg' : '/usr/bin/ffmpeg'),
+        'ffprobe_binary' => getenv('FFPROBE_PATH')
+    ?: (PHP_OS_FAMILY === 'Windows' ? 'ffprobe' : '/usr/bin/ffprobe'),
         'caption_font_size' => 36,
         'safe_area_bottom_pct' => 20,
         'enable_branding' => true,
