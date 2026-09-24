@@ -14,12 +14,18 @@ $linkCreate = "index.php?com=ai_video&act=create";
 $linkJobs = "index.php?com=ai_video&act=jobs";
 $linkAssets = "index.php?com=ai_video&act=assets";
 $linkSettings = "index.php?com=ai_video&act=settings";
+$linkDelete = "index.php?com=ai_video&act=delete";
 
 switch ($act) {
     /* 1. Video Projects Library */
     case "man":
         viewVideoProjects();
         $template = "ai_video/mans";
+        break;
+
+    /* 1.1 Delete Project(s) */
+    case "delete":
+        deleteVideoProject();
         break;
 
     /* 2. Video Detail & Preview */
@@ -610,4 +616,59 @@ function uploadProductAsset() {
     } else {
         $func->transfer("Vui lòng chọn file hình ảnh sản phẩm", "index.php?com=ai_video&act=view&id=" . $idVideo, false);
     }
+}
+
+/**
+ * 13. Xóa một hoặc nhiều dự án Video AI
+ */
+function deleteVideoProject() {
+    global $d, $func, $linkMan;
+
+    $id = !empty($_GET['id']) ? (int)$_GET['id'] : 0;
+    $listid = !empty($_GET['listid']) ? trim($_GET['listid']) : '';
+
+    $idsToDelete = array();
+    if ($id) {
+        $idsToDelete[] = $id;
+    } elseif (!empty($listid)) {
+        $rawIds = explode(',', $listid);
+        foreach ($rawIds as $rId) {
+            $val = (int)trim($rId);
+            if ($val > 0) $idsToDelete[] = $val;
+        }
+    }
+
+    if (empty($idsToDelete)) {
+        $func->transfer("Không tìm thấy dự án video cần xóa.", $linkMan, false);
+    }
+
+    $deletedCount = 0;
+    foreach ($idsToDelete as $vId) {
+        $video = $d->rawQueryOne("SELECT id, video_file, thumbnail FROM table_ai_video WHERE id = ? LIMIT 1", array($vId));
+        if (!empty($video)) {
+            // Xóa file video và thumbnail nếu tồn tại trên disk
+            if (!empty($video['video_file'])) {
+                $vPath = $video['video_file'];
+                if (file_exists($vPath)) @unlink($vPath);
+                if (file_exists('../' . $vPath)) @unlink('../' . $vPath);
+            }
+            if (!empty($video['thumbnail'])) {
+                $tPath = $video['thumbnail'];
+                if (file_exists($tPath)) @unlink($tPath);
+                if (file_exists('../' . $tPath)) @unlink('../' . $tPath);
+            }
+
+            // Xóa các jobs render liên quan
+            $d->rawQuery("DELETE FROM table_ai_video_job WHERE id_video = ?", array($vId));
+
+            // Xóa các bài publish post liên quan nếu có
+            $d->rawQuery("DELETE FROM table_publish_post WHERE id_video = ?", array($vId));
+
+            // Xóa video project
+            $d->rawQuery("DELETE FROM table_ai_video WHERE id = ?", array($vId));
+            $deletedCount++;
+        }
+    }
+
+    $func->transfer("Đã xóa thành công {$deletedCount} dự án video!", $linkMan);
 }

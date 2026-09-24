@@ -3,21 +3,25 @@ $linkMan = "index.php?com=ai_video&act=man";
 $linkView = "index.php?com=ai_video&act=view";
 $linkCreate = "index.php?com=ai_video&act=create";
 $linkJobs = "index.php?com=ai_video&act=jobs";
+$linkDelete = "index.php?com=ai_video&act=delete";
 ?>
 
 <div class="content-header text-sm">
     <div class="container-fluid">
         <div class="row mb-2 align-items-center">
             <div class="col-sm-6 mb-2 mb-sm-0">
-                <h1 class="m-0 text-dark font-weight-bold" style="font-size: 1.25rem;">
+                <h1 class="m-0 text-dark font-weight-600" style="font-size: 1.25rem;">
                     <i class="fas fa-video mr-2 text-primary"></i>Dự án Video AI (AI Video Production)
                 </h1>
             </div>
             <div class="col-sm-6 text-sm-right">
-                <a href="<?=$linkCreate?>" class="btn btn-sm btn-success mr-2 shadow-sm">
+                <a href="<?=$linkCreate?>" class="btn btn-sm btn-success mr-2 shadow-sm font-weight-600">
                     <i class="fas fa-plus-circle mr-1"></i> Tạo Dự án Video
                 </a>
-                <a href="<?=$linkJobs?>" class="btn btn-sm btn-outline-info shadow-sm">
+                <a class="btn btn-sm btn-danger text-white mr-2 shadow-sm font-weight-600" id="delete-all" data-url="<?=$linkDelete?>" title="Xóa tất cả các mục đã chọn">
+                    <i class="far fa-trash-alt mr-1"></i> Xóa tất cả
+                </a>
+                <a href="<?=$linkJobs?>" class="btn btn-sm btn-outline-info shadow-sm font-weight-600">
                     <i class="fas fa-tasks mr-1"></i> Hàng đợi Render
                 </a>
             </div>
@@ -136,6 +140,12 @@ $linkJobs = "index.php?com=ai_video&act=jobs";
                 <table class="table table-hover table-striped align-middle mb-0" style="width: 100%; table-layout: auto;">
                     <thead class="thead-light">
                         <tr class="text-center" style="font-size: 13px;">
+                            <th style="width: 45px;" class="align-middle text-center">
+                                <div class="custom-control custom-checkbox my-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="selectall-checkbox">
+                                    <label for="selectall-checkbox" class="custom-control-label"></label>
+                                </div>
+                            </th>
                             <th style="width: 50px;">ID</th>
                             <th style="width: 85px;">Thumbnail</th>
                             <th class="text-left" style="min-width: 220px;">Dự án Video & Sản phẩm</th>
@@ -144,12 +154,18 @@ $linkJobs = "index.php?com=ai_video&act=jobs";
                             <th style="width: 70px;">Version</th>
                             <th style="width: 140px;">Trạng thái</th>
                             <th style="width: 105px;">Cập nhật</th>
-                            <th style="width: 110px;">Thao tác</th>
+                            <th style="width: 140px;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if (!empty($items)): foreach ($items as $item): ?>
                             <tr>
+                                <td class="text-center align-middle">
+                                    <div class="custom-control custom-checkbox my-checkbox">
+                                        <input type="checkbox" class="custom-control-input select-checkbox" id="select-checkbox-<?=$item['id']?>" value="<?=$item['id']?>">
+                                        <label for="select-checkbox-<?=$item['id']?>" class="custom-control-label"></label>
+                                    </div>
+                                </td>
                                 <td class="text-center align-middle">
                                     <span class="badge badge-light border text-muted">#<?=$item['id']?></span>
                                 </td>
@@ -174,7 +190,7 @@ $linkJobs = "index.php?com=ai_video&act=jobs";
                                     <?php endif; ?>
                                 </td>
                                 <td class="align-middle">
-                                    <div class="font-weight-bold" style="word-break: break-word; line-height: 1.35;">
+                                    <div class="font-weight-600" style="word-break: break-word; line-height: 1.35;">
                                         <a href="<?=$linkView?>&id=<?=$item['id']?>" class="text-primary" style="font-size: 14px;">
                                             <?=htmlspecialchars($item['title'] ?: 'Video Project #'.$item['id'])?>
                                         </a>
@@ -206,20 +222,20 @@ $linkJobs = "index.php?com=ai_video&act=jobs";
                                     <div class="text-muted text-xs mt-1" style="word-break: break-word;"><?=$item['template_id']?></div>
                                 </td>
                                 <td class="text-center align-middle">
-                                    <span class="badge badge-light border text-uppercase font-weight-bold"><?=$item['provider']?></span>
+                                    <span class="badge badge-light border text-uppercase font-weight-600"><?=$item['provider']?></span>
                                     <?php if (!empty($item['ai_video_seconds'])): ?>
                                         <div class="text-muted text-xs mt-1"><?=$item['ai_video_seconds']?>s AI Clip</div>
                                     <?php endif; ?>
                                 </td>
                                 <td class="text-center align-middle">
-                                    <span class="badge badge-secondary font-weight-bold">v<?=$item['version']?></span>
+                                    <span class="badge badge-secondary font-weight-600">v<?=$item['version']?></span>
                                     <?php if (!empty($item['is_active'])): ?>
                                         <div class="mt-1"><span class="badge badge-success text-xs">Active</span></div>
                                     <?php endif; ?>
                                 </td>
                                 <td class="text-center align-middle">
                                     <?php
-                                    $st = $item['status'];
+                                     $st = $item['status'];
                                     if ($st === 'REVIEW_REQUIRED'):
                                         echo '<span class="badge badge-warning p-1 text-wrap d-block"><i class="fas fa-clock mr-1"></i>Chờ Admin duyệt</span>';
                                     elseif ($st === 'APPROVED'):
@@ -247,12 +263,13 @@ $linkJobs = "index.php?com=ai_video&act=jobs";
                                         <?php if (in_array($item['status'], array('READY', 'FAILED', 'REJECTED', 'WAITING_ASSET'))): ?>
                                             <a href="index.php?com=ai_video&act=render_now&id=<?=$item['id']?>" class="btn btn-xs btn-primary shadow-sm" title="Render ngay" onclick="return confirm('Kích hoạt tiến trình render video ngay bây giờ?');"><i class="fas fa-bolt"></i> Render</a>
                                         <?php endif; ?>
+                                        <a class="btn btn-xs btn-danger shadow-sm text-white" id="delete-item" data-url="<?=$linkDelete?>&id=<?=$item['id']?>" title="Xóa dự án video"><i class="fas fa-trash-alt"></i> Xóa</a>
                                     </div>
                                 </td>
                             </tr>
                         <?php endforeach; else: ?>
                             <tr>
-                                <td colspan="9" class="text-center py-5 text-muted">
+                                <td colspan="10" class="text-center py-5 text-muted">
                                     <i class="fas fa-film fa-3x mb-3 text-secondary d-block" style="opacity: 0.5;"></i>
                                     <h5>Chưa có dự án video nào</h5>
                                     <p class="mb-0">Hãy bấm "<strong>Tạo Dự án Video</strong>" từ kịch bản TikTok đã duyệt để bắt đầu!</p>
@@ -266,6 +283,15 @@ $linkJobs = "index.php?com=ai_video&act=jobs";
             <?php if (!empty($paging)): ?>
                 <div class="card-footer clearfix py-2"><?=$paging?></div>
             <?php endif; ?>
+
+            <div class="card-footer py-2">
+                <a href="<?=$linkCreate?>" class="btn btn-sm btn-success mr-2 shadow-sm font-weight-600">
+                    <i class="fas fa-plus-circle mr-1"></i> Tạo Dự án Video
+                </a>
+                <a class="btn btn-sm btn-danger text-white shadow-sm font-weight-600" id="delete-all" data-url="<?=$linkDelete?>" title="Xóa tất cả các mục đã chọn">
+                    <i class="far fa-trash-alt mr-1"></i> Xóa tất cả
+                </a>
+            </div>
         </div>
     </div>
 </section>
