@@ -341,7 +341,7 @@ $linkWeights = "index.php?com=product_research&act=weights";
 <!-- Modal Quick Import from ACCESSTRADE API -->
 <div class="modal fade" id="modalImportAccessTrade" tabindex="-1" role="dialog" aria-labelledby="modalImportAccessTradeLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
-        <form method="post" action="index.php?com=product_research&act=import_accesstrade" class="modal-content text-sm">
+        <form method="post" action="index.php?com=product_research&act=import_accesstrade" class="modal-content text-sm" onsubmit="handleImportSubmit(this)">
             <div class="modal-header bg-gradient-info text-white py-2">
                 <h5 class="modal-title font-weight-600" id="modalImportAccessTradeLabel"><i class="fas fa-cloud-download-alt mr-2"></i>Kéo sản phẩm tự động từ ACCESSTRADE Live API</h5>
                 <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
@@ -379,7 +379,7 @@ $linkWeights = "index.php?com=product_research&act=weights";
             </div>
             <div class="modal-footer py-2">
                 <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Hủy</button>
-                <button type="submit" class="btn btn-sm btn-info font-weight-600"><i class="fas fa-sync-alt mr-1"></i> Bắt đầu Kéo sản phẩm</button>
+                <button type="submit" id="btnImportSubmit" class="btn btn-sm btn-info font-weight-600"><i class="fas fa-sync-alt mr-1"></i> Bắt đầu Kéo sản phẩm</button>
             </div>
         </form>
     </div>
@@ -406,5 +406,14 @@ function applyFilter() {
 function openRejectModal(id) {
     document.getElementById('reject_candidate_id').value = id;
     $('#rejectModal').modal('show');
+}
+
+function handleImportSubmit(form) {
+    var btn = document.getElementById('btnImportSubmit');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Đang tải từ ACCESSTRADE...';
+    }
+    return true;
 }
 </script>

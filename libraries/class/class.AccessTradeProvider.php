@@ -27,7 +27,7 @@ class AccessTradeProvider implements AffiliateProviderInterface
     const PROVIDER_NAME = 'ACCESSTRADE Publisher Network';
 
     const DEFAULT_BASE_URL = 'https://api.accesstrade.vn';
-    const DEFAULT_TIMEOUT = 30;
+    const DEFAULT_TIMEOUT = 8;
     const DEFAULT_RATE_LIMIT = 30; // 30 req/min
 
     // ACCESSTRADE Transaction Status Mappings
@@ -902,8 +902,8 @@ class AccessTradeProvider implements AffiliateProviderInterface
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
-        curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
+        curl_setopt($ch, CURLOPT_TIMEOUT, min(8, max(1, (int)$this->timeout)));
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);

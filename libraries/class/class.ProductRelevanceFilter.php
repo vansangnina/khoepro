@@ -285,13 +285,14 @@ class ProductRelevanceFilter
 
     /**
      * Complete Two-Stage Product Filter Pipeline
-     * ACCESSTRADE DATAFEED -> BASIC RELEVANCE FILTER -> AI PRODUCT RELEVANCE ANALYSIS -> RESULT
+     * ACCESSTRADE DATAFEED -> BASIC RELEVANCE FILTER -> AI PRODUCT RELEVANCE ANALYSIS (Optional) -> RESULT
      * @param array $product
+     * @param bool $enableAi
      * @return array
      */
-    public function evaluateProduct(array $product)
+    public function evaluateProduct(array $product, $enableAi = false)
     {
-        // Stage 1: Basic Relevance Filter
+        // Stage 1: Basic Relevance Filter (Rule-based, instant <1ms)
         $basic = $this->evaluateBasic($product);
 
         if ($basic['verdict'] === self::VERDICT_NOT_RELEVANT) {
@@ -299,23 +300,25 @@ class ProductRelevanceFilter
             return $basic;
         }
 
-        // If Stage 1 is RELEVANT or NEEDS_REVIEW, run Stage 2 AI Analysis
-        $aiResult = $this->evaluateAiRelevance($product, $basic);
+        // Only trigger heavy LLM API call if explicitly requested ($enableAi === true)
+        if ($enableAi) {
+            $aiResult = $this->evaluateAiRelevance($product, $basic);
+            return array(
+                'verdict' => $aiResult['verdict'],
+                'stage' => $aiResult['stage'],
+                'confidence' => $aiResult['confidence'],
+                'reasons' => array_unique(array_merge($basic['reasons'], $aiResult['reasons'])),
+                'fitness_niche' => $aiResult['fitness_niche'] ?? '',
+                'khoepro_audience_fit' => $aiResult['khoepro_audience_fit'] ?? 'MEDIUM',
+                'review_potential' => $aiResult['review_potential'] ?? 'MEDIUM',
+                'comparison_potential' => $aiResult['comparison_potential'] ?? 'MEDIUM',
+                'content_potential' => $aiResult['content_potential'] ?? 'MEDIUM',
+                'summary_rationale' => $aiResult['summary_rationale'] ?? '',
+                'is_relevant' => $aiResult['is_relevant'],
+                'raw_product' => $product
+            );
+        }
 
-        // Merge stage 1 & stage 2 insights
-        return array(
-            'verdict' => $aiResult['verdict'],
-            'stage' => $aiResult['stage'],
-            'confidence' => $aiResult['confidence'],
-            'reasons' => array_unique(array_merge($basic['reasons'], $aiResult['reasons'])),
-            'fitness_niche' => $aiResult['fitness_niche'] ?? '',
-            'khoepro_audience_fit' => $aiResult['khoepro_audience_fit'] ?? 'MEDIUM',
-            'review_potential' => $aiResult['review_potential'] ?? 'MEDIUM',
-            'comparison_potential' => $aiResult['comparison_potential'] ?? 'MEDIUM',
-            'content_potential' => $aiResult['content_potential'] ?? 'MEDIUM',
-            'summary_rationale' => $aiResult['summary_rationale'] ?? '',
-            'is_relevant' => $aiResult['is_relevant'],
-            'raw_product' => $product
-        );
+        return $basic;
     }
 }

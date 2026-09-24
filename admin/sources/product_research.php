@@ -885,9 +885,11 @@ function importFromAccessTradeAction()
 {
     global $d, $func;
 
+    @set_time_limit(30);
+
     $keyword = !empty($_POST['keyword']) ? trim($_POST['keyword']) : (!empty($_GET['keyword']) ? trim($_GET['keyword']) : 'gym');
     $limit = !empty($_POST['limit']) ? min(50, max(1, (int)$_POST['limit'])) : 10;
-    $filterRelevance = isset($_POST['filter_relevance']) ? (bool)$_POST['filter_relevance'] : false;
+    $filterRelevance = !empty($_POST['filter_relevance']) ? (bool)$_POST['filter_relevance'] : false;
 
     if (empty($keyword)) {
         $func->transfer("Vui lòng nhập từ khóa tìm kiếm sản phẩm ACCESSTRADE", "index.php?com=product_research&act=man", false);
@@ -902,7 +904,7 @@ function importFromAccessTradeAction()
     ));
 
     if (empty($candidates)) {
-        $func->transfer("Không tìm thấy sản phẩm nào khớp với từ khóa '{$keyword}' từ ACCESSTRADE API", "index.php?com=product_research&act=man", false);
+        $func->transfer("Không tìm thấy sản phẩm nào khớp với từ khóa '{$keyword}' từ ACCESSTRADE API (hoặc đã bị bộ lọc loại trừ). Vui lòng thử lại với từ khóa khác hoặc tắt bộ lọc ngành.", "index.php?com=product_research&act=man", false);
     }
 
     $research = new ProductResearch($d, $func);
@@ -943,7 +945,7 @@ function importFromAccessTradeAction()
         }
     }
 
-    $msg = "Đã kéo thành công {$createdCount} sản phẩm từ ACCESSTRADE API (Trùng lặp bỏ qua: {$dupCount})!";
+    $msg = "Đã kéo thành công {$createdCount} sản phẩm từ ACCESSTRADE Live API (Trùng lặp bỏ qua: {$dupCount})!";
     $func->transfer($msg, "index.php?com=product_research&act=man");
 }
 
