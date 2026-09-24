@@ -70,9 +70,10 @@ $isEdit = !empty($item['id']);
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="platform" class="font-weight-bold">Nền tảng ưu tiên:</label>
+                                    <label for="platform" class="font-weight-600">Nền tảng ưu tiên:</label>
                                     <select class="form-control form-control-sm" name="data[platform]" id="platform">
                                         <option value="all" <?= ($item['platform'] ?? '') == 'all' ? 'selected' : '' ?>>Tất cả nền tảng (AI Multi-Platform)</option>
+                                        <option value="accesstrade" <?= ($item['platform'] ?? '') == 'accesstrade' ? 'selected' : '' ?>>ACCESSTRADE Publisher API (Tự động kéo từ Datafeed)</option>
                                         <option value="tiktok" <?= ($item['platform'] ?? '') == 'tiktok' ? 'selected' : '' ?>>TikTok Shop</option>
                                         <option value="shopee" <?= ($item['platform'] ?? '') == 'shopee' ? 'selected' : '' ?>>Shopee</option>
                                         <option value="lazada" <?= ($item['platform'] ?? '') == 'lazada' ? 'selected' : '' ?>>Lazada</option>
@@ -81,7 +82,7 @@ $isEdit = !empty($item['id']);
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="depth" class="font-weight-bold">Độ sâu nghiên cứu (Depth):</label>
+                                    <label for="depth" class="font-weight-600">Độ sâu nghiên cứu (Depth):</label>
                                     <select class="form-control form-control-sm" name="data[depth]" id="depth">
                                         <option value="QUICK" <?= ($item['depth'] ?? '') == 'QUICK' ? 'selected' : '' ?>>QUICK (Nhanh - Tiết kiệm Token)</option>
                                         <option value="STANDARD" <?= ($item['depth'] ?? '') == 'STANDARD' ? 'selected' : '' ?>>STANDARD (Tiêu chuẩn - Khuyên dùng)</option>

@@ -128,6 +128,7 @@ $linkWeights = "index.php?com=product_research&act=weights";
                     </div>
                 </div>
                 <div class="col-md-2 text-right">
+                    <button type="button" class="btn btn-sm btn-info mr-1 font-weight-600" data-toggle="modal" data-target="#modalImportAccessTrade" title="Kéo sản phẩm tự động từ ACCESSTRADE API"><i class="fas fa-cloud-download-alt mr-1"></i>Kéo từ API</button>
                     <a href="<?= $linkAdd ?>" class="btn btn-sm btn-success mr-1" title="Thêm ứng viên"><i class="fas fa-plus"></i></a>
                     <a href="index.php?com=product_research&act=seeds" class="btn btn-sm btn-outline-primary mr-1" title="Quản lý Seeds"><i class="fas fa-seedling"></i></a>
                     <a href="index.php?com=product_research&act=jobs" class="btn btn-sm btn-outline-info mr-1" title="Hàng đợi Jobs"><i class="fas fa-tasks"></i></a>
@@ -140,7 +141,7 @@ $linkWeights = "index.php?com=product_research&act=weights";
     <!-- Candidates Table -->
     <div class="card card-primary card-outline text-sm shadow-sm mb-0">
         <div class="card-header py-2">
-            <h3 class="card-title font-weight-bold"><i class="fas fa-list mr-1"></i> Danh sách Ứng viên Nghiên cứu Sản phẩm</h3>
+            <h3 class="card-title font-weight-600"><i class="fas fa-list mr-1"></i> Danh sách Ứng viên Nghiên cứu Sản phẩm</h3>
             <div class="card-tools">
                 <span class="badge badge-secondary"><?= number_format($countTotal) ?> kết quả</span>
             </div>
@@ -331,7 +332,54 @@ $linkWeights = "index.php?com=product_research&act=weights";
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
-                <button type="submit" class="btn btn-danger font-weight-bold"><i class="fas fa-ban mr-1"></i> Xác nhận Từ chối</button>
+                <button type="submit" class="btn btn-danger font-weight-600"><i class="fas fa-ban mr-1"></i> Xác nhận Từ chối</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Quick Import from ACCESSTRADE API -->
+<div class="modal fade" id="modalImportAccessTrade" tabindex="-1" role="dialog" aria-labelledby="modalImportAccessTradeLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <form method="post" action="index.php?com=product_research&act=import_accesstrade" class="modal-content text-sm">
+            <div class="modal-header bg-gradient-info text-white py-2">
+                <h5 class="modal-title font-weight-600" id="modalImportAccessTradeLabel"><i class="fas fa-cloud-download-alt mr-2"></i>Kéo sản phẩm tự động từ ACCESSTRADE Live API</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group mb-3">
+                    <label class="font-weight-600">Từ khóa sản phẩm cần quét từ ACCESSTRADE: <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control form-control-sm" name="keyword" placeholder="Ví dụ: đai lưng gym, whey protein, dây kháng lực..." required>
+                    <small class="text-muted">Hệ thống sẽ gọi trực tiếp API ACCESSTRADE để lấy thông tin sản phẩm thật, giá bán, ảnh và tự động tạo liên kết Deep Link.</small>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group mb-3">
+                            <label class="font-weight-600">Số lượng sản phẩm:</label>
+                            <select class="form-control form-control-sm" name="limit">
+                                <option value="5">5 sản phẩm</option>
+                                <option value="10" selected>10 sản phẩm</option>
+                                <option value="20">20 sản phẩm</option>
+                                <option value="50">50 sản phẩm</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group mb-3">
+                            <label class="font-weight-600">Bộ lọc ngành AI:</label>
+                            <select class="form-control form-control-sm" name="filter_relevance">
+                                <option value="0">Tất cả kết quả (Khuyên dùng)</option>
+                                <option value="1">Chỉ lấy đúng chuẩn Gym/Fitness</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Hủy</button>
+                <button type="submit" class="btn btn-sm btn-info font-weight-600"><i class="fas fa-sync-alt mr-1"></i> Bắt đầu Kéo sản phẩm</button>
             </div>
         </form>
     </div>

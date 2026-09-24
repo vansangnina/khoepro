@@ -86,6 +86,11 @@ switch ($act) {
         saveProviderConfig();
         break;
 
+    /* Phase 10: Quick Import from ACCESSTRADE API */
+    case "import_accesstrade":
+        importFromAccessTradeAction();
+        break;
+
     default:
         $template = "404";
 }
@@ -872,3 +877,73 @@ function saveProviderConfig()
     $agent->saveAiConfig($config);
     $func->transfer("Lưu cấu hình AI & Nhà cung cấp nghiên cứu thành công!", "index.php?com=product_research&act=provider_config");
 }
+
+/**
+ * Quick Auto-Import Products from ACCESSTRADE Live API
+ */
+function importFromAccessTradeAction()
+{
+    global $d, $func;
+
+    $keyword = !empty($_POST['keyword']) ? trim($_POST['keyword']) : (!empty($_GET['keyword']) ? trim($_GET['keyword']) : 'gym');
+    $limit = !empty($_POST['limit']) ? min(50, max(1, (int)$_POST['limit'])) : 10;
+    $filterRelevance = isset($_POST['filter_relevance']) ? (bool)$_POST['filter_relevance'] : false;
+
+    if (empty($keyword)) {
+        $func->transfer("Vui lòng nhập từ khóa tìm kiếm sản phẩm ACCESSTRADE", "index.php?com=product_research&act=man", false);
+    }
+
+    require_once LIBRARIES . 'class/class.ResearchProvider.php';
+    $atProvider = ResearchProviderFactory::create('accesstrade', $d, $func);
+    $candidates = $atProvider->discoverCandidates(array(
+        'keyword' => $keyword,
+        'limit' => $limit,
+        'filter_relevance' => $filterRelevance
+    ));
+
+    if (empty($candidates)) {
+        $func->transfer("Không tìm thấy sản phẩm nào khớp với từ khóa '{$keyword}' từ ACCESSTRADE API", "index.php?com=product_research&act=man", false);
+    }
+
+    $research = new ProductResearch($d, $func);
+    $createdCount = 0;
+    $dupCount = 0;
+
+    foreach ($candidates as $dto) {
+        $normUrl = $research->normalizeUrl($dto->source_url);
+        $normName = $research->normalizeName($dto->name);
+        $extId = $dto->external_product_id;
+
+        $dupCheck = $research->checkDuplicate('accesstrade', $extId, $dto->source_url, $dto->name, $dto->brand_hint);
+        if ($dupCheck['is_duplicate']) {
+            $dupCount++;
+            continue;
+        }
+
+        $cArray = $dto->toArray();
+        $cArray['normalized_name'] = $normName;
+        $cArray['normalized_url'] = $normUrl;
+        $cArray['status'] = 'DISCOVERED';
+        $cArray['currency'] = 'VND';
+        $cArray['date_created'] = time();
+        $cArray['date_updated'] = time();
+
+        $scoreRes = $research->calculateTotalScore($cArray);
+        $cArray['demand_score'] = $scoreRes['demand_score'];
+        $cArray['content_score'] = $scoreRes['content_score'];
+        $cArray['commission_score'] = $scoreRes['commission_score'];
+        $cArray['competition_score'] = $scoreRes['competition_score'];
+        $cArray['seo_score'] = $scoreRes['seo_score'];
+        $cArray['total_score'] = $scoreRes['total_score'];
+        $cArray['score_breakdown'] = json_encode($scoreRes, JSON_UNESCAPED_UNICODE);
+
+        $newId = $d->insert('product_research', $cArray);
+        if ($newId) {
+            $createdCount++;
+        }
+    }
+
+    $msg = "Đã kéo thành công {$createdCount} sản phẩm từ ACCESSTRADE API (Trùng lặp bỏ qua: {$dupCount})!";
+    $func->transfer($msg, "index.php?com=product_research&act=man");
+}
+
