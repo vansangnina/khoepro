@@ -21,6 +21,9 @@ switch ($act) {
     case "delete":
         deleteCandidate();
         break;
+    case "delete_all":
+        deleteAllCandidates();
+        break;
     case "approve":
         approveCandidate();
         break;
@@ -486,21 +489,75 @@ function recalculateCandidate()
 }
 
 /**
- * Delete Candidate
+ * Delete Candidate (Single item or Multi-select listid)
  */
 function deleteCandidate()
 {
     global $d, $func;
-    $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-    if (!$id) $func->transfer("Không tìm thấy dữ liệu", "index.php?com=product_research&act=man", false);
 
-    $item = $d->rawQueryOne("select id, id_product from #_product_research where id = ? limit 0,1", array($id));
-    if (!empty($item['id_product'])) {
-        $func->transfer("Không thể xóa ứng viên đã được liên kết với sản phẩm thật (ID Product #" . $item['id_product'] . ")", "index.php?com=product_research&act=man", false);
+    $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+    $listid = isset($_GET['listid']) ? trim($_GET['listid']) : '';
+
+    if ($id > 0) {
+        $item = $d->rawQueryOne("select id, id_product from #_product_research where id = ? limit 0,1", array($id));
+        if (empty($item)) {
+            $func->transfer("Ứng viên không tồn tại hoặc đã bị xóa", "index.php?com=product_research&act=man", false);
+        }
+
+        if (!empty($item['id_product'])) {
+            $func->transfer("Không thể xóa ứng viên đã được liên kết với sản phẩm thật (ID Product #" . $item['id_product'] . ")", "index.php?com=product_research&act=man", false);
+        }
+
+        $d->rawQuery("delete from #_product_research where id = ?", array($id));
+        $func->transfer("Xóa ứng viên #" . $id . " thành công", "index.php?com=product_research&act=man");
+    } elseif (!empty($listid)) {
+        $ids = explode(',', $listid);
+        $deleted = 0;
+        $skipped = 0;
+
+        foreach ($ids as $item_id) {
+            $cId = (int)trim($item_id);
+            if ($cId > 0) {
+                $item = $d->rawQueryOne("select id, id_product from #_product_research where id = ? limit 0,1", array($cId));
+                if (!empty($item)) {
+                    if (!empty($item['id_product'])) {
+                        $skipped++;
+                    } else {
+                        $d->rawQuery("delete from #_product_research where id = ?", array($cId));
+                        $deleted++;
+                    }
+                }
+            }
+        }
+
+        $msg = "Đã xóa {$deleted} ứng viên được chọn";
+        if ($skipped > 0) {
+            $msg .= " (Bỏ qua {$skipped} ứng viên đã tạo sản phẩm thật)";
+        }
+        $func->transfer($msg, "index.php?com=product_research&act=man");
+    } else {
+        $func->transfer("Không tìm thấy dữ liệu cần xóa", "index.php?com=product_research&act=man", false);
+    }
+}
+
+/**
+ * Delete All Unlinked Candidates (Purge All)
+ */
+function deleteAllCandidates()
+{
+    global $d, $func;
+
+    // Count candidates eligible for deletion (id_product is null or 0)
+    $count = $d->rawQueryOne("select count(id) as total from #_product_research where id_product is null or id_product = 0");
+    $totalToDelete = (int)($count['total'] ?? 0);
+
+    if ($totalToDelete === 0) {
+        $func->transfer("Không có ứng viên nào cần xóa (hoặc tất cả ứng viên đều đã tạo sản phẩm thật)", "index.php?com=product_research&act=man", false);
     }
 
-    $d->rawQuery("delete from #_product_research where id = ?", array($id));
-    $func->transfer("Xóa ứng viên thành công", "index.php?com=product_research&act=man");
+    $d->rawQuery("delete from #_product_research where id_product is null or id_product = 0");
+
+    $func->transfer("Đã xóa sạch toàn bộ {$totalToDelete} ứng viên nghiên cứu thành công!", "index.php?com=product_research&act=man");
 }
 
 /**
