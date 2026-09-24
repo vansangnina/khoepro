@@ -27,3 +27,4 @@ admin/upload/*
 !admin/upload/.gitkeep
 scratch/*
 creator_*
+_reference/
