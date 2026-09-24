@@ -56,6 +56,15 @@ $linkWeights = "index.php?com=product_research&act=weights";
             </div>
         </div>
         <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+            <a href="index.php?com=product_research&act=man&status=PRODUCT_CREATED" class="info-box shadow-sm text-dark text-decoration-none" title="Xem danh sách ứng viên đã tạo thành sản phẩm thật">
+                <span class="info-box-icon bg-teal"><i class="fas fa-box-open text-white"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text font-weight-600 text-teal">Đã tạo SP</span>
+                    <span class="info-box-number text-teal font-weight-600"><?= number_format($summaryStats['product_created'] ?? 0) ?></span>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
             <div class="info-box shadow-sm">
                 <span class="info-box-icon bg-danger"><i class="fas fa-times-circle"></i></span>
                 <div class="info-box-content">
@@ -278,22 +287,29 @@ $linkWeights = "index.php?com=product_research&act=weights";
                                     </div>
                                 </td>
                                 <td class="align-middle text-center">
-                                    <span class="badge <?= $statusBadge ?> p-1 text-wrap d-block"><?= $v['status'] ?></span>
-                                    <?php if (!empty($v['id_product'])) { ?>
-                                        <div class="mt-1">
-                                            <a href="index.php?com=product&act=edit&type=san-pham&id=<?= $v['id_product'] ?>" class="badge badge-primary" target="_blank" title="Xem sản phẩm thật">SP #<?= $v['id_product'] ?></a>
-                                        </div>
-                                    <?php } ?>
-                                    <?php if ($v['status'] == 'REJECTED' && !empty($v['reject_reason'])) { ?>
-                                        <div class="text-xs text-danger mt-1" style="word-break: break-word;" title="<?= htmlspecialchars($v['reject_reason']) ?>"><?= htmlspecialchars($v['reject_reason']) ?></div>
+                                    <?php if (!empty($v['id_product']) || $v['status'] == 'PRODUCT_CREATED') { ?>
+                                        <span class="badge badge-success px-2 py-1 font-weight-600 text-wrap d-block"><i class="fas fa-check-double mr-1"></i>ĐÃ TẠO SP</span>
+                                        <a href="index.php?com=product&act=edit&type=san-pham&id=<?= $v['id_product'] ?>" class="btn btn-xs bg-gradient-primary text-white font-weight-600 mt-1 d-block shadow-sm" target="_blank" title="Mở trang chỉnh sửa sản phẩm trong Quản lý sản phẩm"><i class="fas fa-external-link-alt mr-1"></i>SP #<?= $v['id_product'] ?></a>
+                                    <?php } elseif ($v['status'] == 'APPROVED') { ?>
+                                        <span class="badge badge-primary px-2 py-1 font-weight-600 text-wrap d-block"><i class="fas fa-check mr-1"></i>ĐÃ DUYỆT</span>
+                                        <span class="text-xs text-muted mt-1 d-block">Chờ tạo SP</span>
+                                    <?php } elseif ($v['status'] == 'REJECTED') { ?>
+                                        <span class="badge badge-danger px-2 py-1 font-weight-600 text-wrap d-block"><i class="fas fa-ban mr-1"></i>TỪ CHỐI</span>
+                                        <?php if (!empty($v['reject_reason'])) { ?>
+                                            <div class="text-xs text-danger mt-1" style="word-break: break-word;" title="<?= htmlspecialchars($v['reject_reason']) ?>"><?= htmlspecialchars($v['reject_reason']) ?></div>
+                                        <?php } ?>
+                                    <?php } elseif ($v['status'] == 'RESEARCHED') { ?>
+                                        <span class="badge badge-info px-2 py-1 font-weight-600 text-wrap d-block"><i class="fas fa-flask mr-1"></i>ĐÃ PHÂN TÍCH</span>
+                                    <?php } else { ?>
+                                        <span class="badge badge-secondary px-2 py-1 font-weight-600 text-wrap d-block"><i class="fas fa-search mr-1"></i>MỚI TẢI VỀ</span>
                                     <?php } ?>
                                 </td>
                                 <td class="align-middle text-center">
                                     <div class="d-inline-flex flex-wrap justify-content-center" style="gap: 3px;">
-                                        <a href="index.php?com=product_research&act=edit&id=<?= $v['id'] ?>" class="btn btn-xs btn-default border" title="Xem chi tiết & Sửa"><i class="fas fa-edit"></i></a>
+                                        <a href="index.php?com=product_research&act=edit&id=<?= $v['id'] ?>" class="btn btn-xs btn-default border" title="Xem chi tiết nghiên cứu"><i class="fas fa-edit"></i></a>
                                         
                                         <?php if ($v['status'] == 'APPROVED' && empty($v['id_product'])) { ?>
-                                            <a href="index.php?com=product_research&act=create_product&id=<?= $v['id'] ?>" class="btn btn-xs btn-success" title="Tạo sản phẩm thật"><i class="fas fa-magic"></i></a>
+                                            <a href="index.php?com=product_research&act=create_product&id=<?= $v['id'] ?>" class="btn btn-xs btn-success font-weight-600" title="Đẩy sang Quản lý sản phẩm thật"><i class="fas fa-magic mr-1"></i>Tạo SP</a>
                                         <?php } ?>
                                         
                                         <?php if ($v['status'] == 'RESEARCHED' || $v['status'] == 'DISCOVERED') { ?>
@@ -301,7 +317,9 @@ $linkWeights = "index.php?com=product_research&act=weights";
                                             <button type="button" class="btn btn-xs btn-outline-danger" onclick="openRejectModal(<?= $v['id'] ?>)" title="Từ chối (Reject)"><i class="fas fa-times"></i></button>
                                         <?php } ?>
 
-                                        <?php if (empty($v['id_product'])) { ?>
+                                        <?php if (!empty($v['id_product'])) { ?>
+                                            <a href="index.php?com=product&act=edit&type=san-pham&id=<?= $v['id_product'] ?>" class="btn btn-xs btn-outline-primary" target="_blank" title="Mở sản phẩm thật"><i class="fas fa-box-open"></i></a>
+                                        <?php } else { ?>
                                             <a href="index.php?com=product_research&act=delete&id=<?= $v['id'] ?>" class="btn btn-xs btn-outline-danger border" onclick="return confirm('Bạn có chắc muốn xóa ứng viên #<?= $v['id'] ?> này?')" title="Xóa ứng viên"><i class="fas fa-trash-alt"></i></a>
                                         <?php } ?>
                                     </div>
