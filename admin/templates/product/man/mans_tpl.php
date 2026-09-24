@@ -182,6 +182,7 @@ $copyImg = (isset($config['product'][$type]['copy_image']) && $config['product']
                                             </ul>
                                         </div>
                                     <?php } ?>
+                                    <a class="text-info mr-2" href="index.php?com=ai_video&act=create_from_product&id=<?= $items[$i]['id'] ?>" title="Tạo Video AI TikTok từ sản phẩm này"><i class="fas fa-video"></i></a>
                                     <a class="text-primary mr-2" href="<?= $linkEdit ?><?= $linkID ?>&id=<?= $items[$i]['id'] ?>" title="<?=chinhsua?>"><i class="fas fa-edit"></i></a>
                                     <a class="text-danger" id="delete-item" data-url="<?= $linkDelete ?><?= $linkID ?>&id=<?= $items[$i]['id'] ?>" title="Xóa"><i class="fas fa-trash-alt"></i></a>
                                 </td>

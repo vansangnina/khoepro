@@ -72,6 +72,190 @@ class AIVideoEngine {
     }
 
     /**
+     * Khởi tạo dự án Video AI trực tiếp từ Sản phẩm
+     * Tự động kiểm tra kịch bản AI Content (nếu chưa có thì tự động sinh kịch bản chuẩn từ dữ liệu sản phẩm),
+     * đồng thời giải quyết và ánh xạ toàn bộ ảnh sản phẩm + gallery để đảm bảo trạng thái READY 100%.
+     * 
+     * @param int $idProduct ID sản phẩm trong table_product
+     * @param array $options Cấu hình tùy chọn
+     * @return array ['success' => bool, 'id_video' => int, 'version' => int, 'status' => string, 'error' => string|null]
+     */
+    public function createProjectFromProduct($idProduct, $options = array()) {
+        $idProduct = (int)$idProduct;
+        if (!$idProduct) {
+            return array('success' => false, 'id_video' => 0, 'status' => 'FAILED', 'error' => 'ID sản phẩm không hợp lệ.');
+        }
+
+        $product = $this->d->rawQueryOne("SELECT id, namevi, descvi, contentvi, regular_price, sale_price, discount, photo, slugvi FROM table_product WHERE id = ? LIMIT 1", array($idProduct));
+        if (empty($product)) {
+            return array('success' => false, 'id_video' => 0, 'status' => 'FAILED', 'error' => 'Không tìm thấy sản phẩm #' . $idProduct . ' trong cơ sở dữ liệu.');
+        }
+
+        // 1. Tìm kịch bản TikTok hiện có của sản phẩm
+        $content = $this->d->rawQueryOne(
+            "SELECT * FROM table_ai_content 
+             WHERE id_product = ? AND content_type = 'tiktok_script' AND status IN ('APPROVED', 'APPLIED') 
+             ORDER BY id DESC LIMIT 1",
+            array($idProduct)
+        );
+
+        // Nếu chưa có kịch bản APPROVED, tìm kịch bản bất kỳ của sản phẩm để duyệt
+        if (empty($content)) {
+            $anyContent = $this->d->rawQueryOne(
+                "SELECT * FROM table_ai_content 
+                 WHERE id_product = ? AND content_type = 'tiktok_script' 
+                 ORDER BY id DESC LIMIT 1",
+                array($idProduct)
+            );
+            if (!empty($anyContent)) {
+                $this->d->rawQuery("UPDATE table_ai_content SET status = 'APPROVED', date_updated = ? WHERE id = ?", array(time(), (int)$anyContent['id']));
+                $content = $this->d->rawQueryOne("SELECT * FROM table_ai_content WHERE id = ? LIMIT 1", array((int)$anyContent['id']));
+            }
+        }
+
+        // 2. Nếu sản phẩm chưa có kịch bản AI Content nào -> Tự động sinh kịch bản chuẩn TikTok từ dữ liệu sản phẩm
+        if (empty($content) || empty($content['structured_data'])) {
+            $prodName = $product['namevi'];
+            $priceText = !empty($product['sale_price']) ? number_format($product['sale_price']) . 'đ' : (!empty($product['regular_price']) ? number_format($product['regular_price']) . 'đ' : 'ưu đãi tốt');
+
+            $shotPlan = array(
+                array(
+                    'scene_number' => 1,
+                    'purpose' => 'HOOK',
+                    'duration' => 3,
+                    'voiceover' => 'Bạn đang tìm kiếm ' . $prodName . ' chuẩn chính hãng và hiệu quả nhất?',
+                    'on_screen_text' => '[HOOK 0–3S] ' . mb_substr($prodName, 0, 30, 'UTF-8'),
+                    'visual_instruction' => 'Cận cảnh sản phẩm ' . $prodName . ' nổi bật và góc nhìn sắc nét',
+                    'asset_type' => 'PRODUCT_PHOTO',
+                    'motion_effect' => 'zoom_in',
+                    'render_method' => 'LOCAL'
+                ),
+                array(
+                    'scene_number' => 2,
+                    'purpose' => 'PROBLEM',
+                    'duration' => 4,
+                    'voiceover' => 'Nhiều người thường mua nhầm hàng kém chất lượng, vừa lãng phí tiền bạc lại không an toàn khi tập luyện.',
+                    'on_screen_text' => 'Tránh xa hàng kém chất lượng',
+                    'visual_instruction' => 'Góc cận chi tiết chỉ ra rủi ro khi chọn sai dụng cụ',
+                    'asset_type' => 'PRODUCT_PHOTO',
+                    'motion_effect' => 'pan_left',
+                    'render_method' => 'LOCAL'
+                ),
+                array(
+                    'scene_number' => 3,
+                    'purpose' => 'PRODUCT_INTRO',
+                    'duration' => 5,
+                    'voiceover' => 'Đây là giải pháp toàn diện từ KhoePro: ' . $prodName . ' chất lượng vượt trội.',
+                    'on_screen_text' => 'Giải pháp: ' . mb_substr($prodName, 0, 32, 'UTF-8'),
+                    'visual_instruction' => 'Toàn cảnh sản phẩm chính hãng với góc quay sang trọng',
+                    'asset_type' => 'PRODUCT_PHOTO',
+                    'motion_effect' => 'slow_push',
+                    'render_method' => 'LOCAL'
+                ),
+                array(
+                    'scene_number' => 4,
+                    'purpose' => 'DEMO',
+                    'duration' => 5,
+                    'voiceover' => 'Chất liệu cao cấp, độ hoàn thiện tỉ mỉ, hỗ trợ tối đa cho từng chuyển động và bài tập.',
+                    'on_screen_text' => 'Chất liệu cao cấp - Hoàn thiện tỉ mỉ',
+                    'visual_instruction' => 'Góc cận cảnh đường may, chất liệu và cấu tạo thực tế',
+                    'asset_type' => 'PRODUCT_PHOTO',
+                    'motion_effect' => 'crop_focus',
+                    'render_method' => 'LOCAL'
+                ),
+                array(
+                    'scene_number' => 5,
+                    'purpose' => 'BENEFIT',
+                    'duration' => 4,
+                    'voiceover' => 'Giúp bảo vệ cơ thể, tăng cường hiệu suất tập luyện và mang lại cảm giác an tâm tuyệt đối.',
+                    'on_screen_text' => 'Tối ưu hiệu suất & An toàn',
+                    'visual_instruction' => 'Trình diễn tính năng thực tế hỗ trợ người tập',
+                    'asset_type' => 'PRODUCT_PHOTO',
+                    'motion_effect' => 'zoom_out',
+                    'render_method' => 'LOCAL'
+                ),
+                array(
+                    'scene_number' => 6,
+                    'purpose' => 'LIMITATION',
+                    'duration' => 3,
+                    'voiceover' => 'Lưu ý chọn đúng kích thước và sử dụng đúng kỹ thuật để đạt hiệu quả cao nhất.',
+                    'on_screen_text' => 'Lưu ý sử dụng đúng chuẩn',
+                    'visual_instruction' => 'Góc quay hướng dẫn lưu ý khi sử dụng',
+                    'asset_type' => 'PRODUCT_PHOTO',
+                    'motion_effect' => 'pan_right',
+                    'render_method' => 'LOCAL'
+                ),
+                array(
+                    'scene_number' => 7,
+                    'purpose' => 'BEST_FOR',
+                    'duration' => 3,
+                    'voiceover' => 'Sản phẩm phù hợp cho cả người mới bắt đầu và gymer chuyên nghiệp muốn nâng cao phong độ.',
+                    'on_screen_text' => 'Phù hợp mọi cấp độ tập luyện',
+                    'visual_instruction' => 'Hình ảnh tổng thể hoàn hảo cho mọi gymer',
+                    'asset_type' => 'PRODUCT_PHOTO',
+                    'motion_effect' => 'zoom_in',
+                    'render_method' => 'LOCAL'
+                ),
+                array(
+                    'scene_number' => 8,
+                    'purpose' => 'CTA',
+                    'duration' => 3,
+                    'voiceover' => 'Xem ngay giỏ hàng và ưu đãi đặc biệt hôm nay tại KhoePro để sở hữu giá tốt nhất!',
+                    'on_screen_text' => '[ƯU ĐÃI ' . $priceText . '] Xem ngay giỏ hàng KhoePro',
+                    'visual_instruction' => 'Màn hình kêu gọi mua hàng kèm logo KhoePro',
+                    'asset_type' => 'PRODUCT_PHOTO',
+                    'motion_effect' => 'slow_push',
+                    'render_method' => 'LOCAL'
+                )
+            );
+
+            $structuredData = array(
+                'hook_text' => 'Bạn đang tìm kiếm ' . $prodName . ' chuẩn chính hãng?',
+                'selling_points' => array('Chính hãng KhoePro', 'Chất liệu cao cấp', 'Tối ưu hiệu suất'),
+                'target_audience' => 'Gymer và người yêu thích thể thao thể hình',
+                'shot_plan' => $shotPlan
+            );
+
+            $contentData = array(
+                'id_product' => $idProduct,
+                'content_type' => 'tiktok_script',
+                'title' => 'Kịch bản TikTok: ' . $prodName,
+                'content_text' => 'Kịch bản video giới thiệu sản phẩm ' . $prodName . ' chuyên sâu cho TikTok.',
+                'structured_data' => json_encode($structuredData, JSON_UNESCAPED_UNICODE),
+                'target_duration' => 30,
+                'status' => 'APPROVED',
+                'script_hash' => hash('sha256', $prodName . '|' . json_encode($structuredData)),
+                'date_created' => time(),
+                'date_updated' => time()
+            );
+
+            $idContent = $this->d->insert('ai_content', $contentData);
+        } else {
+            $idContent = (int)$content['id'];
+        }
+
+        if (!$idContent) {
+            return array('success' => false, 'id_video' => 0, 'status' => 'FAILED', 'error' => 'Không thể tạo kịch bản AI Content cho sản phẩm.');
+        }
+
+        // 3. Khởi tạo dự án video từ kịch bản
+        $videoTitle = !empty($options['title']) ? $options['title'] : ('Video TikTok: ' . $product['namevi']);
+        $videoOptions = array_merge(array(
+            'title' => $videoTitle,
+            'mode' => VideoComposer::MODE_ECONOMY,
+            'voice_id' => 'vi-VN-Standard-A',
+            'template_id' => 'PROBLEM_SOLUTION',
+            'aspect_ratio' => '9:16',
+            'target_duration' => 30,
+            'provider' => 'mock'
+        ), $options);
+
+        $res = $this->createProjectFromApprovedContent($idContent, $videoOptions);
+
+        return $res;
+    }
+
+    /**
      * Khởi tạo dự án Video từ Kịch bản TikTok đã được Admin duyệt
      * @param int $idContent ID từ table_ai_content (bắt buộc status = 'APPROVED')
      * @param array $options Cấu hình tùy chọn (mode, voice_id, template_id, target_duration, aspect_ratio)

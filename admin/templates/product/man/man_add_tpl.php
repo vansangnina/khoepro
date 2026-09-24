@@ -53,6 +53,9 @@ if (
         <div class="card-footer text-sm sticky-top">
             <button type="submit" class="btn btn-sm bg-gradient-primary submit-check" disabled><i class="far fa-save mr-2"></i><?=luu?></button>
             <button type="submit" class="btn btn-sm bg-gradient-success submit-check" name="save-here" disabled><i class="far fa-save mr-2"></i><?=luutaitrang?></button>
+            <?php if (!empty($item['id'])) { ?>
+                <a class="btn btn-sm bg-gradient-info text-white mr-1 font-weight-600" href="index.php?com=ai_video&act=create_from_product&id=<?= $item['id'] ?>" title="Tạo Video AI TikTok từ sản phẩm này" target="_blank"><i class="fas fa-video mr-1"></i>Tạo Video AI</a>
+            <?php } ?>
             <button type="reset" class="btn btn-sm bg-gradient-secondary"><i class="fas fa-redo mr-2"></i><?=lamlai?></button>
             <a class="btn btn-sm bg-gradient-danger" href="<?= $linkMan ?>" title="<?=thoat?>"><i class="fas fa-sign-out-alt mr-2"></i><?=thoat?></a>
         </div>
@@ -598,6 +601,9 @@ if (
         <div class="card-footer text-sm">
             <button type="submit" class="btn btn-sm bg-gradient-primary submit-check" disabled><i class="far fa-save mr-2"></i><?=luu?></button>
             <button type="submit" class="btn btn-sm bg-gradient-success submit-check" name="save-here" disabled><i class="far fa-save mr-2"></i><?=luutaitrang?></button>
+            <?php if (!empty($item['id'])) { ?>
+                <a class="btn btn-sm bg-gradient-info text-white mr-1 font-weight-600" href="index.php?com=ai_video&act=create_from_product&id=<?= $item['id'] ?>" title="Tạo Video AI TikTok từ sản phẩm này" target="_blank"><i class="fas fa-video mr-1"></i>Tạo Video AI</a>
+            <?php } ?>
             <button type="reset" class="btn btn-sm bg-gradient-secondary"><i class="fas fa-redo mr-2"></i><?=lamlai?></button>
             <a class="btn btn-sm bg-gradient-danger" href="<?= $linkMan ?>" title="<?=thoat?>"><i class="fas fa-sign-out-alt mr-2"></i><?=thoat?></a>
             <input type="hidden" name="id" value="<?= (isset($item['id']) && $item['id'] > 0) ? $item['id'] : '' ?>">

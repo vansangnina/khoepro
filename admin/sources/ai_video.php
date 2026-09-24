@@ -40,6 +40,11 @@ switch ($act) {
         $template = "ai_video/create";
         break;
 
+    /* 3.1 Create Project Directly from Product */
+    case "create_from_product":
+        createProjectFromProductAction();
+        break;
+
     /* 4. Save Project */
     case "save_create":
         saveCreateProject();
@@ -272,6 +277,40 @@ function saveCreateProject() {
         $func->transfer($msg, "index.php?com=ai_video&act=view&id=" . $res['id_video']);
     } else {
         $func->transfer("Lỗi tạo dự án video: " . $res['error'], "index.php?com=ai_video&act=create", false);
+    }
+}
+
+/**
+ * 4.1 Tạo Dự án Video trực tiếp từ Sản phẩm đã có đầy đủ hình ảnh & nội dung
+ */
+function createProjectFromProductAction() {
+    global $d, $func, $videoEngine;
+
+    $idProduct = !empty($_GET['id']) ? (int)$_GET['id'] : 0;
+    if (!$idProduct) {
+        $func->transfer("Vui lòng chọn sản phẩm hợp lệ để tạo Video AI", "index.php?com=product&act=man&type=san-pham", false);
+    }
+
+    $options = array(
+        'mode' => !empty($_GET['mode']) ? strtoupper(trim($_GET['mode'])) : 'ECONOMY',
+        'video_type' => 'TIKTOK_9_16',
+        'aspect_ratio' => '9:16',
+        'target_duration' => 30,
+        'voice_id' => 'vi-VN-Standard-A',
+        'template_id' => 'PROBLEM_SOLUTION',
+        'provider' => 'mock'
+    );
+
+    $res = $videoEngine->createProjectFromProduct($idProduct, $options);
+    if (!empty($res['success'])) {
+        $msg = "Đã khởi tạo Dự án Video AI từ sản phẩm thành công (v" . ($res['version'] ?? 1) . ")!";
+        if (!empty($res['status']) && $res['status'] === 'WAITING_ASSET') {
+            $msg .= " Lưu ý: Dự án đang thiếu " . ($res['missing_assets_count'] ?? 0) . " tài nguyên.";
+        }
+        $func->transfer($msg, "index.php?com=ai_video&act=view&id=" . (int)$res['id_video']);
+    } else {
+        $errorMsg = !empty($res['error']) ? $res['error'] : 'Không thể khởi tạo video.';
+        $func->transfer("Lỗi tạo video từ sản phẩm: " . $errorMsg, "index.php?com=product&act=man&type=san-pham", false);
     }
 }
 
