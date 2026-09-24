@@ -77,9 +77,31 @@ $linkWeights = "index.php?com=product_research&act=weights";
 
     <!-- Filter & Action Bar -->
     <div class="card card-outline card-primary shadow-sm mb-3">
-        <div class="card-body">
-            <div class="row align-items-center">
-                <div class="col-md-2 mb-2 mb-md-0">
+        <div class="card-body p-3">
+            <!-- Row 1: Actions & Search -->
+            <div class="d-flex flex-wrap align-items-center justify-content-between mb-3" style="gap: 8px;">
+                <div class="d-flex flex-wrap align-items-center" style="gap: 6px;">
+                    <a href="<?= $linkAdd ?>" class="btn btn-sm bg-gradient-primary text-white font-weight-600" title="Thêm mới ứng viên"><i class="fas fa-plus mr-1"></i>Thêm mới</a>
+                    <button type="button" class="btn btn-sm bg-gradient-info text-white font-weight-600" data-toggle="modal" data-target="#modalImportAccessTrade" title="Kéo sản phẩm tự động từ ACCESSTRADE API"><i class="fas fa-cloud-download-alt mr-1"></i>Kéo từ API</button>
+                    <a class="btn btn-sm bg-gradient-danger text-white font-weight-600" id="delete-all" data-url="index.php?com=product_research&act=delete" title="Xóa các mục đã chọn"><i class="far fa-trash-alt mr-1"></i>Xóa chọn</a>
+                    <a class="btn btn-sm btn-outline-danger font-weight-600" href="index.php?com=product_research&act=delete_all" onclick="return confirm('CẢNH BÁO: Bạn có chắc chắn muốn XÓA TẤT CẢ ứng viên nghiên cứu chưa tạo sản phẩm thật? Thao tác này không thể hoàn tác!')" title="Xóa toàn bộ ứng viên chưa liên kết"><i class="fas fa-trash-alt mr-1"></i>Xóa tất cả</a>
+                </div>
+                <div class="d-flex flex-wrap align-items-center" style="gap: 6px;">
+                    <a href="index.php?com=product_research&act=seeds" class="btn btn-sm btn-outline-primary font-weight-600" title="Quản lý Seeds"><i class="fas fa-seedling mr-1"></i>Seeds</a>
+                    <a href="index.php?com=product_research&act=jobs" class="btn btn-sm btn-outline-info font-weight-600" title="Hàng đợi Jobs"><i class="fas fa-tasks mr-1"></i>Jobs</a>
+                    <a href="index.php?com=product_research&act=provider_config" class="btn btn-sm btn-outline-secondary font-weight-600 mr-2" title="Cấu hình AI & API"><i class="fas fa-robot mr-1"></i>Cấu hình</a>
+                    <div class="input-group input-group-sm" style="min-width: 220px; max-width: 280px;">
+                        <input type="text" class="form-control" id="keyword" placeholder="Tìm tên, ID ngoài..." value="<?= htmlspecialchars($_GET['keyword'] ?? '') ?>" onkeypress="if (event.keyCode == 13) applyFilter();">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary font-weight-600" type="button" onclick="applyFilter()"><i class="fas fa-search"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 2: Filter Dropdowns -->
+            <div class="row pt-2 border-top">
+                <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 mb-2 mb-lg-0">
                     <select class="form-control form-control-sm" id="filter_platform" onchange="applyFilter()">
                         <option value="">-- Nền tảng (Platform) --</option>
                         <option value="tiktok" <?= ($_GET['platform'] ?? '') == 'tiktok' ? 'selected' : '' ?>>TikTok Shop</option>
@@ -90,7 +112,7 @@ $linkWeights = "index.php?com=product_research&act=weights";
                         <option value="other" <?= ($_GET['platform'] ?? '') == 'other' ? 'selected' : '' ?>>Khác</option>
                     </select>
                 </div>
-                <div class="col-md-2 mb-2 mb-md-0">
+                <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 mb-2 mb-lg-0">
                     <select class="form-control form-control-sm" id="filter_source" onchange="applyFilter()">
                         <option value="">-- Nguồn phát hiện --</option>
                         <option value="manual" <?= ($_GET['discovery_source'] ?? '') == 'manual' ? 'selected' : '' ?>>Thủ công (Manual)</option>
@@ -100,7 +122,7 @@ $linkWeights = "index.php?com=product_research&act=weights";
                         <option value="csv_import" <?= ($_GET['discovery_source'] ?? '') == 'csv_import' ? 'selected' : '' ?>>CSV Import</option>
                     </select>
                 </div>
-                <div class="col-md-2 mb-2 mb-md-0">
+                <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 mb-2 mb-lg-0">
                     <select class="form-control form-control-sm" id="filter_status" onchange="applyFilter()">
                         <option value="">-- Trạng thái --</option>
                         <option value="DISCOVERED" <?= ($_GET['status'] ?? '') == 'DISCOVERED' ? 'selected' : '' ?>>DISCOVERED (Mới)</option>
@@ -110,7 +132,7 @@ $linkWeights = "index.php?com=product_research&act=weights";
                         <option value="PRODUCT_CREATED" <?= ($_GET['status'] ?? '') == 'PRODUCT_CREATED' ? 'selected' : '' ?>>PRODUCT_CREATED (Đã tạo SP)</option>
                     </select>
                 </div>
-                <div class="col-md-2 mb-2 mb-md-0">
+                <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 mb-0">
                     <select class="form-control form-control-sm" id="filter_score" onchange="applyFilter()">
                         <option value="">-- Khoảng điểm (Score) --</option>
                         <option value="80-100" <?= ($_GET['score_range'] ?? '') == '80-100' ? 'selected' : '' ?>>80 - 100 (Rất tiềm năng)</option>
@@ -118,23 +140,6 @@ $linkWeights = "index.php?com=product_research&act=weights";
                         <option value="40-59" <?= ($_GET['score_range'] ?? '') == '40-59' ? 'selected' : '' ?>>40 - 59 (Trung bình)</option>
                         <option value="0-39" <?= ($_GET['score_range'] ?? '') == '0-39' ? 'selected' : '' ?>>0 - 39 (Thấp)</option>
                     </select>
-                </div>
-                <div class="col-md-2 mb-2 mb-md-0">
-                    <div class="input-group input-group-sm">
-                        <input type="text" class="form-control" id="keyword" placeholder="Tìm tên, ID ngoài..." value="<?= htmlspecialchars($_GET['keyword'] ?? '') ?>" onkeypress="if (event.keyCode == 13) applyFilter();">
-                        <div class="input-group-append">
-                            <button class="btn btn-primary" type="button" onclick="applyFilter()"><i class="fas fa-search"></i></button>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 text-right mt-2 mt-md-0">
-                    <button type="button" class="btn btn-sm btn-info mr-1 font-weight-600" data-toggle="modal" data-target="#modalImportAccessTrade" title="Kéo sản phẩm tự động từ ACCESSTRADE API"><i class="fas fa-cloud-download-alt mr-1"></i>Kéo từ API</button>
-                    <a href="<?= $linkAdd ?>" class="btn btn-sm btn-success mr-1 font-weight-600" title="Thêm ứng viên"><i class="fas fa-plus mr-1"></i>Thêm</a>
-                    <a class="btn btn-sm bg-gradient-danger text-white mr-1 font-weight-600" id="delete-all" data-url="index.php?com=product_research&act=delete" title="Xóa các mục đã chọn"><i class="far fa-trash-alt mr-1"></i>Xóa chọn</a>
-                    <a class="btn btn-sm btn-outline-danger mr-1 font-weight-600" href="index.php?com=product_research&act=delete_all" onclick="return confirm('CẢNH BÁO: Bạn có chắc chắn muốn XÓA TẤT CẢ ứng viên nghiên cứu chưa tạo sản phẩm thật? Thao tác này không thể hoàn tác!')" title="Xóa toàn bộ ứng viên chưa liên kết"><i class="fas fa-trash-alt mr-1"></i>Xóa tất cả</a>
-                    <a href="index.php?com=product_research&act=seeds" class="btn btn-sm btn-outline-primary mr-1" title="Quản lý Seeds"><i class="fas fa-seedling"></i></a>
-                    <a href="index.php?com=product_research&act=jobs" class="btn btn-sm btn-outline-info mr-1" title="Hàng đợi Jobs"><i class="fas fa-tasks"></i></a>
-                    <a href="index.php?com=product_research&act=provider_config" class="btn btn-sm btn-outline-secondary" title="Cấu hình AI & API"><i class="fas fa-robot"></i></a>
                 </div>
             </div>
         </div>
