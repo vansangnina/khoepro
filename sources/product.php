@@ -142,7 +142,7 @@ if ($id != '') {
     $paging = $func->pagination($total, $perPage, $curPage, $url);
 
     /* Lấy bài viết liên quan */
-    $relatedNews = $d->rawQuery("select id, name$lang, slugvi, slugen, photo, desc$lang, date_created from #_news where type = 'tin-tuc' and find_in_set('hienthi',status) order by numb, id desc limit 0,4");
+    $relatedNews = $d->rawQuery("select id, name$lang, slugvi, slugen, photo, desc$lang, date_created from #_news where type = 'tin-tuc' and find_in_set('hienthi',status) order by numb, id desc limit 0,8");
 
     /* Comment */
     $comment = new Comments($d, $func, $rowDetail['id'], $rowDetail['type']);

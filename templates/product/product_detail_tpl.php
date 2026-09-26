@@ -25,11 +25,6 @@ $bestForText = !empty($rowDetail['best_for']) ? $rowDetail['best_for'] : (!empty
 ?>
 
 <div class="fitnado-pro-detail wrap py-4">
-    <!-- Breadcrumb -->
-    <div class="fitnado-breadcrumb mb-3">
-        <?= (!empty($breadcrumbs)) ? $breadcrumbs : '' ?>
-    </div>
-
     <!-- HERO SECTION: Above the Fold (Gallery + Conversion Engine) -->
     <div class="pro-detail-hero card border-0 rounded-16 p-3 p-lg-4 mb-4 shadow-sm bg-white">
         <div class="row">
@@ -114,11 +109,11 @@ $bestForText = !empty($rowDetail['best_for']) ? $rowDetail['best_for'] : (!empty
                             </a>
                         <?php } ?>
                         <?php if (!empty($productList['id'])) { ?>
-                            <a href="<?= $productList[$sluglang] ?>" class="badge badge-light text-secondary font-weight-bold p-2">
+                            <a href="<?= $productList[$sluglang] ?>" class="badge badge-light text-secondary font-weight-600 p-2">
                                 <i class="fas fa-layer-group mr-1"></i><?= htmlspecialchars($productList['name' . $lang]) ?>
                             </a>
                         <?php } ?>
-                        <span class="badge badge-success-subtle text-success font-weight-bold px-2 py-1">
+                        <span class="badge badge-success-subtle text-success font-weight-600 px-2 py-1">
                             <i class="fas fa-award mr-1"></i>Editor's Choice
                         </span>
                     </div>
@@ -224,7 +219,7 @@ $bestForText = !empty($rowDetail['best_for']) ? $rowDetail['best_for'] : (!empty
                                                 <?= htmlspecialchars($offer['seller_name']) ?>
                                             </span>
                                             <?php if (!empty($offer['is_best_deal'])) { ?>
-                                                <span class="badge badge-warning text-dark font-weight-bold text-xs">Rẻ nhất</span>
+                                                <span class="badge badge-warning text-dark font-weight-600 text-xs">Rẻ nhất</span>
                                             <?php } ?>
                                         </div>
                                         <div class="offer-action-group">
@@ -349,7 +344,7 @@ $bestForText = !empty($rowDetail['best_for']) ? $rowDetail['best_for'] : (!empty
                     <i class="fas fa-balance-scale text-primary"></i>
                     <span>SO SÁNH TRỰC TIẾP VỚI CÁC LỰA CHỌN KHÁC</span>
                 </h3>
-                <a href="so-sanh?id1=<?= $rowDetail['id'] ?>&id2=<?= $compareCandidates[0]['id'] ?>" class="btn btn-outline-primary btn-sm font-weight-bold">
+                <a href="so-sanh?id1=<?= $rowDetail['id'] ?>&id2=<?= $compareCandidates[0]['id'] ?>" class="btn btn-outline-primary btn-sm font-weight-600">
                     So sánh chi tiết hơn <i class="fas fa-arrow-right ml-1"></i>
                 </a>
             </div>
@@ -361,11 +356,11 @@ $bestForText = !empty($rowDetail['best_for']) ? $rowDetail['best_for'] : (!empty
                             <th class="col-feature">Tiêu chí so sánh</th>
                             <th class="col-current-pro">
                                 <div class="badge badge-primary mb-1">Đang xem</div>
-                                <div class="font-weight-900"><?= htmlspecialchars($rowDetail['name' . $lang]) ?></div>
+                                <div class="font-weight-600"><?= htmlspecialchars($rowDetail['name' . $lang]) ?></div>
                             </th>
                             <?php foreach ($compareCandidates as $cItem) { ?>
                                 <th>
-                                    <div class="font-weight-800"><?= htmlspecialchars($cItem['name']) ?></div>
+                                    <div class="font-weight-600"><?= htmlspecialchars($cItem['name']) ?></div>
                                 </th>
                             <?php } ?>
                         </tr>
@@ -384,22 +379,22 @@ $bestForText = !empty($rowDetail['best_for']) ? $rowDetail['best_for'] : (!empty
                         </tr>
                         <tr>
                             <td class="col-feature">Điểm Fitnado Score</td>
-                            <td class="col-current-pro font-weight-900 text-primary">
+                            <td class="col-current-pro font-weight-600 text-primary">
                                 <span class="badge badge-warning text-dark px-2 py-1"><?= $displayScore ?>/10</span>
                             </td>
                             <?php foreach ($compareCandidates as $cItem) { ?>
-                                <td class="font-weight-800">
+                                <td class="font-weight-600">
                                     <span class="badge badge-light border px-2 py-1"><?= !empty($cItem['review_score']) ? number_format($cItem['review_score'], 1) : '9.0' ?>/10</span>
                                 </td>
                             <?php } ?>
                         </tr>
                         <tr>
                             <td class="col-feature">Giá tham khảo</td>
-                            <td class="col-current-pro font-weight-900 text-danger" style="font-size: 16px;">
+                            <td class="col-current-pro font-weight-600 text-danger" style="font-size: 16px;">
                                 <?= $bestPrice > 0 ? $func->formatMoney($bestPrice) : 'Liên hệ' ?>
                             </td>
                             <?php foreach ($compareCandidates as $cItem) { ?>
-                                <td class="font-weight-800 text-dark">
+                                <td class="font-weight-600 text-dark">
                                     <?= (!empty($cItem['best_offer']['affiliate_price'])) ? $func->formatMoney($cItem['best_offer']['affiliate_price']) : ($cItem['sale_price'] > 0 ? $func->formatMoney($cItem['sale_price']) : $func->formatMoney($cItem['regular_price'])) ?>
                                 </td>
                             <?php } ?>
@@ -419,14 +414,14 @@ $bestForText = !empty($rowDetail['best_for']) ? $rowDetail['best_for'] : (!empty
                             <td class="col-feature">Hành động</td>
                             <td class="col-current-pro">
                                 <?php if (!empty($bestOffer)) { ?>
-                                    <a href="<?= $bestOffer['go_url'] ?>" target="_blank" rel="nofollow sponsored" class="btn btn-sm btn-primary font-weight-bold px-3">
+                                    <a href="<?= $bestOffer['go_url'] ?>" target="_blank" rel="nofollow sponsored" class="btn btn-sm btn-primary font-weight-600 px-3">
                                         Mua giá tốt <i class="fas fa-external-link-alt ml-1"></i>
                                     </a>
                                 <?php } ?>
                             </td>
                             <?php foreach ($compareCandidates as $cItem) { ?>
                                 <td>
-                                    <a href="<?= $cItem['slugvi'] ?>" class="btn btn-sm btn-outline-dark font-weight-bold">
+                                    <a href="<?= $cItem['slugvi'] ?>" class="btn btn-sm btn-outline-dark font-weight-600">
                                         Xem chi tiết
                                     </a>
                                 </td>
@@ -511,40 +506,91 @@ $bestForText = !empty($rowDetail['best_for']) ? $rowDetail['best_for'] : (!empty
         </section>
     <?php } ?>
 
-    <!-- RELATED ARTICLES -->
-    <?php if (!empty($relatedNews)) {
-        $articleIcons = array('🏋️', '🥤', '〰️', '🎒', '💪', '🏃');
-    ?>
-        <section class="fitnado-section mt-4 mb-4">
+    <!-- RELATED ARTICLES (CẨM NANG & KINH NGHIỆM TẬP LUYỆN) -->
+    <?php if (!empty($relatedNews)) { ?>
+        <section class="fitnado-section fitnado-knowledge-section mt-5 mb-4">
             <div class="fitnado-sectionHead">
                 <div>
-                    <h2>▣ CẨM NANG & KINH NGHIỆM TẬP LUYỆN</h2>
-                    <p>Kiến thức và hướng dẫn chọn thiết bị từ Khỏe Pro.</p>
+                    <h2><i class="fa-solid fa-book-open-reader me-2 text-primary"></i> CẨM NANG & KINH NGHIỆM TẬP LUYỆN</h2>
+                    <p>Kiến thức, hướng dẫn và kinh nghiệm chọn thiết bị tập gym hữu ích từ Khỏe Pro.</p>
                 </div>
                 <a href="tin-tuc" class="fitnado-more">Xem tất cả bài viết →</a>
             </div>
 
-            <div class="fitnado-articles">
-                <?php foreach ($relatedNews as $k => $n_item) {
-                    $aIcon = $articleIcons[$k % count($articleIcons)];
-                ?>
-                    <a href="<?= $n_item[$sluglang] ?>" class="fitnado-article" title="<?= htmlspecialchars($n_item['name' . $lang]) ?>">
-                        <div class="pic">
-                            <?php if (!empty($n_item['photo'])) { ?>
-                                <img class="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';" data-src="<?= THUMBS ?>/280x180x1/<?= UPLOAD_NEWS_L . $n_item['photo'] ?>" alt="<?= htmlspecialchars($n_item['name' . $lang]) ?>" />
-                                <span style="display:none;"><?= $aIcon ?></span>
-                            <?php } else { ?>
-                                <span><?= $aIcon ?></span>
-                            <?php } ?>
+            <div class="fitnado-articles-slider-wrap position-relative">
+                <div class="owl-page owl-carousel owl-theme owl-articles-slider" 
+                     data-items="screen:0|items:1|margin:16,screen:480|items:2|margin:16,screen:768|items:3|margin:20,screen:1024|items:4|margin:20,screen:1280|items:4|margin:20" 
+                     data-rewind="1" 
+                     data-autoplay="1" 
+                     data-loop="0" 
+                     data-lazyload="0" 
+                     data-mousedrag="1" 
+                     data-touchdrag="1" 
+                     data-smartspeed="400" 
+                     data-autoplayspeed="4000" 
+                     data-dots="1" 
+                     data-nav="1">
+                    <?php foreach ($relatedNews as $k => $v) { 
+                        // Determine category tag label & icon
+                        $tagLabel = 'Kiến thức';
+                        $tagIcon = 'fa-solid fa-book-open';
+                        $tagClass = 'badge-knowledge';
+                        $lowerName = mb_strtolower($v['name' . $lang], 'UTF-8');
+                        if (strpos($lowerName, 'so sánh') !== false || strpos($lowerName, 'vs') !== false) {
+                            $tagLabel = 'So sánh';
+                            $tagIcon = 'fa-solid fa-code-compare';
+                            $tagClass = 'badge-compare';
+                        } elseif (strpos($lowerName, 'đánh giá') !== false || strpos($lowerName, 'review') !== false) {
+                            $tagLabel = 'Đánh giá';
+                            $tagIcon = 'fa-solid fa-star';
+                            $tagClass = 'badge-review';
+                        } elseif (strpos($lowerName, 'hướng dẫn') !== false || strpos($lowerName, 'cách chọn') !== false || strpos($lowerName, 'cẩm nang') !== false) {
+                            $tagLabel = 'Hướng dẫn';
+                            $tagIcon = 'fa-solid fa-compass';
+                            $tagClass = 'badge-guide';
+                        }
+                    ?>
+                        <div class="fitnado-article-card">
+                            <a href="<?= $v[$sluglang] ?>" class="article-thumb" title="<?= htmlspecialchars($v['name' . $lang]) ?>">
+                                <?php if (!empty($v['photo'])) { ?>
+                                    <img class="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" data-src="<?= THUMBS ?>/400x250x1/<?= UPLOAD_NEWS_L . $v['photo'] ?>" alt="<?= htmlspecialchars($v['name' . $lang]) ?>" />
+                                    <span class="fallback-thumb" style="display:none;"><i class="fa-solid fa-dumbbell"></i></span>
+                                <?php } else { ?>
+                                    <span class="fallback-thumb"><i class="fa-solid fa-dumbbell"></i></span>
+                                <?php } ?>
+                                <span class="article-category-badge <?= $tagClass ?>">
+                                    <i class="<?= $tagIcon ?>"></i> <?= $tagLabel ?>
+                                </span>
+                            </a>
+                            <div class="article-content-body">
+                                <div class="article-meta-row">
+                                    <span class="article-meta-date">
+                                        <i class="fa-regular fa-calendar"></i> <?= date("d/m/Y", !empty($v['date_created']) ? $v['date_created'] : time()) ?>
+                                    </span>
+                                    <span class="article-meta-time">
+                                        <i class="fa-regular fa-clock"></i> 4 phút đọc
+                                    </span>
+                                </div>
+                                <h3 class="article-card-title">
+                                    <a href="<?= $v[$sluglang] ?>" title="<?= htmlspecialchars($v['name' . $lang]) ?>">
+                                        <?= htmlspecialchars($v['name' . $lang]) ?>
+                                    </a>
+                                </h3>
+                                <?php if (!empty($v['desc' . $lang])) { ?>
+                                    <p class="article-card-desc">
+                                        <?= strip_tags($v['desc' . $lang]) ?>
+                                    </p>
+                                <?php } ?>
+                                <div class="article-card-footer">
+                                    <a href="<?= $v[$sluglang] ?>" class="article-readmore-btn">
+                                        <span>Khám phá chi tiết</span>
+                                        <i class="fa-solid fa-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
-                        <div class="fitnado-article-info">
-                            <b><?= htmlspecialchars($n_item['name' . $lang]) ?></b>
-                            <?php if (!empty($n_item['desc' . $lang])) { ?>
-                                <p><?= strip_tags($n_item['desc' . $lang]) ?></p>
-                            <?php } ?>
-                        </div>
-                    </a>
-                <?php } ?>
+                    <?php } ?>
+                </div>
             </div>
         </section>
     <?php } ?>
